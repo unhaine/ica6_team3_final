@@ -1,65 +1,367 @@
-import Image from "next/image";
+'use client';
+
+import { useState, useCallback } from 'react';
+import dynamic from 'next/dynamic';
+import ImageUploader from '@/components/ImageUploader';
+import ImagePreview from '@/components/ImagePreview';
+
+// Konva는 브라우저 API를 사용하므로 SSR을 비활성화해야 합니다.
+const BoundingBoxCanvas = dynamic(() => import('@/components/BoundingBoxCanvas'), {
+  ssr: false,
+});
+
+type ApiType = 'cloud-vision' | 'gemini-flash' | 'compare';
+
+interface DetectedItem {
+  id: string;
+  label: string;
+  confidence: number;
+  boundingBox: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  };
+  source?: string;
+}
+
+interface CompareResult {
+  comparison: boolean;
+  cloudVision: {
+    detectedItems?: DetectedItem[];
+    allLabels?: string[];
+    error?: string;
+  };
+  geminiFlash: {
+    detectedItems?: DetectedItem[];
+    allLabels?: string[];
+    error?: string;
+  };
+}
 
 export default function Home() {
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isAnalyzed, setIsAnalyzed] = useState(false);
+  const [detectedItems, setDetectedItems] = useState<DetectedItem[]>([]);
+  const [allLabels, setAllLabels] = useState<string[]>([]);
+  const [selectedApi, setSelectedApi] = useState<ApiType>('cloud-vision');
+  const [compareResult, setCompareResult] = useState<CompareResult | null>(null);
+  const [analysisTime, setAnalysisTime] = useState<{ cloudVision?: number; geminiFlash?: number }>({});
+
+  const handleImageSelect = useCallback((file: File, url: string) => {
+    setImageFile(file);
+    setPreviewUrl(url);
+    setDetectedItems([]);
+    setAllLabels([]);
+    setIsAnalyzed(false);
+    setCompareResult(null);
+    setAnalysisTime({});
+  }, []);
+
+  const handleRemoveImage = useCallback(() => {
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+    }
+    setImageFile(null);
+    setPreviewUrl(null);
+    setDetectedItems([]);
+    setAllLabels([]);
+    setIsAnalyzed(false);
+    setCompareResult(null);
+    setAnalysisTime({});
+  }, [previewUrl]);
+
+  const handleUpdateItem = useCallback((id: string, newBox: { x: number; y: number; width: number; height: number }) => {
+    setDetectedItems((prev: DetectedItem[]) =>
+      prev.map((item: DetectedItem) => (item.id === id ? { ...item, boundingBox: newBox } : item))
+    );
+  }, []);
+
+  const handleAnalyze = useCallback(async () => {
+    if (!imageFile) return;
+
+    setIsAnalyzing(true);
+    setCompareResult(null);
+    
+    try {
+      const reader = new FileReader();
+      const base64Promise = new Promise<string>((resolve) => {
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.readAsDataURL(imageFile);
+      });
+      
+      const base64Image = await base64Promise;
+      const startTime = Date.now();
+
+      const response = await fetch(`/api/vision/analyze?api=${selectedApi}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image: base64Image }),
+      });
+
+      const endTime = Date.now();
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.details || '분석 실패');
+      }
+
+      const data = await response.json();
+
+      if (selectedApi === 'compare') {
+        // 비교 모드
+        setCompareResult(data);
+        // 기본적으로 Gemini Flash 결과를 메인 캔버스에 표시
+        if (data.geminiFlash?.detectedItems) {
+          setDetectedItems(data.geminiFlash.detectedItems);
+          setAllLabels(data.geminiFlash.allLabels || []);
+        }
+      } else {
+        setDetectedItems(data.detectedItems);
+        setAllLabels(data.allLabels || []);
+        setAnalysisTime({
+          [selectedApi === 'cloud-vision' ? 'cloudVision' : 'geminiFlash']: endTime - startTime
+        });
+      }
+      
+      setIsAnalyzed(true);
+    } catch (error: any) {
+      console.error('분석 실패:', error);
+      alert(`이미지 분석 중 오류가 발생했습니다: ${error.message}`);
+    } finally {
+      setIsAnalyzing(false);
+    }
+  }, [imageFile, selectedApi]);
+
+  const handleReanalyze = useCallback(() => {
+    setIsAnalyzed(false);
+    setDetectedItems([]);
+    setAllLabels([]);
+    setCompareResult(null);
+  }, []);
+
+  const [canvasHeight, setCanvasHeight] = useState<number | null>(null);
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+    <main className="min-h-screen bg-[#0f172a] text-slate-200 selection:bg-emerald-500/30">
+      {/* 배경 글래스모피즘 효과 */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-emerald-500/10 rounded-full blur-[120px]" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-500/10 rounded-full blur-[120px]" />
+      </div>
+
+      <div className="relative z-10 container mx-auto px-4 py-1 max-w-7xl">
+        <header className="relative z-10 flex flex-col md:flex-row md:items-end justify-between mb-6 gap-3 border-b border-slate-800/50 pb-2 mt-4">
+          <div className="space-y-1">
+            <h1 className="text-2xl md:text-4xl font-extrabold tracking-tight text-white">
+              Refriger<span className="text-emerald-400">AI</span>
+            </h1>
+            <p className="text-slate-400 text-sm font-light leading-relaxed">
+              냉장고 속 식료품을 AI가 정밀 분석하여 정리해 드립니다.
+            </p>
+          </div>
+          <div className="flex flex-col items-start md:items-end gap-2">
+            <div className="inline-block px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-medium tracking-wide">
+              AI-Powered Smart Fridge
+            </div>
+            <div className="text-slate-500 text-[10px] font-mono uppercase tracking-widest">POC Verification State</div>
+          </div>
+        </header>
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-2 items-start">
+          {/* 왼쪽: 이미지 영역 */}
+          <div className={`${(previewUrl || isAnalyzed) ? 'lg:col-span-8' : 'lg:col-span-12'} space-y-2 sticky top-8`}>
+            {previewUrl ? (
+              <div className="group relative">
+                {isAnalyzed && detectedItems.length > 0 ? (
+                  <div className="transition-all duration-500 transform hover:scale-[1.01]">
+                    <BoundingBoxCanvas
+                      imageUrl={previewUrl}
+                      items={detectedItems}
+                      onUpdateItem={handleUpdateItem}
+                      onHeightChange={setCanvasHeight}
+                    />
+                    <div className="absolute top-2 right-4 z-20 flex gap-2">
+                      <button
+                        onClick={handleReanalyze}
+                        className="p-3 bg-blue-500/80 hover:bg-blue-600 text-white rounded-2xl backdrop-blur-md transition-all shadow-xl hover:scale-105"
+                        title="다시 분석"
+                      >
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                      </button>
+                      <button
+                        onClick={handleRemoveImage}
+                        className="p-3 bg-red-500/80 hover:bg-red-600 text-white rounded-2xl backdrop-blur-md transition-all shadow-xl hover:rotate-90"
+                        title="이미지 삭제"
+                      >
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <ImagePreview 
+                    previewUrl={previewUrl} 
+                    onRemove={handleRemoveImage} 
+                    onHeightChange={setCanvasHeight}
+                  />
+                )}
+              </div>
+            ) : (
+              /* 이미지가 아예 없는 처음에만 가운데에 업로더 표시 */
+              <div className="max-w-2xl mx-auto">
+                <ImageUploader
+                  onImageSelect={handleImageSelect}
+                  onAnalyze={handleAnalyze}
+                  isAnalyzing={isAnalyzing}
+                  hasImage={!!imageFile}
+                  showUploader={true}
+                />
+              </div>
+            )}
+          </div>
+
+          {/* 오른쪽: 컨트롤 및 결과 섹션 */}
+          {(previewUrl || isAnalyzed) && (
+            <div 
+              className="lg:col-span-4 flex flex-col space-y-2 animate-in fade-in slide-in-from-right-8 duration-700"
+              style={{ height: canvasHeight ? `${canvasHeight}px` : 'auto' }}
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+              
+              {/* 분석 도구 영역 (고정) */}
+              <div className="flex-none bg-slate-800/50 backdrop-blur-xl border border-slate-700/50 rounded-3xl p-4 shadow-2xl space-y-6">
+                <div className="space-y-2">
+                  <label className="text-slate-400 text-sm font-medium block">분석할 AI 엔진 선택</label>
+                  <div className="grid grid-cols-3 gap-2">
+                    <button
+                      onClick={() => setSelectedApi('cloud-vision')}
+                      className={`flex items-center justify-center px-1 py-1 rounded-xl text-[10px] font-medium transition-all ${
+                        selectedApi === 'cloud-vision'
+                          ? 'bg-blue-500/20 border border-blue-500/50 text-blue-300 shadow-lg'
+                          : 'bg-slate-700/30 border border-transparent text-slate-400 hover:bg-slate-700/50'
+                      }`}
+                    >
+                      <span className="flex items-center gap-1">🔍 Cloud Vision</span>
+                    </button>
+                    <button
+                      onClick={() => setSelectedApi('gemini-flash')}
+                      className={`flex items-center justify-center px-1 py-1 rounded-xl text-[10px] font-medium transition-all ${
+                        selectedApi === 'gemini-flash'
+                          ? 'bg-purple-500/20 border border-purple-500/50 text-purple-300 shadow-lg'
+                          : 'bg-slate-700/30 border border-transparent text-slate-400 hover:bg-slate-700/50'
+                      }`}
+                    >
+                      <span className="flex items-center gap-1">✨ Gemini Flash 2.0</span>
+                    </button>
+
+                  </div>
+                </div>
+
+                <div className="pt-2 border-t border-slate-700/50">
+                  <ImageUploader
+                    onImageSelect={handleImageSelect}
+                    onAnalyze={handleAnalyze}
+                    isAnalyzing={isAnalyzing}
+                    hasImage={!!imageFile}
+                    showUploader={false}
+                  />
+                </div>
+              </div>
+
+              {/* 1. 탐지된 객체 리스트 (유동적 확장/축소) 또는 분석 대기 메시지 */}
+              <section className="flex-1 min-h-0 bg-slate-800/30 border border-slate-700/50 rounded-3xl p-4 backdrop-blur-sm flex flex-col justify-center">
+                {!isAnalyzed ? (
+                  <div className="text-center space-y-3 opacity-50">
+                    <div className="w-12 h-12 rounded-full border-2 border-dashed border-slate-600 flex items-center justify-center mx-auto">
+                      <svg className="w-6 h-6 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                      </svg>
+                    </div>
+                    <p className="text-sm text-slate-500 font-medium">분석 시작 버튼을 눌러주세요</p>
+                  </div>
+                ) : (
+                  <>
+                    <h2 className="flex-none text-lg font-bold text-white mb-4 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="p-1.5 bg-emerald-500/20 rounded-lg">
+                          <svg className="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                          </svg>
+                        </div>
+                        탐지된 품목 ({detectedItems.length})
+                      </div>
+                      <div className="flex gap-2">
+                        {analysisTime.geminiFlash && (
+                          <span className="text-[10px] px-2 py-0.5 bg-purple-500/20 text-purple-400 rounded-full">✨ {analysisTime.geminiFlash}ms</span>
+                        )}
+                        {analysisTime.cloudVision && (
+                          <span className="text-[10px] px-2 py-0.5 bg-blue-500/20 text-blue-400 rounded-full">🔍 {analysisTime.cloudVision}ms</span>
+                        )}
+                      </div>
+                    </h2>
+                    <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar space-y-2">
+                      {detectedItems.map((item: DetectedItem) => (
+                        <div
+                          key={item.id}
+                          className="flex items-center justify-between bg-slate-700/30 border border-slate-600/20 rounded-xl p-3 hover:bg-slate-700/50 transition-all"
+                        >
+                          <div className="flex flex-col">
+                            <span className="text-white font-medium text-sm">{item.label}</span>
+                            <span className="text-[10px] text-slate-500">정확도 {(item.confidence * 100).toFixed(1)}%</span>
+                          </div>
+                          <div className="h-1.5 w-16 bg-slate-600 rounded-full overflow-hidden">
+                            <div 
+                              className="h-full bg-emerald-400 transition-all duration-1000" 
+                              style={{ width: `${item.confidence * 100}%` }}
+                            />
+                          </div>
+                        </div>
+                      ))}
+                      {detectedItems.length === 0 && (
+                        <p className="text-slate-500 text-center py-6 italic text-sm">
+                          감지된 객체가 없습니다.
+                        </p>
+                      )}
+                    </div>
+                  </>
+                )}
+              </section>
+
+              {/* 2. 전체 분석 라벨 (분석 완료 시에만 노출, 50/50 비율 유지) */}
+              {isAnalyzed && (
+                <section className="flex-1 min-h-0 bg-slate-800/30 border border-slate-700/50 rounded-3xl p-4 backdrop-blur-sm flex flex-col">
+                  <h2 className="flex-none text-lg font-bold text-white mb-4 flex items-center gap-2">
+                    <div className="p-1.5 bg-blue-500/20 rounded-lg">
+                      <svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                      </svg>
+                    </div>
+                    인식된 키워드
+                  </h2>
+                  <div className="flex-1 overflow-y-auto pr-1 flex flex-wrap gap-1.5 content-start custom-scrollbar">
+                    {allLabels.map((label, idx) => (
+                      <span 
+                        key={idx}
+                        className="px-3 py-1 bg-slate-700/50 border border-slate-600/30 rounded-full text-xs text-slate-300 hover:text-white hover:border-emerald-400 transition-colors cursor-default h-fit"
+                      >
+                        {label}
+                      </span>
+                    ))}
+                  </div>
+                </section>
+              )}
+            </div>
+          )}
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+
+        <footer className="text-center mt-32 space-y-2 py-8 border-t border-slate-800/50">
+        </footer>
+      </div>
+    </main>
   );
 }
