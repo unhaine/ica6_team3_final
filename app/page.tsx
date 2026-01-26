@@ -33,6 +33,25 @@ interface GroceryItem {
   category?: string;
 }
 
+interface RecommendedRecipe {
+  recipe: {
+    rcpSno: string;
+    rcpTtl: string;
+    ckgNm: string;
+    ckgIpdc: string;
+    ckgMtrlCn: string;
+    ckgInbunNm: string;
+    ckgDodfNm: string;
+    ckgTimeNm: string;
+    rcpImgUrl: string;
+    ckgKndActoNm: string;
+  };
+  matchedIngredients: string[];
+  missingIngredients: string[];
+  matchRate: number;
+  canCook: boolean;
+}
+
 interface CompareResult {
   comparison: boolean;
   cloudVision: {
@@ -58,6 +77,8 @@ export default function Home() {
   const [compareResult, setCompareResult] = useState<CompareResult | null>(null);
   const [analysisTime, setAnalysisTime] = useState<{ cloudVision?: number; geminiFlash?: number }>({});
   const [groceryItems, setGroceryItems] = useState<GroceryItem[]>([]);  // 영수증에서 추출한 식료품
+  const [recommendedRecipes, setRecommendedRecipes] = useState<RecommendedRecipe[]>([]);  // 추천 레시피
+  const [isRecommending, setIsRecommending] = useState(false);  // 추천 중
 
   const handleImageSelect = useCallback((file: File, url: string) => {
     setImageFile(file);
@@ -68,6 +89,7 @@ export default function Home() {
     setCompareResult(null);
     setAnalysisTime({});
     setGroceryItems([]);
+    setRecommendedRecipes([]);
   }, []);
 
   const handleRemoveImage = useCallback(() => {
@@ -82,6 +104,7 @@ export default function Home() {
     setCompareResult(null);
     setAnalysisTime({});
     setGroceryItems([]);
+    setRecommendedRecipes([]);
   }, [previewUrl]);
 
   const handleUpdateItem = useCallback((id: string, newBox: { x: number; y: number; width: number; height: number }) => {
@@ -166,7 +189,55 @@ export default function Home() {
     setAllLabels([]);
     setCompareResult(null);
     setGroceryItems([]);
+    setRecommendedRecipes([]);
   }, []);
+
+  const handleRecommendRecipes = useCallback(async () => {
+    setIsRecommending(true);
+    
+    try {
+      // 냉장고 모드: detectedItems에서 재료 추출
+      // 영수증 모드: groceryItems에서 재료 추출
+      const ingredients = selectedApi === 'receipt-ocr' 
+        ? groceryItems.map(item => item.name)
+        : detectedItems.map(item => item.label);
+
+      if (ingredients.length === 0) {
+        alert('식재료가 없습니다. 먼저 이미지를 분석해주세요.');
+        return;
+      }
+
+      console.log('레시피 추천 요청:', ingredients);
+
+      const response = await fetch('/api/recipes/recommend-ai', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ingredients }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || '레시피 추천 실패');
+      }
+
+      const data = await response.json();
+      console.log('추천 레시피:', data);
+
+      setRecommendedRecipes(data.recipes || []);
+
+      if (data.recipes && data.recipes.length > 0) {
+        alert(`🎉 ${data.recipes.length}개의 레시피를 찾았습니다!`);
+      } else {
+        alert('😅 매칭되는 레시피가 없습니다. Recipe 테이블에 데이터를 넣어주세요.');
+      }
+
+    } catch (error: any) {
+      console.error('레시피 추천 실패:', error);
+      alert(`레시피 추천 중 오류가 발생했습니다:\n\n${error.message}`);
+    } finally {
+      setIsRecommending(false);
+    }
+  }, [selectedApi, groceryItems, detectedItems]);
 
   const [canvasHeight, setCanvasHeight] = useState<number | null>(null);
 
@@ -291,26 +362,26 @@ export default function Home() {
                   {/* 냉장고 모드일 때만 AI 엔진 선택 표시 */}
                   {selectedApi !== 'receipt-ocr' && (
                     <div className="grid grid-cols-2 gap-2">
-                      <button
-                        onClick={() => setSelectedApi('cloud-vision')}
-                        className={`flex items-center justify-center px-1 py-1 rounded-xl text-[10px] font-medium transition-all ${
-                          selectedApi === 'cloud-vision'
-                            ? 'bg-blue-500/20 border border-blue-500/50 text-blue-300 shadow-lg'
-                            : 'bg-slate-700/30 border border-transparent text-slate-400 hover:bg-slate-700/50'
-                        }`}
-                      >
-                        <span className="flex items-center gap-1">🔍 Cloud Vision</span>
-                      </button>
-                      <button
-                        onClick={() => setSelectedApi('gemini-flash')}
-                        className={`flex items-center justify-center px-1 py-1 rounded-xl text-[10px] font-medium transition-all ${
-                          selectedApi === 'gemini-flash'
-                            ? 'bg-purple-500/20 border border-purple-500/50 text-purple-300 shadow-lg'
-                            : 'bg-slate-700/30 border border-transparent text-slate-400 hover:bg-slate-700/50'
-                        }`}
-                      >
-                        <span className="flex items-center gap-1">✨ Gemini Flash 2.0</span>
-                      </button>
+                    <button
+                      onClick={() => setSelectedApi('cloud-vision')}
+                      className={`flex items-center justify-center px-1 py-1 rounded-xl text-[10px] font-medium transition-all ${
+                        selectedApi === 'cloud-vision'
+                          ? 'bg-blue-500/20 border border-blue-500/50 text-blue-300 shadow-lg'
+                          : 'bg-slate-700/30 border border-transparent text-slate-400 hover:bg-slate-700/50'
+                      }`}
+                    >
+                      <span className="flex items-center gap-1">🔍 Cloud Vision</span>
+                    </button>
+                    <button
+                      onClick={() => setSelectedApi('gemini-flash')}
+                      className={`flex items-center justify-center px-1 py-1 rounded-xl text-[10px] font-medium transition-all ${
+                        selectedApi === 'gemini-flash'
+                          ? 'bg-purple-500/20 border border-purple-500/50 text-purple-300 shadow-lg'
+                          : 'bg-slate-700/30 border border-transparent text-slate-400 hover:bg-slate-700/50'
+                      }`}
+                    >
+                      <span className="flex items-center gap-1">✨ Gemini Flash 2.0</span>
+                    </button>
                     </div>
                   )}
 
@@ -318,7 +389,7 @@ export default function Home() {
                   {selectedApi === 'receipt-ocr' && (
                     <div className="text-xs text-slate-400 bg-orange-500/10 border border-orange-500/30 rounded-lg p-2">
                       💡 쿠팡프레시, 롯데마트 등의 구매내역이나 영수증을 업로드하면 식료품 목록을 자동으로 추출합니다.
-                    </div>
+                  </div>
                   )}
                 </div>
 
@@ -331,6 +402,35 @@ export default function Home() {
                     showUploader={false}
                   />
                 </div>
+
+                {/* 레시피 추천 버튼 - 분석 완료 후에만 표시 */}
+                {isAnalyzed && (detectedItems.length > 0 || groceryItems.length > 0) && (
+                  <div className="pt-2 border-t border-slate-700/50">
+                    <button
+                      onClick={handleRecommendRecipes}
+                      disabled={isRecommending}
+                      className={`w-full py-3 px-4 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-all duration-300 ${
+                        isRecommending
+                          ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
+                          : 'bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600 hover:shadow-lg hover:shadow-purple-500/25 active:scale-[0.98]'
+                      }`}
+                    >
+                      {isRecommending ? (
+                        <>
+                          <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                          </svg>
+                          레시피 찾는 중...
+                        </>
+                      ) : (
+                        <>
+                          🍳 레시피 추천받기
+                        </>
+                      )}
+                    </button>
+                  </div>
+                )}
               </div>
 
               {/* 1. 탐지된 객체 리스트 (유동적 확장/축소) 또는 분석 대기 메시지 */}
@@ -440,7 +540,7 @@ export default function Home() {
               </section>
 
               {/* 2. 전체 분석 라벨 (분석 완료 시에만 노출, 50/50 비율 유지) */}
-              {isAnalyzed && (
+              {isAnalyzed && selectedApi !== 'receipt-ocr' && (
                 <section className="flex-1 min-h-0 bg-slate-800/30 border border-slate-700/50 rounded-3xl p-4 backdrop-blur-sm flex flex-col">
                   <h2 className="flex-none text-lg font-bold text-white mb-4 flex items-center gap-2">
                     <div className="p-1.5 bg-blue-500/20 rounded-lg">
@@ -458,6 +558,75 @@ export default function Home() {
                       >
                         {label}
                       </span>
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              {/* 3. 추천 레시피 (레시피 추천 완료 시에만 노출) */}
+              {recommendedRecipes.length > 0 && (
+                <section className="flex-[2] min-h-[500px] bg-gradient-to-br from-purple-900/20 to-pink-900/20 border border-purple-500/30 rounded-3xl p-4 backdrop-blur-sm flex flex-col">
+                  <h2 className="flex-none text-lg font-bold text-white mb-4 flex items-center gap-2">
+                    <div className="p-1.5 bg-purple-500/20 rounded-lg">
+                      <svg className="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                      </svg>
+                    </div>
+                    추천 레시피 ({recommendedRecipes.length})
+                  </h2>
+                  <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar space-y-3">
+                    {recommendedRecipes.map((rec, idx) => (
+                      <div
+                        key={idx}
+                        className="bg-slate-800/50 border border-slate-600/30 rounded-xl p-3 hover:bg-slate-700/50 transition-all"
+                      >
+                        <div className="flex items-start justify-between mb-2">
+                          <div className="flex-1">
+                            <h3 className="text-white font-medium text-sm mb-1">{rec.recipe.ckgNm}</h3>
+                            <p className="text-xs text-slate-400 line-clamp-2">{rec.recipe.ckgIpdc}</p>
+                          </div>
+                          <div className={`ml-2 px-2 py-1 rounded-lg text-xs font-bold ${
+                            rec.canCook 
+                              ? 'bg-emerald-500/20 text-emerald-400' 
+                              : 'bg-yellow-500/20 text-yellow-400'
+                          }`}>
+                            {Math.round(rec.matchRate * 100)}%
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center gap-2 text-xs text-slate-500 mb-2">
+                          <span>👨‍🍳 {rec.recipe.ckgDodfNm}</span>
+                          <span>•</span>
+                          <span>⏱️ {rec.recipe.ckgTimeNm || '시간미정'}</span>
+                          <span>•</span>
+                          <span>🍽️ {rec.recipe.ckgInbunNm}</span>
+                        </div>
+
+                        {rec.canCook && (
+                          <div className="flex items-center gap-1 text-xs text-emerald-400 mb-2">
+                            <span>✅ 바로 요리 가능!</span>
+                          </div>
+                        )}
+
+                        <div className="flex flex-wrap gap-1 mb-2">
+                          {rec.matchedIngredients.slice(0, 5).map((ing, i) => (
+                            <span key={i} className="px-2 py-0.5 bg-emerald-500/20 text-emerald-400 rounded text-xs">
+                              {ing}
+                            </span>
+                          ))}
+                          {rec.matchedIngredients.length > 5 && (
+                            <span className="px-2 py-0.5 bg-slate-700 text-slate-400 rounded text-xs">
+                              +{rec.matchedIngredients.length - 5}
+                            </span>
+                          )}
+                        </div>
+
+                        {rec.missingIngredients.length > 0 && rec.missingIngredients.length <= 3 && (
+                          <div className="text-xs text-slate-500">
+                            부족: {rec.missingIngredients.join(', ')}
+                          </div>
+                        )}
+                      </div>
                     ))}
                   </div>
                 </section>
