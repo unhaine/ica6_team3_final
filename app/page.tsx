@@ -565,7 +565,7 @@ export default function Home() {
 
               {/* 3. 추천 레시피 (레시피 추천 완료 시에만 노출) */}
               {recommendedRecipes.length > 0 && (
-                <section className="flex-1 min-h-0 bg-gradient-to-br from-purple-900/20 to-pink-900/20 border border-purple-500/30 rounded-3xl p-4 backdrop-blur-sm flex flex-col">
+                <section className="flex-[2] min-h-[500px] bg-gradient-to-br from-purple-900/20 to-pink-900/20 border border-purple-500/30 rounded-3xl p-4 backdrop-blur-sm flex flex-col">
                   <h2 className="flex-none text-lg font-bold text-white mb-4 flex items-center gap-2">
                     <div className="p-1.5 bg-purple-500/20 rounded-lg">
                       <svg className="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">

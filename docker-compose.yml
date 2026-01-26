@@ -1,11 +1,11 @@
-version: '3.8'
-
 services:
   # PostgreSQL Database
   db:
     image: postgres:16-alpine
     container_name: refrigerai-db
     restart: always
+    env_file:
+      - .env.production
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-refrigerai}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-refrigerai123!}
@@ -30,6 +30,8 @@ services:
     restart: always
     ports:
       - "3000:3000"
+    env_file:
+      - .env.production
     environment:
       # Database
       DATABASE_URL: postgresql://${POSTGRES_USER:-refrigerai}:${POSTGRES_PASSWORD:-refrigerai123!}@db:5432/${POSTGRES_DB:-refrigerai}?schema=public
