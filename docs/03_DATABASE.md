@@ -1,153 +1,59 @@
-# 데이터베이스 구조
+# 데이터베이스 구조 (Database Schema)
 
-## 개요
+## ER Diagram (Conceptual)
+`Users` -< `UserIngredients` >- `Ingredients (Master)`
+`Users` -< `Posts`
+`Recipes` (External/Cached)
 
-- **DBMS**: Supabase (PostgreSQL)
-- **ORM**: Prisma 또는 Supabase Client SDK
-- **선택 이유**: 실시간 동기화, 간편한 인증, 무료 티어 제공
+## Tables
 
-## ERD (Entity Relationship Diagram)
+### 1. `users` (사용자)
+Supabase Auth와 연동되는 사용자 기본 정보.
+- `id` (UUID, PK): Supabase Auth ID
+- `email` (String): 이메일
+- `nickname` (String): 닉네임
+- `avatar_url` (String): 프로필 이미지
+- `created_at` (Timestamp): 가입일
 
-```
-[users] 1 ──── N [refrigerators]
-                      │
-                      1
-                      │
-                      N
-                      │
-               [scan_sessions] 1 ──── N [detected_items]
-                                            │
-                                            N
-                                            │
-                                     [grocery_items] N ──── 1 [refrigerators]
-```
+### 2. `ingredients` (식재료 마스터 DB)
+표준화된 식재료 정보 및 권장 소비기한 데이터. (초기 데이터는 식약처 API 등에서 구축)
+- `id` (Int, PK): 식재료 ID
+- `name` (String): 식재료명 (e.g., '계란', '우유')
+- `category` (String): 분류 (e.g., '유제품', '채소')
+- `default_expiration_days` (Int): 권장 소비기한 (일 단위)
+- `icon_url` (String): 아이콘 이미지 URL
 
-**관계 설명**:
+### 3. `user_ingredients` (사용자 냉장고 인벤토리)
+사용자가 실제로 보유 중인 식재료.
+- `id` (UUID, PK)
+- `user_id` (UUID, FK -> users.id)
+- `ingredient_id` (Int, FK -> ingredients.id, Nullable): 마스터 DB에 없는 경우 null일 수 있음(또는 기타로 처리)
+- `name` (String): 사용자가 입력/수정한 표시 이름
+- `quantity` (String): 수량 (e.g., '2개', '300g')
+- `expiry_date` (Date): 소비기한
+- `status` (Enum): 'AVAILABLE', 'CONSUMED', 'DISCARDED' (상태 관리)
+- `created_at` (Timestamp)
+- `updated_at` (Timestamp)
 
-- 한 사용자(User)는 여러 냉장고(Refrigerator)를 가질 수 있음
-- 한 냉장고는 여러 스캔 세션(ScanSession)을 가질 수 있음
-- 한 스캔 세션은 여러 탐지된 아이템(DetectedItem)을 가질 수 있음
-- 최종 확정된 아이템은 GroceryItem으로 저장됨
+### 4. `recipes` (레시피 데이터)
+만개의 레시피 CSV 데이터를 임포트하거나 필요한 만큼 캐싱하여 사용.
+- `id` (Int, PK)
+- `title` (String): 레시피명
+- `ingredients_list` (JSONB): 필요 재료 및 수량 목록
+- `instructions` (Text): 조리법
+- `original_image_url` (String): 원본 이미지
+- `difficulty` (String): 난이도
+- `cooking_time` (String): 조리 시간
 
----
+### 5. `posts` (커뮤니티 글)
+- `id` (UUID, PK)
+- `user_id` (UUID, FK)
+- `recipe_id` (Int, FK, Nullable): 따라한 레시피가 있다면 연결
+- `image_url` (String): 인증샷
+- `content` (Text): 내용
+- `ai_score` (Int): AI 싱크로율 점수
+- `created_at` (Timestamp)
 
-## 테이블 정의
-
-### users
-
-사용자 정보 (MVP에서는 선택적 - 비로그인 사용 가능)
-
-| 컬럼       | 타입         | 설명          | 제약조건         |
-| ---------- | ------------ | ------------- | ---------------- |
-| id         | UUID         | 고유 ID       | PK               |
-| email      | VARCHAR(255) | 이메일        | UNIQUE, NOT NULL |
-| name       | VARCHAR(100) | 이름          | NOT NULL         |
-| avatar_url | TEXT         | 프로필 이미지 |                  |
-| created_at | TIMESTAMP    | 생성일        | DEFAULT NOW()    |
-| updated_at | TIMESTAMP    | 수정일        |                  |
-
----
-
-### refrigerators
-
-냉장고 정보
-
-| 컬럼       | 타입         | 설명        | 제약조건              |
-| ---------- | ------------ | ----------- | --------------------- |
-| id         | UUID         | 고유 ID     | PK                    |
-| user_id    | UUID         | 소유자      | FK → users, NULL 허용 |
-| name       | VARCHAR(100) | 냉장고 이름 | DEFAULT '내 냉장고'   |
-| created_at | TIMESTAMP    | 생성일      | DEFAULT NOW()         |
-| updated_at | TIMESTAMP    | 수정일      |                       |
-
----
-
-### scan_sessions
-
-스캔 세션 (사진 업로드 및 인식 기록)
-
-| 컬럼            | 타입      | 설명                          | 제약조건                     |
-| --------------- | --------- | ----------------------------- | ---------------------------- |
-| id              | UUID      | 고유 ID                       | PK                           |
-| refrigerator_id | UUID      | 냉장고                        | FK → refrigerators, NOT NULL |
-| image_url       | TEXT      | 업로드된 이미지 URL           | NOT NULL                     |
-| status          | ENUM      | pending/processing/done/error | DEFAULT 'pending'            |
-| created_at      | TIMESTAMP | 생성일                        | DEFAULT NOW()                |
-
----
-
-### detected_items
-
-Vision API 탐지 결과 (수정 전 원본)
-
-| 컬럼            | 타입         | 설명                 | 제약조건                     |
-| --------------- | ------------ | -------------------- | ---------------------------- |
-| id              | UUID         | 고유 ID              | PK                           |
-| scan_session_id | UUID         | 스캔 세션            | FK → scan_sessions, NOT NULL |
-| label           | VARCHAR(100) | 품목명 (원본)        | NOT NULL                     |
-| label_kr        | VARCHAR(100) | 품목명 (한글)        |                              |
-| confidence      | FLOAT        | 신뢰도 (0~1)         | NOT NULL                     |
-| bbox_x          | FLOAT        | 박스 X 좌표 (정규화) | NOT NULL                     |
-| bbox_y          | FLOAT        | 박스 Y 좌표 (정규화) | NOT NULL                     |
-| bbox_width      | FLOAT        | 박스 너비 (정규화)   | NOT NULL                     |
-| bbox_height     | FLOAT        | 박스 높이 (정규화)   | NOT NULL                     |
-| is_confirmed    | BOOLEAN      | 사용자 확정 여부     | DEFAULT FALSE                |
-| created_at      | TIMESTAMP    | 생성일               | DEFAULT NOW()                |
-
----
-
-### grocery_items
-
-확정된 식료품 목록
-
-| 컬럼            | 타입         | 설명           | 제약조건                     |
-| --------------- | ------------ | -------------- | ---------------------------- |
-| id              | UUID         | 고유 ID        | PK                           |
-| refrigerator_id | UUID         | 냉장고         | FK → refrigerators, NOT NULL |
-| name            | VARCHAR(100) | 품목명         | NOT NULL                     |
-| quantity        | INT          | 수량           | DEFAULT 1                    |
-| category        | VARCHAR(50)  | 카테고리       |                              |
-| expiry_date     | DATE         | 유통기한       | (Phase 2)                    |
-| image_url       | TEXT         | 식료품 이미지  |                              |
-| source_session  | UUID         | 출처 스캔 세션 | FK → scan_sessions           |
-| created_at      | TIMESTAMP    | 생성일         | DEFAULT NOW()                |
-| updated_at      | TIMESTAMP    | 수정일         |                              |
-
----
-
-## 인덱스
-
-```sql
--- 스캔 세션 조회 최적화
-CREATE INDEX idx_scan_sessions_refrigerator ON scan_sessions(refrigerator_id);
-CREATE INDEX idx_scan_sessions_created ON scan_sessions(created_at DESC);
-
--- 탐지 아이템 조회 최적화
-CREATE INDEX idx_detected_items_session ON detected_items(scan_session_id);
-
--- 식료품 조회 최적화
-CREATE INDEX idx_grocery_items_refrigerator ON grocery_items(refrigerator_id);
-CREATE INDEX idx_grocery_items_expiry ON grocery_items(expiry_date);
-```
-
----
-
-## 마이그레이션 히스토리
-
-| 버전 |    날짜    | 설명                      | 작성자 |
-| :--: | :--------: | ------------------------- | :----: |
-| 001  | 2026-01-23 | 초기 테이블 생성          |   -    |
-| 002  |            | (예정) 유통기한 알림 추가 |   -    |
-
----
-
-## 주의사항 / 메모
-
-- **MVP 단계**: `users` 테이블은 선택적. 비로그인 사용자는 로컬 스토리지 또는 익명 세션 사용
-- **이미지 저장**: Supabase Storage 또는 Cloudinary 활용 권장
-- **정규화된 좌표**: Bounding Box 좌표는 0~1 사이의 정규화된 값으로 저장하여 다양한 해상도에 대응
-- **카테고리**: 향후 별도 `categories` 테이블로 분리 고려
-
----
-
-_최종 업데이트: 2026-01-23_
+## 데이터 전략
+- **Master Data**: 초기에는 자주 쓰이는 식재료 위주로 마스터 데이터를 구축하고, 사용자가 입력하는 데이터 중 마스터에 없는 것은 추후 배치작업으로 마스터로 승격 검토.
+- **Search**: PostgreSQL의 Full Text Search 기능을 활용하여 재료 검색 최적화.
