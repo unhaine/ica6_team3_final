@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 // 기본 분석 라우트 - Cloud Vision과 Gemini Flash 중 선택 가능
 // 쿼리 파라미터로 api=cloud-vision 또는 api=gemini-flash 지정
 // 또는 api=compare로 두 API 결과 비교
+// api=receipt-ocr로 영수증/구매내역 OCR (OpenAI GPT-4o 사용)
 
 export async function POST(req: NextRequest) {
   try {
@@ -41,9 +42,14 @@ export async function POST(req: NextRequest) {
     }
 
     // 단일 API 호출
-    const targetUrl = apiType === 'gemini-flash' 
-      ? `${baseUrl}/api/vision/analyze/gemini-flash`
-      : `${baseUrl}/api/vision/analyze/cloud-vision`;
+    let targetUrl: string;
+    if (apiType === 'receipt-ocr') {
+      targetUrl = `${baseUrl}/api/vision/analyze/receipt-ocr`;
+    } else if (apiType === 'gemini-flash') {
+      targetUrl = `${baseUrl}/api/vision/analyze/gemini-flash`;
+    } else {
+      targetUrl = `${baseUrl}/api/vision/analyze/cloud-vision`;
+    }
 
     const response = await fetch(targetUrl, {
       method: 'POST',

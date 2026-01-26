@@ -37,11 +37,23 @@ export async function POST(req: NextRequest) {
 
     // 이미지 최적화 (Gemini는 최대 20MB 지원하지만, 처리 속도를 위해 적정 크기로 조정)
     // .rotate()를 추가하여 EXIF 오리엔테이션 문제를 방지합니다.
-    const optimizedBuffer = await sharp(imageBuffer)
-      .rotate()
-      .resize(1600, 1600, { fit: 'inside', withoutEnlargement: true })
-      .jpeg({ quality: 85 })
-      .toBuffer();
+    // HEIC/HEIF 형식이 들어와도 자동으로 JPEG로 변환됩니다.
+    let optimizedBuffer: Buffer;
+    try {
+      optimizedBuffer = await sharp(imageBuffer)
+        .rotate()
+        .resize(1600, 1600, { fit: 'inside', withoutEnlargement: true })
+        .jpeg({ quality: 85 })
+        .toBuffer();
+    } catch (sharpError: any) {
+      console.error('이미지 처리 에러:', sharpError.message);
+      
+      // HEIC/HEIF 형식 에러인 경우 사용자에게 안내
+      if (sharpError.message.includes('heif') || sharpError.message.includes('bad seek')) {
+        throw new Error('HEIC/HEIF 형식은 지원되지 않습니다. JPG, PNG 등의 형식으로 변환 후 업로드해주세요.');
+      }
+      throw new Error('이미지 처리 중 오류가 발생했습니다: ' + sharpError.message);
+    }
     
     const metadata = await sharp(optimizedBuffer).metadata();
     const { width, height } = metadata;
@@ -103,7 +115,14 @@ export async function POST(req: NextRequest) {
     
     if (!response.ok) {
       console.error('Gemini API 에러:', result);
-      throw new Error(result.error?.message || 'Gemini API 에러');
+      const errorMessage = result.error?.message || 'Gemini API 에러';
+      
+      // 할당량 초과 에러인 경우 사용자 친화적 메시지
+      if (result.error?.code === 429 || errorMessage.includes('quota')) {
+        throw new Error('Gemini API 할당량이 초과되었습니다. Cloud Vision API를 사용하거나 잠시 후 다시 시도해주세요.');
+      }
+      
+      throw new Error(errorMessage);
     }
 
     // 응답에서 텍스트 추출

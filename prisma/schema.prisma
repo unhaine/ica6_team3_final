@@ -1,0 +1,64 @@
+// RefrigerAI - 냉장고 식료품 관리 시스템
+// Prisma Schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// 식료품 모델
+model GroceryItem {
+  id          String   @id @default(cuid())
+  name        String   // 식료품 이름
+  quantity    String?  // 수량 (예: "1개", "700g")
+  category    String?  // 카테고리 (채소, 과일, 육류 등)
+  price       Int?     // 가격
+  source      String?  // 출처 (receipt-ocr, fridge-photo 등)
+  expiryDate  DateTime? // 유통기한
+  purchaseDate DateTime? // 구매일
+  
+  // 메타데이터
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // 영수증 스캔과의 관계
+  receiptId   String?
+  receipt     ReceiptScan? @relation(fields: [receiptId], references: [id], onDelete: SetNull)
+  
+  @@index([name])
+  @@index([category])
+  @@index([createdAt])
+}
+
+// 영수증 스캔 기록
+model ReceiptScan {
+  id          String   @id @default(cuid())
+  imageUrl    String?  // 업로드된 이미지 URL (선택)
+  storeName   String?  // 매장명 (쿠팡프레시, 롯데마트 등)
+  totalAmount Int?     // 총 금액
+  scanDate    DateTime @default(now())
+  
+  // 추출된 식료품들
+  groceryItems GroceryItem[]
+  
+  createdAt   DateTime @default(now())
+  
+  @@index([scanDate])
+}
+
+// 냉장고 사진 분석 기록
+model FridgePhotoAnalysis {
+  id          String   @id @default(cuid())
+  imageUrl    String?  // 업로드된 냉장고 사진 URL (선택)
+  apiSource   String   // 사용한 API (cloud-vision, gemini-flash)
+  itemCount   Int      // 감지된 품목 수
+  analysisData Json    // 분석 결과 전체 (JSON)
+  
+  createdAt   DateTime @default(now())
+  
+  @@index([createdAt])
+  @@index([apiSource])
+}

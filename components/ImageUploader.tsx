@@ -21,10 +21,50 @@ export default function ImageUploader({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFile = useCallback(
-    (file: File) => {
+    async (file: File) => {
       if (!file.type.startsWith("image/")) {
         alert("이미지 파일만 업로드 가능합니다.");
         return;
+      }
+
+      // HEIC/HEIF 이미지를 JPEG로 변환
+      if (file.type === "image/heic" || file.type === "image/heif" || file.name.toLowerCase().endsWith('.heic') || file.name.toLowerCase().endsWith('.heif')) {
+        try {
+          // Canvas를 사용하여 JPEG로 변환
+          const img = new Image();
+          const objectUrl = URL.createObjectURL(file);
+          
+          await new Promise((resolve, reject) => {
+            img.onload = resolve;
+            img.onerror = reject;
+            img.src = objectUrl;
+          });
+
+          const canvas = document.createElement('canvas');
+          canvas.width = img.width;
+          canvas.height = img.height;
+          const ctx = canvas.getContext('2d');
+          ctx?.drawImage(img, 0, 0);
+          
+          URL.revokeObjectURL(objectUrl);
+
+          // JPEG Blob 생성
+          const blob = await new Promise<Blob>((resolve) => {
+            canvas.toBlob((blob) => resolve(blob!), 'image/jpeg', 0.95);
+          });
+
+          const convertedFile = new File([blob], file.name.replace(/\.heic$/i, '.jpg').replace(/\.heif$/i, '.jpg'), {
+            type: 'image/jpeg',
+          });
+
+          const previewUrl = URL.createObjectURL(convertedFile);
+          onImageSelect(convertedFile, previewUrl);
+          return;
+        } catch (error) {
+          console.error('HEIC 변환 실패:', error);
+          alert('HEIC/HEIF 이미지 변환에 실패했습니다. 다른 형식의 이미지를 사용해주세요.');
+          return;
+        }
       }
 
       const previewUrl = URL.createObjectURL(file);
@@ -136,7 +176,7 @@ export default function ImageUploader({
                 </span>
               </p>
               <p className="mt-1 text-xs text-gray-500">
-                PNG, JPG, WEBP 형식 지원
+                PNG, JPG, WEBP, HEIC 형식 지원
               </p>
             </div>
           </div>

@@ -10,7 +10,7 @@ const BoundingBoxCanvas = dynamic(() => import('@/components/BoundingBoxCanvas')
   ssr: false,
 });
 
-type ApiType = 'cloud-vision' | 'gemini-flash' | 'compare';
+type ApiType = 'cloud-vision' | 'gemini-flash' | 'compare' | 'receipt-ocr';
 
 interface DetectedItem {
   id: string;
@@ -23,6 +23,14 @@ interface DetectedItem {
     height: number;
   };
   source?: string;
+}
+
+interface GroceryItem {
+  id: string;
+  name: string;
+  quantity: string;
+  price?: number;
+  category?: string;
 }
 
 interface CompareResult {
@@ -49,6 +57,7 @@ export default function Home() {
   const [selectedApi, setSelectedApi] = useState<ApiType>('cloud-vision');
   const [compareResult, setCompareResult] = useState<CompareResult | null>(null);
   const [analysisTime, setAnalysisTime] = useState<{ cloudVision?: number; geminiFlash?: number }>({});
+  const [groceryItems, setGroceryItems] = useState<GroceryItem[]>([]);  // 영수증에서 추출한 식료품
 
   const handleImageSelect = useCallback((file: File, url: string) => {
     setImageFile(file);
@@ -58,6 +67,7 @@ export default function Home() {
     setIsAnalyzed(false);
     setCompareResult(null);
     setAnalysisTime({});
+    setGroceryItems([]);
   }, []);
 
   const handleRemoveImage = useCallback(() => {
@@ -71,6 +81,7 @@ export default function Home() {
     setIsAnalyzed(false);
     setCompareResult(null);
     setAnalysisTime({});
+    setGroceryItems([]);
   }, [previewUrl]);
 
   const handleUpdateItem = useCallback((id: string, newBox: { x: number; y: number; width: number; height: number }) => {
@@ -105,12 +116,17 @@ export default function Home() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.details || '분석 실패');
+        const errorMessage = errorData.error || errorData.details || '분석 실패';
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
 
-      if (selectedApi === 'compare') {
+      if (selectedApi === 'receipt-ocr') {
+        // 영수증 OCR 모드
+        setGroceryItems(data.groceryItems || []);
+        setIsAnalyzed(true);
+      } else if (selectedApi === 'compare') {
         // 비교 모드
         setCompareResult(data);
         // 기본적으로 Gemini Flash 결과를 메인 캔버스에 표시
@@ -118,18 +134,27 @@ export default function Home() {
           setDetectedItems(data.geminiFlash.detectedItems);
           setAllLabels(data.geminiFlash.allLabels || []);
         }
+        setIsAnalyzed(true);
       } else {
+        // 냉장고 사진 분석 모드
         setDetectedItems(data.detectedItems);
         setAllLabels(data.allLabels || []);
         setAnalysisTime({
           [selectedApi === 'cloud-vision' ? 'cloudVision' : 'geminiFlash']: endTime - startTime
         });
+        setIsAnalyzed(true);
       }
-      
-      setIsAnalyzed(true);
     } catch (error: any) {
       console.error('분석 실패:', error);
-      alert(`이미지 분석 중 오류가 발생했습니다: ${error.message}`);
+      
+      let userMessage = error.message;
+      
+      // 할당량 에러인 경우 추가 안내
+      if (error.message.includes('할당량') || error.message.includes('quota')) {
+        userMessage += '\n\n💡 Cloud Vision API로 전환하거나 잠시 후 다시 시도해주세요.';
+      }
+      
+      alert(`❌ 이미지 분석 중 오류가 발생했습니다:\n\n${userMessage}`);
     } finally {
       setIsAnalyzing(false);
     }
@@ -140,6 +165,7 @@ export default function Home() {
     setDetectedItems([]);
     setAllLabels([]);
     setCompareResult(null);
+    setGroceryItems([]);
   }, []);
 
   const [canvasHeight, setCanvasHeight] = useState<number | null>(null);
@@ -175,7 +201,7 @@ export default function Home() {
           <div className={`${(previewUrl || isAnalyzed) ? 'lg:col-span-8' : 'lg:col-span-12'} space-y-2 sticky top-8`}>
             {previewUrl ? (
               <div className="group relative">
-                {isAnalyzed && detectedItems.length > 0 ? (
+                {isAnalyzed && detectedItems.length > 0 && selectedApi !== 'receipt-ocr' ? (
                   <div className="transition-all duration-500 transform hover:scale-[1.01]">
                     <BoundingBoxCanvas
                       imageUrl={previewUrl}
@@ -236,30 +262,64 @@ export default function Home() {
               {/* 분석 도구 영역 (고정) */}
               <div className="flex-none bg-slate-800/50 backdrop-blur-xl border border-slate-700/50 rounded-3xl p-4 shadow-2xl space-y-6">
                 <div className="space-y-2">
-                  <label className="text-slate-400 text-sm font-medium block">분석할 AI 엔진 선택</label>
-                  <div className="grid grid-cols-3 gap-2">
+                  <label className="text-slate-400 text-sm font-medium block">분석 모드 선택</label>
+                  
+                  {/* 모드 선택: 냉장고 vs 영수증 */}
+                  <div className="grid grid-cols-2 gap-2 mb-3">
                     <button
                       onClick={() => setSelectedApi('cloud-vision')}
-                      className={`flex items-center justify-center px-1 py-1 rounded-xl text-[10px] font-medium transition-all ${
-                        selectedApi === 'cloud-vision'
-                          ? 'bg-blue-500/20 border border-blue-500/50 text-blue-300 shadow-lg'
+                      className={`flex items-center justify-center px-2 py-2 rounded-xl text-xs font-medium transition-all ${
+                        selectedApi !== 'receipt-ocr'
+                          ? 'bg-emerald-500/20 border border-emerald-500/50 text-emerald-300 shadow-lg'
                           : 'bg-slate-700/30 border border-transparent text-slate-400 hover:bg-slate-700/50'
                       }`}
                     >
-                      <span className="flex items-center gap-1">🔍 Cloud Vision</span>
+                      <span className="flex items-center gap-1">📸 냉장고 사진</span>
                     </button>
                     <button
-                      onClick={() => setSelectedApi('gemini-flash')}
-                      className={`flex items-center justify-center px-1 py-1 rounded-xl text-[10px] font-medium transition-all ${
-                        selectedApi === 'gemini-flash'
-                          ? 'bg-purple-500/20 border border-purple-500/50 text-purple-300 shadow-lg'
+                      onClick={() => setSelectedApi('receipt-ocr')}
+                      className={`flex items-center justify-center px-2 py-2 rounded-xl text-xs font-medium transition-all ${
+                        selectedApi === 'receipt-ocr'
+                          ? 'bg-orange-500/20 border border-orange-500/50 text-orange-300 shadow-lg'
                           : 'bg-slate-700/30 border border-transparent text-slate-400 hover:bg-slate-700/50'
                       }`}
                     >
-                      <span className="flex items-center gap-1">✨ Gemini Flash 2.0</span>
+                      <span className="flex items-center gap-1">🧾 영수증/구매내역</span>
                     </button>
-
                   </div>
+
+                  {/* 냉장고 모드일 때만 AI 엔진 선택 표시 */}
+                  {selectedApi !== 'receipt-ocr' && (
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        onClick={() => setSelectedApi('cloud-vision')}
+                        className={`flex items-center justify-center px-1 py-1 rounded-xl text-[10px] font-medium transition-all ${
+                          selectedApi === 'cloud-vision'
+                            ? 'bg-blue-500/20 border border-blue-500/50 text-blue-300 shadow-lg'
+                            : 'bg-slate-700/30 border border-transparent text-slate-400 hover:bg-slate-700/50'
+                        }`}
+                      >
+                        <span className="flex items-center gap-1">🔍 Cloud Vision</span>
+                      </button>
+                      <button
+                        onClick={() => setSelectedApi('gemini-flash')}
+                        className={`flex items-center justify-center px-1 py-1 rounded-xl text-[10px] font-medium transition-all ${
+                          selectedApi === 'gemini-flash'
+                            ? 'bg-purple-500/20 border border-purple-500/50 text-purple-300 shadow-lg'
+                            : 'bg-slate-700/30 border border-transparent text-slate-400 hover:bg-slate-700/50'
+                        }`}
+                      >
+                        <span className="flex items-center gap-1">✨ Gemini Flash 2.0</span>
+                      </button>
+                    </div>
+                  )}
+
+                  {/* 영수증 모드 안내 */}
+                  {selectedApi === 'receipt-ocr' && (
+                    <div className="text-xs text-slate-400 bg-orange-500/10 border border-orange-500/30 rounded-lg p-2">
+                      💡 쿠팡프레시, 롯데마트 등의 구매내역이나 영수증을 업로드하면 식료품 목록을 자동으로 추출합니다.
+                    </div>
+                  )}
                 </div>
 
                 <div className="pt-2 border-t border-slate-700/50">
@@ -284,7 +344,54 @@ export default function Home() {
                     </div>
                     <p className="text-sm text-slate-500 font-medium">분석 시작 버튼을 눌러주세요</p>
                   </div>
+                ) : selectedApi === 'receipt-ocr' ? (
+                  // 영수증 OCR 결과 표시
+                  <>
+                    <h2 className="flex-none text-lg font-bold text-white mb-4 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="p-1.5 bg-orange-500/20 rounded-lg">
+                          <svg className="w-4 h-4 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                          </svg>
+                        </div>
+                        추출된 식료품 ({groceryItems.length})
+                      </div>
+                    </h2>
+                    <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar space-y-2">
+                      {groceryItems.map((item: GroceryItem) => (
+                        <div
+                          key={item.id}
+                          className="bg-slate-700/30 border border-slate-600/20 rounded-xl p-3 hover:bg-slate-700/50 transition-all"
+                        >
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2">
+                                <span className="text-white font-medium text-sm">{item.name}</span>
+                                {item.category && (
+                                  <span className="text-[9px] px-1.5 py-0.5 bg-emerald-500/20 text-emerald-400 rounded">
+                                    {item.category}
+                                  </span>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-2 mt-1">
+                                <span className="text-[11px] text-slate-400">수량: {item.quantity}</span>
+                                {item.price && (
+                                  <span className="text-[11px] text-slate-400">• {item.price.toLocaleString()}원</span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                      {groceryItems.length === 0 && (
+                        <p className="text-slate-500 text-center py-6 italic text-sm">
+                          추출된 식료품이 없습니다.
+                        </p>
+                      )}
+                    </div>
+                  </>
                 ) : (
+                  // 냉장고 사진 분석 결과 표시
                   <>
                     <h2 className="flex-none text-lg font-bold text-white mb-4 flex items-center justify-between">
                       <div className="flex items-center gap-2">
