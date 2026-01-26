@@ -17,17 +17,21 @@ export const metadata: Metadata = {
   description: "스마트폰으로 냉장고를 촬영하면 AI가 식료품을 자동으로 인식합니다",
 };
 
+import { SimulationProvider } from "@/providers/SimulationProvider";
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ko">
+    <html lang="ko" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+        <SimulationProvider>
+          {children}
+        </SimulationProvider>
       </body>
     </html>
   );
