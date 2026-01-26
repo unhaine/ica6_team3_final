@@ -9,14 +9,45 @@ datasource db {
   provider = "postgresql"
 }
 
-// 식료품 모델
+// ================================
+// 사용자 관리
+// ================================
+
+model User {
+  id          String   @id @default(cuid())
+  username    String   @unique  // 아이디
+  password    String              // 비밀번호 (해시됨)
+  name        String              // 이름
+  email       String?  @unique    // 이메일 (선택)
+  
+  // 관계
+  groceryItems        GroceryItem[]
+  receiptScans        ReceiptScan[]
+  fridgeAnalyses      FridgePhotoAnalysis[]
+  favoriteRecipes     FavoriteRecipe[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([username])
+  @@index([email])
+}
+
+// ================================
+// 식료품 관리
+// ================================
+
+// 사용자별 보유 식료품
 model GroceryItem {
   id          String   @id @default(cuid())
+  userId      String   // 소유자
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
   name        String   // 식료품 이름
   quantity    String?  // 수량 (예: "1개", "700g")
   category    String?  // 카테고리 (채소, 과일, 육류 등)
   price       Int?     // 가격
-  source      String?  // 출처 (receipt-ocr, fridge-photo 등)
+  source      String?  // 출처 (receipt-ocr, fridge-photo, manual)
   expiryDate  DateTime? // 유통기한
   purchaseDate DateTime? // 구매일
   
@@ -28,14 +59,19 @@ model GroceryItem {
   receiptId   String?
   receipt     ReceiptScan? @relation(fields: [receiptId], references: [id], onDelete: SetNull)
   
+  @@index([userId])
   @@index([name])
   @@index([category])
+  @@index([expiryDate])
   @@index([createdAt])
 }
 
 // 영수증 스캔 기록
 model ReceiptScan {
   id          String   @id @default(cuid())
+  userId      String   // 소유자
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
   imageUrl    String?  // 업로드된 이미지 URL (선택)
   storeName   String?  // 매장명 (쿠팡프레시, 롯데마트 등)
   totalAmount Int?     // 총 금액
@@ -46,12 +82,16 @@ model ReceiptScan {
   
   createdAt   DateTime @default(now())
   
+  @@index([userId])
   @@index([scanDate])
 }
 
 // 냉장고 사진 분석 기록
 model FridgePhotoAnalysis {
   id          String   @id @default(cuid())
+  userId      String   // 소유자
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
   imageUrl    String?  // 업로드된 냉장고 사진 URL (선택)
   apiSource   String   // 사용한 API (cloud-vision, gemini-flash)
   itemCount   Int      // 감지된 품목 수
@@ -59,6 +99,58 @@ model FridgePhotoAnalysis {
   
   createdAt   DateTime @default(now())
   
+  @@index([userId])
   @@index([createdAt])
   @@index([apiSource])
+}
+
+// ================================
+// 레시피 관리
+// ================================
+
+// 레시피 (공공데이터 마이그레이션)
+model Recipe {
+  rcpSno          BigInt   @id @map("rcp_sno")  // 레시피일련번호 (PK)
+  rcpTtl          String?  @db.VarChar(200) @map("rcp_ttl")  // 레시피제목
+  ckgNm           String?  @db.VarChar(40) @map("ckg_nm")   // 요리명
+  rgtrId          String?  @db.VarChar(32) @map("rgtr_id")   // 등록자ID
+  rgtrNm          String?  @db.VarChar(64) @map("rgtr_nm")   // 등록자명
+  inqCnt          Int?     @default(0) @map("inq_cnt")       // 조회수
+  rcmmCnt         Int?     @default(0) @map("rcmm_cnt")       // 추천수
+  srapCnt         Int?     @default(0) @map("srap_cnt")       // 스크랩수
+  ckgMthActoNm    String?  @db.VarChar(200) @map("ckg_mth_acto_nm")  // 요리방법별명
+  ckgStaActoNm    String?  @db.VarChar(200) @map("ckg_sta_acto_nm")  // 요리상황별명
+  ckgMtrlActoNm   String?  @db.VarChar(200) @map("ckg_mtrl_acto_nm")  // 요리재료별명
+  ckgKndActoNm    String?  @db.VarChar(200) @map("ckg_knd_acto_nm")  // 요리종류별명
+  ckgIpdc         String?  @db.VarChar(4000) @map("ckg_ipdc") // 요리소개
+  ckgMtrlCn       String?  @db.VarChar(4000) @map("ckg_mtrl_cn") // 요리재료내용
+  ckgInbunNm      String?  @db.VarChar(200) @map("ckg_inbun_nm")  // 요리인분명
+  ckgDodfNm       String?  @db.VarChar(200) @map("ckg_dodf_nm")  // 요리난이도명
+  ckgTimeNm       String?  @db.VarChar(200) @map("ckg_time_nm")  // 요리시간명
+  firstRegDt      String?  @db.Char(14) @map("first_reg_dt")      // 최초등록일시 (YYYYMMDDHHMMSS)
+  rcpImgUrl       String?  @db.VarChar(500) @map("rcp_img_url")   // 레시피 이미지 URL
+  
+  // 관계
+  favorites       FavoriteRecipe[]
+  
+  @@index([ckgNm])
+  @@index([ckgMtrlActoNm])
+  @@index([ckgKndActoNm])
+  @@map("Recipe")
+}
+
+// 사용자 즐겨찾기 레시피
+model FavoriteRecipe {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  recipeId    BigInt
+  recipe      Recipe   @relation(fields: [recipeId], references: [rcpSno], onDelete: Cascade)
+  
+  createdAt   DateTime @default(now())
+  
+  @@unique([userId, recipeId])
+  @@index([userId])
+  @@index([recipeId])
 }
