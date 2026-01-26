@@ -7,13 +7,15 @@ const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
 
-// Prisma 7+ 호환: PostgreSQL adapter 사용
+// Next.js 15/16 + Prisma 7+ 에서는 Driver Adapter 사용이 권장됩니다.
 const connectionString = process.env.DATABASE_URL || '';
-
 const pool = new Pool({ connectionString });
 const adapter = new PrismaPg(pool);
 
-export const prisma = globalForPrisma.prisma ?? new PrismaClient({ adapter });
+export const prisma = globalForPrisma.prisma ?? new PrismaClient({ 
+  adapter,
+  log: ['query', 'error', 'warn']
+});
 
 if (process.env.NODE_ENV !== 'production') {
   globalForPrisma.prisma = prisma;

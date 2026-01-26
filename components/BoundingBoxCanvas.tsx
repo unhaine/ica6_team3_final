@@ -1,94 +1,98 @@
 'use client';
 
 import React, { useEffect, useState, useRef } from 'react';
-import { Stage, Layer, Rect, Text, Group, Image as KonvaImage } from 'react-konva';
+import { Stage, Layer, Rect, Text, Group, Image as KonvaImage, Circle } from 'react-konva';
 import useImage from 'use-image';
 
-interface DetectedItem {
-  id: string;
-  label: string;
-  confidence: number;
-  boundingBox: {
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-  };
+import { BoundingBox } from '@/types/ingredient';
+
+interface ExtendedBoundingBox extends BoundingBox {
+  confidence?: number;
 }
 
 interface BoundingBoxCanvasProps {
   imageUrl: string;
-  items: DetectedItem[];
+  items: ExtendedBoundingBox[];
   onUpdateItem: (id: string, newBox: { x: number; y: number; width: number; height: number }) => void;
+  onRemoveItem?: (id: string) => void;
+  onLabelChange?: (id: string, newLabel: string) => void;
   onHeightChange?: (height: number) => void;
 }
 
-const BoundingBoxCanvas: React.FC<BoundingBoxCanvasProps> = ({ imageUrl, items, onUpdateItem, onHeightChange }) => {
-  const [image] = useImage(imageUrl);
-  const stageRef = useRef<any>(null);
-  const [dimensions, setDimensions] = useState({ width: 0, height: 0, scale: 1 });
+const BoundingBoxCanvas: React.FC<BoundingBoxCanvasProps> = ({ 
+  imageUrl, 
+  items, 
+  onUpdateItem, 
+  onRemoveItem, 
+  onLabelChange,
+  onHeightChange 
+}) => {
+  const [image] = useImage(imageUrl, 'anonymous'); // CORS safe
   const containerRef = useRef<HTMLDivElement>(null);
+  const [dimensions, setDimensions] = useState({ width: 0, height: 0, scale: 1 });
+  
+  // 선택된 박스 ID (편집 UI 표시용)
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
-  // 컨테이너 크기에 맞춰 캔버스 크기 조정
   useEffect(() => {
     const handleResize = () => {
       if (containerRef.current && image) {
         const containerWidth = containerRef.current.offsetWidth;
-        const maxViewportHeight = window.innerHeight * 0.85; // 화면 높이의 85%로 제한
+        // 화면 높이의 70% 정도로 제한하여 스크롤 최소화
+        const maxViewportHeight = window.innerHeight * 0.7; 
         
         let width = containerWidth;
         let scale = width / image.width;
         let height = image.height * scale;
 
-        // 세로로 너무 긴 이미지인 경우 높이를 기준으로 다시 스케일 조정
         if (height > maxViewportHeight) {
           height = maxViewportHeight;
           scale = height / image.height;
           width = image.width * scale;
         }
 
-        setDimensions({
-          width: width,
-          height: height,
-          scale: scale,
-        });
-        
-        if (onHeightChange) {
-          onHeightChange(height);
-        }
+        setDimensions({ width, height, scale });
+        if (onHeightChange) onHeightChange(height);
       }
     };
 
     handleResize();
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, [image]);
+  }, [image, onHeightChange]);
 
-  if (!image) return null;
+  // 배경 클릭 시 선택 해제
+  const handleStageClick = (e: any) => {
+    // Stage(배경) 클릭 시에만 선택 해제
+    if (e.target === e.target.getStage()) {
+      setSelectedId(null);
+    }
+  };
+
+  if (!image) return <div className="w-full aspect-video bg-muted animate-pulse rounded-xl" />;
 
   return (
-    <div ref={containerRef} className="w-full relative bg-gray-900 rounded-xl overflow-hidden shadow-2xl border border-gray-700 flex justify-center">
+    <div ref={containerRef} className="w-full relative bg-zinc-900 rounded-xl overflow-hidden shadow-2xl border border-zinc-700 flex justify-center touchscreen-manipulation">
       <Stage
         width={dimensions.width}
         height={dimensions.height}
-        ref={stageRef}
+        onMouseDown={handleStageClick}
+        onTouchStart={handleStageClick}
       >
         <Layer>
-          {/* 원본 이미지 */}
           <KonvaImage
             image={image}
             width={dimensions.width}
             height={dimensions.height}
           />
           
-          {/* 바운딩 박스들 */}
           {items.map((item) => {
-            const { x, y, width, height } = item.boundingBox;
-            // Vision API 좌표는 0~1 사이의 정규화된 값이므로 캔버스 크기에 곱해줌
+            const { x, y, width, height } = item;
             const rectX = x * dimensions.width;
             const rectY = y * dimensions.height;
             const rectWidth = width * dimensions.width;
             const rectHeight = height * dimensions.height;
+            const isSelected = selectedId === item.id;
 
             return (
               <Group
@@ -96,49 +100,99 @@ const BoundingBoxCanvas: React.FC<BoundingBoxCanvasProps> = ({ imageUrl, items, 
                 draggable
                 x={rectX}
                 y={rectY}
+                onClick={() => setSelectedId(item.id)}
+                onTap={() => setSelectedId(item.id)}
                 onDragEnd={(e) => {
                   const node = e.target;
+                  // 캔버스 밖으로 나가지 않도록 제한 (옵션)
+                  const newX = Math.max(0, Math.min(node.x(), dimensions.width - rectWidth));
+                  const newY = Math.max(0, Math.min(node.y(), dimensions.height - rectHeight));
+                  
+                  // 위치 보정
+                  node.x(newX);
+                  node.y(newY);
+
                   onUpdateItem(item.id, {
-                    x: node.x() / dimensions.width,
-                    y: node.y() / dimensions.height,
-                    width: width, // 너비와 높이는 일단 고정 (드래그만 지원)
-                    height: height,
+                    x: newX / dimensions.width,
+                    y: newY / dimensions.height,
+                    width,
+                    height,
                   });
                 }}
               >
-                {/* 박스 테두리 */}
+                {/* 박스 영역 */}
                 <Rect
                   width={rectWidth}
                   height={rectHeight}
-                  stroke="#10b981" // emerald-500
-                  strokeWidth={3}
+                  stroke={isSelected ? "#34d399" : "#10b981"} // 선택 시 더 밝은색
+                  strokeWidth={isSelected ? 4 : 2}
                   cornerRadius={4}
-                  fill="rgba(16, 185, 129, 0.1)"
+                  fill={isSelected ? "rgba(52, 211, 153, 0.2)" : "rgba(16, 185, 129, 0.1)"}
                 />
                 
                 {/* 라벨 태그 */}
-                <Group y={-25}>
+                <Group y={-26}>
                   <Rect
-                    width={item.label.length * 10 + 50}
-                    height={25}
-                    fill="#10b981"
-                    cornerRadius={[4, 4, 0, 0]}
+                    width={item.label.length * 12 + 30}
+                    height={24}
+                    fill={isSelected ? "#34d399" : "#10b981"}
+                    cornerRadius={[4, 4, 4, 0]}
+                    shadowBlur={5}
                   />
                   <Text
-                    text={`${item.label} ${(item.confidence * 100).toFixed(0)}%`}
+                    text={item.label}
                     fontSize={14}
                     fill="white"
-                    padding={5}
+                    padding={4}
                     fontStyle="bold"
+                    onClick={() => {
+                        // 간단한 라벨 수정 (Prompt)
+                        if (onLabelChange) {
+                            const newLabel = prompt("새로운 이름을 입력하세요:", item.label);
+                            if (newLabel) onLabelChange(item.id, newLabel);
+                        }
+                    }}
+                    onTap={() => {
+                        if (onLabelChange) {
+                            const newLabel = prompt("새로운 이름을 입력하세요:", item.label);
+                            if (newLabel) onLabelChange(item.id, newLabel);
+                        }
+                    }}
                   />
                 </Group>
+
+                {/* 삭제 버튼 (선택되었을 때만 표시) */}
+                {isSelected && onRemoveItem && (
+                  <Group x={rectWidth} y={-10} 
+                    onClick={() => onRemoveItem(item.id)}
+                    onTap={() => onRemoveItem(item.id)}
+                  >
+                    <Circle radius={10} fill="#ef4444" shadowBlur={2} />
+                    <Text text="✕" fontSize={12} fill="white" x={-4} y={-5} fontStyle="bold" />
+                  </Group>
+                )}
+                
+                {/* 리사이즈 핸들 (우하단) */}
+                {isSelected && (
+                    <Circle 
+                        x={rectWidth} 
+                        y={rectHeight} 
+                        radius={5} 
+                        fill="white" 
+                        stroke="#10b981"
+                        strokeWidth={2}
+                        cursor="nwse-resize"
+                    />
+                )}
               </Group>
             );
           })}
         </Layer>
       </Stage>
-      <div className="absolute bottom-4 right-4 bg-black/60 backdrop-blur-md text-white text-xs px-3 py-1.5 rounded-full border border-white/10">
-        박스를 드래그하여 위치를 조정할 수 있습니다
+      
+      {/* 안내 문구 오버레이 */}
+      <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-md text-white text-xs px-3 py-1.5 rounded-full border border-white/10 pointer-events-none">
+        {selectedId ? "라벨을 눌러 수정하거나 🔴 버튼으로 삭제하세요" : "박스를 눌러 편집하세요"}
       </div>
     </div>
   );

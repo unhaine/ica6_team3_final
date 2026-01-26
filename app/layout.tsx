@@ -18,6 +18,7 @@ export const metadata: Metadata = {
 };
 
 import { SimulationProvider } from "@/providers/SimulationProvider";
+import { AuthProvider } from "@/providers/AuthProvider";
 
 export default function RootLayout({
   children,
@@ -29,10 +30,13 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <SimulationProvider>
-          {children}
-        </SimulationProvider>
+        <AuthProvider>
+          <SimulationProvider>
+            {children}
+          </SimulationProvider>
+        </AuthProvider>
       </body>
     </html>
   );
 }
+

@@ -2,13 +2,13 @@
 
 import React, { createContext, useContext, ReactNode } from 'react';
 import { useAuthSimulation } from '@/hooks/useAuthSimulation';
-import { useAnalysisSimulation } from '@/hooks/useAnalysisSimulation';
+import { useAnalysis } from '@/hooks/useAnalysis';
 import { useRecipeSimulation } from '@/hooks/useRecipeSimulation';
 import { useIngredientStorage } from '@/hooks/useIngredientStorage';
 
 interface SimulationContextType {
   auth: ReturnType<typeof useAuthSimulation>;
-  analysis: ReturnType<typeof useAnalysisSimulation>;
+  analysis: ReturnType<typeof useAnalysis>;
   recipe: ReturnType<typeof useRecipeSimulation>;
   storage: ReturnType<typeof useIngredientStorage>;
 }
@@ -17,7 +17,7 @@ const SimulationContext = createContext<SimulationContextType | undefined>(undef
 
 export const SimulationProvider = ({ children }: { children: ReactNode }) => {
   const auth = useAuthSimulation();
-  const analysis = useAnalysisSimulation();
+  const analysis = useAnalysis();
   const recipe = useRecipeSimulation();
   const storage = useIngredientStorage();
 

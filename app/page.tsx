@@ -263,7 +263,12 @@ export default function Home() {
             <div className="inline-block px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-medium tracking-wide">
               AI-Powered Smart Fridge
             </div>
-            <div className="text-slate-500 text-[10px] font-mono uppercase tracking-widest">POC Verification State</div>
+            <a 
+              href="/login"
+              className="px-4 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-full text-slate-300 text-[10px] font-bold uppercase tracking-wider transition-all hover:text-white"
+            >
+              Sign In
+            </a>
           </div>
         </header>
 
@@ -412,7 +417,7 @@ export default function Home() {
                       className={`w-full py-3 px-4 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-all duration-300 ${
                         isRecommending
                           ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
-                          : 'bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600 hover:shadow-lg hover:shadow-purple-500/25 active:scale-[0.98]'
+                          : 'bg-linear-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600 hover:shadow-lg hover:shadow-purple-500/25 active:scale-[0.98]'
                       }`}
                     >
                       {isRecommending ? (
@@ -565,7 +570,7 @@ export default function Home() {
 
               {/* 3. 추천 레시피 (레시피 추천 완료 시에만 노출) */}
               {recommendedRecipes.length > 0 && (
-                <section className="flex-[2] min-h-[500px] bg-gradient-to-br from-purple-900/20 to-pink-900/20 border border-purple-500/30 rounded-3xl p-4 backdrop-blur-sm flex flex-col">
+                <section className="flex-2 min-h-[500px] bg-linear-to-br from-purple-900/20 to-pink-900/20 border border-purple-500/30 rounded-3xl p-4 backdrop-blur-sm flex flex-col">
                   <h2 className="flex-none text-lg font-bold text-white mb-4 flex items-center gap-2">
                     <div className="p-1.5 bg-purple-500/20 rounded-lg">
                       <svg className="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
