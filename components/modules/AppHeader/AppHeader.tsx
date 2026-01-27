@@ -26,7 +26,7 @@ export const AppHeader = ({
         <header 
             className={cn(
                 "sticky top-0 z-50 w-full flex items-center justify-between px-4 h-16 transition-all",
-                transparent ? "bg-transparent" : "bg-background/80 backdrop-blur-md border-b",
+                transparent ? "bg-transparent" : "bg-background/80 backdrop-blur-md ",
                 className
             )}
         >

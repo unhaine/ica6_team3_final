@@ -24,7 +24,7 @@ export default function RecipesPage() {
         <main className="flex flex-col min-h-screen bg-background pb-20">
             <AppHeader title="추천 레시피" />
 
-            <div className="flex-1 flex flex-col p-4 gap-6">
+            <div className="flex-1 flex flex-col p-4 gap-6 w-full h-full">
                 <div className="space-y-4">
                     <div className="flex items-center justify-between">
                         <Typography variant="h3" weight="bold">맞춤 요리 추천</Typography>

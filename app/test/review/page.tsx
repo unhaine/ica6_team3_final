@@ -90,7 +90,7 @@ function ReviewContent() {
         return (
             <div className="flex-1 flex flex-col w-full relative h-[calc(100vh-140px)]">
             {/* Canvas Area - Full Screen */}
-                <div className="flex-1 relative w-full bg-black/5 overflow-hidden flex flex-col items-center justify-center">
+                <div className="flex-1 relative w-full bg-black overflow-hidden flex flex-col items-center justify-center">
                     <BoundingBoxCanvas 
                         imageUrl={analysis.result.imageUrl}
                         items={localBoxes}
@@ -104,16 +104,6 @@ function ReviewContent() {
 
                 {/* Content Bar */}
                 <div className="h-20 bg-background border-t flex items-center justify-around px-8 shrink-0 gap-4 z-10">
-                    {/* Reset Button */}
-                    <button 
-                        onClick={() => setLocalBoxes(analysis.result?.boundingBoxes || [])}
-                        className="flex flex-col items-center gap-1 p-2 text-muted-foreground hover:text-primary active:scale-95 transition-all"
-                    >
-                        <div className="p-3 rounded-full bg-muted hover:bg-primary/10 transition-colors">
-                            <Icon name="RotateCcw" size={24} />
-                        </div>
-                        <span className="text-[10px] font-medium">초기화</span>
-                    </button>
 
                     {/* Add Box Button */}
                     <button 
@@ -135,6 +125,18 @@ function ReviewContent() {
                         </div>
                         <span className="text-[10px] font-bold">확인</span>
                     </button>
+
+                    {/* Reset Button */}
+                    <button 
+                        onClick={() => setLocalBoxes(analysis.result?.boundingBoxes || [])}
+                        className="flex flex-col items-center gap-1 p-2 text-muted-foreground hover:text-primary active:scale-95 transition-all"
+                    >
+                        <div className="p-3 rounded-full bg-muted hover:bg-primary/10 transition-colors">
+                            <Icon name="RotateCcw" size={24} />
+                        </div>
+                        <span className="text-[10px] font-medium">초기화</span>
+                    </button>
+
                 </div>
             </div>
         );

@@ -11,15 +11,15 @@ export const BottomNav = ({ className }: BottomNavProps) => {
     const pathname = usePathname();
 
     const navItems = [
-        { label: '홈', icon: 'House', href: '/test' },
-        { label: '업로드', icon: 'CirclePlus', href: '/test/upload' },
-        { label: '레시피', icon: 'Utensils', href: '/test/recipes' },
+        { label: '홈', icon: 'Snail', href: '/test' },
+        { label: '업로드', icon: 'Utensils', href: '/test' },
+        { label: '레시피', icon: 'Ham', href: '/test' },
     ] as const;
 
     return (
         <nav 
             className={cn(
-                "fixed bottom-0 left-0 z-50 w-full h-16 bg-background/80 backdrop-blur-md border-t flex items-center justify-around px-2 pb-safe",
+                "fixed bottom-0 left-0 z-50 w-full h-16 bg-background/80 backdrop-blur-md flex items-center justify-around px-2 pb-safe",
                 className
             )}
         >

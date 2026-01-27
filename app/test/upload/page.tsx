@@ -11,6 +11,8 @@ import { useSimulation } from '@/providers/SimulationProvider';
 import { AnalysisType } from '@/types/analysis';
 import { cn } from '@/lib/utils';
 import dynamic from 'next/dynamic';
+import Image from 'next/image';
+
 
 const BoundingBoxCanvas = dynamic(() => import('@/components/BoundingBoxCanvas'), { 
     ssr: false,
@@ -40,12 +42,12 @@ export default function UploadPage() {
     };
 
     const handleStartAnalysis = async () => {
-        if (!selectedType || !previewImage) return;
+    if (!selectedType || !previewImage) return;
 
-        await analysis.performAnalysis(selectedType, previewImage);
+    await analysis.performAnalysis(selectedType, previewImage);
 
-        // 분석 완료 후 결과 페이지로 이동
-        router.push(`/test/review?type=${selectedType}`);
+    // 분석 완료 후 결과 페이지로 이동
+    router.push(`/test/review?type=${selectedType}`);
     };
 
     const handleReset = () => {
@@ -58,43 +60,43 @@ export default function UploadPage() {
         <main className="flex flex-col min-h-screen bg-background pb-20">
             <AppHeader title={previewImage ? "사진 확인" : "식재료 등록"} showBack={!!previewImage} onBack={handleReset} />
 
+
             {!previewImage ? (
-                <div className="flex-1 flex flex-col p-4 gap-6">
-                    <div className="space-y-2 mt-4">
-                        <Typography variant="h3" weight="bold">무엇을 등록할까요?</Typography>
-                        <Typography variant="body2" color="muted">분석할 사진의 종류를 선택해주세요.</Typography>
-                    </div>
-
-                    <div className="grid grid-cols-1 gap-4 mt-4">
-                        <button
-                            onClick={() => handleTypeSelect('fridge')}
-                            className="group relative overflow-hidden rounded-2xl border-2 border-transparent bg-card p-6 text-left transition-all hover:border-primary/50 hover:shadow-lg active:scale-[0.98]"
-                        >
-                            <div className="flex items-center justify-between">
-                                <div className="space-y-1">
-                                    <Typography variant="h4" weight="bold">🧊 냉장고 사진</Typography>
-                                    <Typography variant="body2" color="muted">냉장고 안을 촬영한 사진</Typography>
-                                </div>
-                                <div className="rounded-full bg-primary/10 p-3 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-                                    <Icon name="Camera" size={24} />
-                                </div>
-                            </div>
-                        </button>
-
-                        <button
-                            onClick={() => handleTypeSelect('receipt')}
-                            className="group relative overflow-hidden rounded-2xl border-2 border-transparent bg-card p-6 text-left transition-all hover:border-primary/50 hover:shadow-lg active:scale-[0.98]"
-                        >
-                            <div className="flex items-center justify-between">
-                                <div className="space-y-1">
-                                    <Typography variant="h4" weight="bold">📄 영수증 / 내역</Typography>
-                                    <Typography variant="body2" color="muted">구매한 식재료 영수증 사진</Typography>
-                                </div>
-                                <div className="rounded-full bg-primary/10 p-3 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-                                    <Icon name="FileText" size={24} />
-                                </div>
-                            </div>
-                        </button>
+                <div className="flex-1 flex flex-col items-center p-4 gap-2">
+                    <Image
+                        src="/wow.png"
+                        alt="고양이"
+                        width={300}
+                        height={300}
+                    />
+                    <button 
+                        onClick={() => handleTypeSelect('fridge')}
+                        className="group flex items-center gap-4 p-4 rounded-2xl bg-card border hover:border-primary/50 hover:shadow-md transition-all text-left w-full"
+                    >
+                        <div className="p-3 rounded-xl bg-emerald-500/10 text-emerald-500 group-hover:bg-emerald-500 group-hover:text-white transition-colors">
+                            <Icon name="Refrigerator" size={28} />
+                        </div>
+                        <div className="flex-1">
+                            <Typography variant="subtitle2" weight="bold">냉장고 사진</Typography>
+                            <Typography variant="caption" color="muted">냉장고 안을 촬영한 사진</Typography>
+                        </div>
+                        <Icon name="ChevronRight" size={20} className="text-muted-foreground" />
+                    </button>
+                    <button 
+                        onClick={() => handleTypeSelect('receipt')}
+                        className="group flex items-center gap-4 p-4 rounded-2xl bg-card border hover:border-primary/50 hover:shadow-md transition-all text-left w-full"
+                    >
+                        <div className="p-3 rounded-xl bg-blue-500/10 text-blue-500 group-hover:bg-blue-500 group-hover:text-white transition-colors">
+                            <Icon name="ReceiptText" size={28} />
+                        </div>
+                        <div className="flex-1">
+                            <Typography variant="subtitle2" weight="bold">영수증 / 내역</Typography>
+                            <Typography variant="caption" color="muted">구매한 식재료 영수증 사진</Typography>
+                        </div>
+                        <Icon name="ChevronRight" size={20} className="text-muted-foreground" />
+                    </button>
+                    <div className="space-y-2 mt-2">
+                    <Typography variant="body2" color="muted">분석할 사진의 종류를 선택해주세요.</Typography>
                     </div>
                 </div>
             ) : (
