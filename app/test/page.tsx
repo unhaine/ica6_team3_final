@@ -190,7 +190,7 @@ export default function TestHomePage() {
               {stats.recentlyAdded.map(ing => (
                 <div 
                   key={ing.id} 
-                  className="shrink-0 px-4 py-3 rounded-2xl bg-muted/50 border flex flex-col items-center min-w-[80px]"
+                  className="shrink-0 px-4 py-3 rounded-2xl bg-muted/50 border flex flex-col items-center min-w-20"
                 >
                   <Typography variant="body2" weight="semibold" className="whitespace-nowrap">
                     {ing.name}

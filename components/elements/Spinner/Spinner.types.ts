@@ -1,5 +1,5 @@
 export interface SpinnerProps {
-  size?: 'sm' | 'md' | 'lg';
-  color?: 'primary' | 'secondary' | 'white' | 'inherit';
-  className?: string;
+    size?: 'sm' | 'md' | 'lg';
+    color?: 'primary' | 'secondary' | 'white' | 'inherit';
+    className?: string;
 }

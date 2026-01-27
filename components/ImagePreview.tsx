@@ -26,7 +26,7 @@ export default function ImagePreview({ previewUrl, onRemove, onHeightChange }: I
         <div className="absolute inset-0 bg-linear-to-br from-emerald-500/10 via-transparent to-teal-500/10 pointer-events-none z-10" />
         
         {/* 이미지 - 높이를 700px로 넉넉하게 잡고 가로 너비를 꽉 채웁니다 */}
-        <div className="relative h-[580px] w-full">
+        <div className="relative h-145 w-full">
           <Image
             src={previewUrl}
             alt="업로드된 냉장고 이미지"
