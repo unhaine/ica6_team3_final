@@ -11,7 +11,7 @@ import { useMemo } from 'react';
 import type { Recipe } from '@/types/recipe';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui';
 
 export default function RecipeDetailPage() {
     const { id } = useParams();

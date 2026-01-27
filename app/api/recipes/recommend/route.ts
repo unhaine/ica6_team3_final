@@ -129,7 +129,7 @@ function parseIngredients(ingredientText: string): string[] {
   // "[재료] 떡국떡400g| 다진소고기100g| 멸치육수800ml| 대파1/3대| 계란2개..."
   
   // 1. [재료], [양념] 등의 태그 제거
-  let text = ingredientText.replace(/\[.*?\]/g, '');
+  const text = ingredientText.replace(/\[.*?\]/g, '');
   
   // 2. |로 분리
   const items = text.split('|').map(s => s.trim());

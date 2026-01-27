@@ -4,17 +4,15 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { AppHeader } from '@/components/modules/AppHeader';
 import { BottomNav } from '@/components/modules/BottomNav';
-import { ActionButton } from '@/components/elements/ActionButton';
 import { Typography } from '@/components/elements/Typography';
 import { Icon } from '@/components/elements/Icon';
 import { useSimulation } from '@/providers/SimulationProvider';
 import { AnalysisType } from '@/types/analysis';
-import { cn } from '@/lib/utils';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
 
 
-const BoundingBoxCanvas = dynamic(() => import('@/components/BoundingBoxCanvas'), { 
+const BoundingBoxCanvas = dynamic(() => import('@/components/modules/BoundingBox'), { 
     ssr: false,
     loading: () => <div className="w-full h-full bg-muted/20 animate-pulse" />
 });

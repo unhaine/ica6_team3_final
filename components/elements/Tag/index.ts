@@ -1,2 +1,3 @@
 export * from './Tag';
-export * from './Tag.types';
+export * from './Tag.type';
+// style은 컴포넌트 내부에서만 사용 (충돌 방지)

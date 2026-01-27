@@ -10,7 +10,7 @@ import { Icon } from '@/components/elements/Icon';
 import { useSimulation } from '@/providers/SimulationProvider';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui';
 import { ProgressBar } from '@/components/elements/ProgressBar';
 
 export default function VerifyPage() {

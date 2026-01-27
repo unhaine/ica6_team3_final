@@ -1,2 +1,2 @@
 export * from './AppHeader';
-export * from './AppHeader.types';
+export * from './AppHeader.type';

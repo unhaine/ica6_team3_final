@@ -1,4 +1,4 @@
-import { TypographyProps } from './Typography.types';
+import { TypographyProps } from './Typography.type';
 import { cn } from '@/lib/utils';
 import { typographyStyles } from './Typography.style';
 

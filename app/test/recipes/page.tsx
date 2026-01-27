@@ -9,7 +9,7 @@ import { Tag } from '@/components/elements/Tag';
 import { useSimulation } from '@/providers/SimulationProvider';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui';
 import { Spinner } from '@/components/elements/Spinner';
 
 export default function RecipesPage() {

@@ -1,8 +1,13 @@
-import type { ProgressBarProps } from './ProgressBar.types';
-import { Progress } from '@/components/ui/progress';
+import type { ProgressBarProps } from './ProgressBar.type';
+import { Progress } from '@/components/ui';
 import { Typography } from '../Typography';
 import { cn } from '@/lib/utils';
+import { STYLES, VARIANT_STYLES } from './ProgressBar.style';
 
+/**
+ * 프로그래스 바 컴포넌트
+ * @description 진행률을 시각적으로 표시하는 바
+ */
 export const ProgressBar = ({
     value,
     max = 100,
@@ -12,18 +17,12 @@ export const ProgressBar = ({
     className,
 }: ProgressBarProps) => {
     const percentage = Math.min(Math.max((value / max) * 100, 0), 100);
-
-    const variantStyles = {
-        default: "bg-primary",
-        success: "bg-green-500",
-        warning: "bg-yellow-500",
-        gradient: "bg-gradient-to-r from-primary to-purple-500",
-    };
+    const variantStyle = VARIANT_STYLES[variant as keyof typeof VARIANT_STYLES] ?? VARIANT_STYLES.default;
 
     return (
-        <div className={cn("space-y-2", className)}>
+        <div className={cn(STYLES.container, className)}>
             {(showLabel || label) && (
-                <div className="flex justify-between items-center">
+                <div className={STYLES.labelContainer}>
                     {label && <Typography variant="caption" color="muted">{label}</Typography>}
                     {showLabel && (
                         <Typography variant="caption" weight="medium" className="ml-auto">
@@ -34,7 +33,7 @@ export const ProgressBar = ({
             )}
             <Progress 
                 value={percentage} 
-                className={cn("h-2", variantStyles[variant as keyof typeof variantStyles])} 
+                className={cn(STYLES.progress, variantStyle)} 
             />
         </div>
     );

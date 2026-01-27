@@ -1,8 +1,15 @@
-import { TagProps } from './Tag.types';
-import { Badge } from '@/components/ui/badge';
+'use client';
+
+import { TagProps } from './Tag.type';
+import { Badge } from '@/components/ui';
 import { Icon } from '../Icon';
 import { cn } from '@/lib/utils';
+import { STYLES, SIZE_CLASSES, VARIANT_CLASSES, ICON_SIZES } from './Tag.style';
 
+/**
+ * 태그 컴포넌트
+ * @description 라벨과 아이콘을 표시하는 태그/칩
+ */
 export const Tag = ({
     label,
     variant = 'default',
@@ -11,31 +18,21 @@ export const Tag = ({
     onRemove,
     className,
 }: TagProps) => {
-    const sizeClasses: Record<'sm' | 'md' | 'lg', string> = {
-        sm: 'px-1.5 py-0.5 text-[10px]',
-        md: 'px-2 py-1 text-xs',
-        lg: 'px-3 py-1.5 text-sm',
-    };
-
-    const variantClasses: Record<'default' | 'owned' | 'missing' | 'primary' | 'outline', string> = {
-        default: 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
-        owned: 'bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800',
-        missing: 'bg-red-100 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800',
-        primary: 'bg-primary text-primary-foreground',
-        outline: 'border-border text-muted-foreground bg-transparent',
-    };
+    const sizeClass = SIZE_CLASSES[size as keyof typeof SIZE_CLASSES] ?? SIZE_CLASSES.md;
+    const variantClass = VARIANT_CLASSES[variant as keyof typeof VARIANT_CLASSES] ?? VARIANT_CLASSES.default;
+    const iconSize = ICON_SIZES[size as keyof typeof ICON_SIZES] ?? ICON_SIZES.md;
 
     return (
         <Badge
-            variant="outline" // base variant
+            variant="outline"
             className={cn(
-                "font-medium rounded-full flex items-center gap-1 transition-colors",
-                sizeClasses[size as keyof typeof sizeClasses],
-                variantClasses[variant as keyof typeof variantClasses],
+                STYLES.tag,
+                sizeClass,
+                variantClass,
                 className
             )}
         >
-            {icon && <Icon name={icon} size={size === 'sm' ? 10 : 14} />}
+            {icon && <Icon name={icon} size={iconSize} />}
             {label}
             {onRemove && (
                 <button
@@ -43,7 +40,8 @@ export const Tag = ({
                         e.stopPropagation();
                         onRemove();
                     }}
-                    className="ml-1 hover:text-foreground/80 focus:outline-none"
+                    className={STYLES.removeButton}
+                    aria-label="태그 삭제"
                 >
                     <Icon name="X" size={12} />
                 </button>

@@ -1,83 +1,105 @@
 "use client";
 
-import { useMemo } from 'react';
 import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useTheme } from 'next-themes';
+import { toast } from 'sonner';
 import { AppHeader } from '@/components/modules/AppHeader';
 import { BottomNav } from '@/components/modules/BottomNav';
-import { ActionButton } from '@/components/elements/ActionButton';
 import { Typography } from '@/components/elements/Typography';
 import { Icon } from '@/components/elements/Icon';
-import { useSimulation } from '@/providers/SimulationProvider';
-import { Card, CardContent } from '@/components/ui/card';
-import { ProgressBar } from '@/components/elements/ProgressBar';
-import { cn } from '@/lib/utils';
 import Image from 'next/image';
+import { IconButton } from '@/components/elements/IconButton';
 
 export default function TestHomePage() {
   const router = useRouter();
-  const { storage, recipe } = useSimulation();
+  const { setTheme, theme, systemTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
 
-  // 식재료 카테고리별 통계
-  const stats = useMemo(() => {
-    const total = storage.ingredients.length;
-    const today = new Date();
-    
-    // 소비기한 임박 (3일 이내)
-    const expiringSoon = storage.ingredients.filter(ing => {
-      if (!ing.expiryDate) return false;
-      const expiry = new Date(ing.expiryDate);
-      const diffDays = Math.ceil((expiry.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-      return diffDays <= 3 && diffDays >= 0;
-    });
+  // Fix: Avoid calling setState synchronously in useEffect to prevent cascading renders
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setMounted(true);
+    }, 0);
+    return () => clearTimeout(timer);
+  }, []);
 
-    // 이미 만료된 것
-    const expired = storage.ingredients.filter(ing => {
-      if (!ing.expiryDate) return false;
-      const expiry = new Date(ing.expiryDate);
-      return expiry < today;
-    });
-
-    // 최근 추가 (3일 이내)
-    const recentlyAdded = storage.ingredients.filter(ing => {
-      const added = new Date(ing.addedAt);
-      const diffDays = Math.ceil((today.getTime() - added.getTime()) / (1000 * 60 * 60 * 24));
-      return diffDays <= 3;
-    }).slice(0, 5);
-
-    return { total, expiringSoon, expired, recentlyAdded };
-  }, [storage.ingredients]);
-
-  // 냉장고 활용도 (Mock - 실제로는 레시피와 매칭 가능 비율)
-  const utilizationRate = useMemo(() => {
-    if (stats.total === 0) return 0;
-    // 활용 가능한 식재료 비율을 시뮬레이션
-    return Math.min(100, Math.floor((stats.total / 10) * 100));
-  }, [stats.total]);
+  const currentTheme = theme === 'system' ? systemTheme : theme;
 
   return (
     <main className="flex flex-col min-h-screen bg-background pb-20">
-      <AppHeader title={"메인화면"} />
+      <AppHeader 
+        title="홈" 
+        rightAction={
+            <IconButton 
+                icon="Settings"
+                variant="ghost"
+                onClick={() => toast.info('설정 메뉴는 아직 준비 중입니다.')} 
+                ariaLabel="설정"
+            />
+        }
+      />
 
-        <div className="flex-1 flex flex-col items-center p-4 gap-2">
-        <Image
-          src="/rat.png"
-          alt="고양이"
-          width={300}
-          height={300}
-        />
-          <button 
-            onClick={() => router.push('/test/upload')}
-            className="group flex items-center gap-4 p-4 rounded-2xl bg-card border hover:border-primary/50 hover:shadow-md transition-all text-left w-full"
-          >
-            <div className="p-3 rounded-xl bg-emerald-500/10 text-emerald-500 group-hover:bg-emerald-500 group-hover:text-white transition-colors">
-              <Icon name="ScanLine" size={28} />
+      <div className="flex-1 flex flex-col p-4 gap-6 overflow-y-auto">
+        {/* Welcome Section */}
+        <div className="flex items-center gap-4 py-2">
+            <div className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-primary">
+                <Image src="/rat.png" alt="User" fill className="object-cover" />
             </div>
-            <div className="flex-1">
-              <Typography variant="subtitle2" weight="bold">식재료 스캔</Typography>
-              <Typography variant="caption" color="muted">냉장고 사진이나 영수증을 촬영해보세요</Typography>
+            <div>
+                <Typography variant="h3" weight="bold">안녕하세요, 셰프님!</Typography>
+                <Typography variant="body2" color="muted">오늘도 맛있는 요리를 만들어보세요.</Typography>
             </div>
-            <Icon name="ChevronRight" size={20} className="text-muted-foreground" />
-        </button>
+        </div>
+
+        {/* Feature: Theme Toggle */}
+        <section className="space-y-3">
+            <Typography variant="subtitle1" weight="bold">앱 설정 (테스트)</Typography>
+            <div className="p-4 rounded-xl bg-card border shadow-sm space-y-4">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                        <Icon name={currentTheme === 'dark' ? 'Moon' : 'Sun'} className="text-primary" />
+                        <Typography>다크 모드</Typography>
+                    </div>
+                    {mounted && (
+                        <div className="flex bg-muted p-1 rounded-lg">
+                            {['light', 'system', 'dark'].map((t) => (
+                                <button
+                                    key={t}
+                                    onClick={() => setTheme(t)}
+                                    className={`px-3 py-1 text-xs rounded-md transition-all ${
+                                        theme === t 
+                                        ? 'bg-background shadow text-primary font-bold' 
+                                        : 'text-muted-foreground hover:text-foreground'
+                                    }`}
+                                >
+                                    {t === 'light' ? 'Light' : t === 'dark' ? 'Dark' : 'Auto'}
+                                </button>
+                            ))}
+                        </div>
+                    )}
+                </div>
+
+                <div className="flex items-center justify-between border-t border-border pt-4">
+                     <Typography>알림 테스트</Typography>
+                     <div className="flex gap-2">
+                        <button 
+                            onClick={() => toast.success('성공적으로 저장되었습니다!')}
+                            className="px-3 py-1.5 text-xs bg-emerald-500/10 text-emerald-600 rounded-md font-medium hover:bg-emerald-500/20"
+                        >
+                            Success
+                        </button>
+                        <button 
+                            onClick={() => toast.error('문제가 발생했습니다.')}
+                            className="px-3 py-1.5 text-xs bg-red-500/10 text-red-600 rounded-md font-medium hover:bg-red-500/20"
+                        >
+                            Error
+                        </button>
+                     </div>
+                </div>
+            </div>
+        </section>
+
       </div>
 
       <BottomNav />

@@ -1,8 +1,15 @@
-import { IconButtonProps } from './IconButton.types';
-import { Button } from '@/components/ui/button';
+'use client';
+
+import { IconButtonProps } from './IconButton.type';
+import { Button } from '@/components/ui';
 import { Icon } from '../Icon';
 import { cn } from '@/lib/utils';
+import { STYLES, ICON_SIZES } from './IconButton.style';
 
+/**
+ * 아이콘 버튼 컴포넌트
+ * @description 아이콘만 포함하는 원형 버튼
+ */
 export const IconButton = ({
     icon,
     size = 'default',
@@ -12,7 +19,7 @@ export const IconButton = ({
     className,
     disabled,
 }: IconButtonProps) => {
-    const iconSize = size === 'sm' ? 16 : size === 'lg' ? 24 : 20;
+    const iconSize = ICON_SIZES[size as keyof typeof ICON_SIZES] ?? ICON_SIZES.default;
 
     return (
         <Button
@@ -20,7 +27,7 @@ export const IconButton = ({
             size="icon"
             onClick={onClick}
             disabled={disabled}
-            className={cn("rounded-full h-10 w-10 active:scale-90 transition-transform", className)}
+            className={cn(STYLES.button, className)}
             aria-label={ariaLabel}
         >
             <Icon name={icon} size={iconSize} />

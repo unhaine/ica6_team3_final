@@ -1,9 +1,16 @@
-import { ActionButtonProps } from './ActionButton.types';
-import { Button } from '@/components/ui/button';
+'use client';
+
+import { ActionButtonProps } from './ActionButton.type';
+import { Button } from '@/components/ui';
 import { Icon } from '../Icon';
 import { Spinner } from '../Spinner';
 import { cn } from '@/lib/utils';
+import { STYLES, ICON_SIZES } from './ActionButton.style';
 
+/**
+ * 액션 버튼 컴포넌트
+ * @description 아이콘과 로딩 상태를 지원하는 확장 버튼
+ */
 export const ActionButton = ({
     children,
     icon,
@@ -16,30 +23,32 @@ export const ActionButton = ({
     disabled,
     ...props
 }: ActionButtonProps) => {
+    const iconSize = ICON_SIZES[size as keyof typeof ICON_SIZES] ?? ICON_SIZES.default;
+
     return (
         <Button
             variant={variant}
             size={size}
             disabled={disabled || loading}
             className={cn(
-                "relative transition-all duration-200 active:scale-95",
-                fullWidth && "w-full",
+                STYLES.button,
+                fullWidth && STYLES.fullWidth,
                 className
             )}
             {...props}
         >
             {loading && (
-                <Spinner size="sm" className="mr-2" color="inherit" />
+                <Spinner size="sm" className={STYLES.iconLeft} color="inherit" />
             )}
 
             {!loading && icon && iconPosition === 'left' && (
-                <Icon name={icon} size={size === 'sm' ? 16 : 20} className="mr-2" />
+                <Icon name={icon} size={iconSize} className={STYLES.iconLeft} />
             )}
 
-            <span className={cn(loading && "opacity-80")}>{children}</span>
+            <span className={cn(loading && STYLES.loadingText)}>{children}</span>
 
             {!loading && icon && iconPosition === 'right' && (
-                <Icon name={icon} size={size === 'sm' ? 16 : 20} className="ml-2" />
+                <Icon name={icon} size={iconSize} className={STYLES.iconRight} />
             )}
         </Button>
     );

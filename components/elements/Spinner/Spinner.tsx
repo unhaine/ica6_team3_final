@@ -1,30 +1,22 @@
-import { SpinnerProps } from './Spinner.types';
+import { SpinnerProps } from './Spinner.type';
 import { cn } from '@/lib/utils';
+import { STYLES, SIZE_CLASSES, COLOR_CLASSES } from './Spinner.style';
 
+/**
+ * 스피너 컴포넌트
+ * @description 로딩 상태를 표시하는 원형 스피너
+ */
 export const Spinner = ({ 
     size = 'md', 
     color = 'primary', 
     className 
 }: SpinnerProps) => {
-    const sizeClasses = {
-        sm: 'h-4 w-4 border-2',
-        md: 'h-8 w-8 border-3',
-        lg: 'h-12 w-12 border-4',
-    };
-
-    const colorClasses = {
-        primary: 'border-primary/30 border-t-primary',
-        secondary: 'border-secondary/30 border-t-secondary',
-        white: 'border-white/30 border-t-white',
-        inherit: 'border-current/30 border-t-current',
-    };
-
     return (
         <div
             className={cn(
-                "animate-spin rounded-full",
-                sizeClasses[size],
-                colorClasses[color],
+                STYLES.spinner,
+                SIZE_CLASSES[size],
+                COLOR_CLASSES[color],
                 className
             )}
         />

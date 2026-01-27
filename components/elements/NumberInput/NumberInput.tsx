@@ -1,9 +1,15 @@
-import type { NumberInputProps } from './NumberInput.types';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+'use client';
+
+import type { NumberInputProps } from './NumberInput.type';
+import { Button, Input } from '@/components/ui';
 import { Icon } from '../Icon';
 import { cn } from '@/lib/utils';
+import { STYLES } from './NumberInput.style';
 
+/**
+ * 숫자 입력 컴포넌트
+ * @description 증감 버튼이 있는 숫자 입력 필드
+ */
 export const NumberInput = ({
     value,
     onChange,
@@ -31,11 +37,11 @@ export const NumberInput = ({
     };
 
     return (
-        <div className={cn("flex items-center gap-1", className)}>
+        <div className={cn(STYLES.container, className)}>
             <Button
                 variant="outline"
                 size="icon"
-                className="h-8 w-8 rounded-full"
+                className={STYLES.button}
                 onClick={handleDecrement}
                 disabled={disabled || (min !== undefined && value <= min)}
                 type="button"
@@ -47,14 +53,14 @@ export const NumberInput = ({
                 type="number"
                 value={value}
                 onChange={handleInputChange}
-                className="h-8 w-16 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                className={STYLES.input}
                 disabled={disabled}
             />
             
             <Button
                 variant="outline"
                 size="icon"
-                className="h-8 w-8 rounded-full"
+                className={STYLES.button}
                 onClick={handleIncrement}
                 disabled={disabled || (max !== undefined && value >= max)}
                 type="button"

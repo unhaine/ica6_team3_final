@@ -11,9 +11,9 @@ import { useEffect, useState, Suspense } from 'react';
 import dynamic from 'next/dynamic';
 import { BoundingBox, Ingredient, IngredientUnit } from '@/types/ingredient';
 import { NumberInput } from '@/components/elements/NumberInput';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui';
 
-const BoundingBoxCanvas = dynamic(() => import('@/components/BoundingBoxCanvas'), { 
+const BoundingBoxCanvas = dynamic(() => import('@/components/modules/BoundingBox'), { 
     ssr: false,
     loading: () => <div className="w-full aspect-square bg-muted animate-pulse rounded-xl" />
 });
@@ -23,28 +23,25 @@ function ReviewContent() {
     const type = searchParams.get('type') || 'fridge';
     const router = useRouter();
     const { analysis, storage } = useSimulation();
-    const [localBoxes, setLocalBoxes] = useState<BoundingBox[]>(
-        analysis.result?.type === 'fridge' ? (analysis.result.boundingBoxes || []) : []
-    );
-    const [localIngredients, setLocalIngredients] = useState<Ingredient[]>(
-        analysis.result?.type === 'receipt' ? (analysis.result.ingredients || []) : []
-    );
+    const [localBoxes, setLocalBoxes] = useState<BoundingBox[]>([]);
+    const [localIngredients, setLocalIngredients] = useState<Ingredient[]>([]);
+    const [lastResultTimestamp, setLastResultTimestamp] = useState<string | null>(null);
 
+    // Sync local state if analysis results change (e.g. analysis completion)
+    if (analysis.result && analysis.result.timestamp !== lastResultTimestamp) {
+        setLastResultTimestamp(analysis.result.timestamp);
+        if (type === 'fridge') {
+            setLocalBoxes(analysis.result.boundingBoxes || []);
+        } else {
+            setLocalIngredients(analysis.result.ingredients || []);
+        }
+    }
 
     useEffect(() => {
-        if (analysis.result) {
-            if (type === 'fridge') {
-                const newBoxes = analysis.result.boundingBoxes || [];
-                // 간단한 길이 비교로 불필요한 업데이트 방지 (완벽하진 않지만 무한 루프 방지)
-                setLocalBoxes(prev => prev.length !== newBoxes.length ? newBoxes : prev);
-            } else {
-                const newIngs = analysis.result.ingredients || [];
-                setLocalIngredients(prev => prev.length !== newIngs.length ? newIngs : prev);
-            }
-        } else if (analysis.status !== 'ANALYZING') {
+        if (!analysis.result && analysis.status !== 'ANALYZING') {
             router.replace('/test/upload');
         }
-    }, [analysis.result, analysis.status, router, type]);
+    }, [analysis.result, analysis.status, router]);
 
     const handleConfirm = () => {
         if (type === 'fridge') {
@@ -94,7 +91,7 @@ function ReviewContent() {
                     <BoundingBoxCanvas 
                         imageUrl={analysis.result.imageUrl}
                         items={localBoxes}
-                        onUpdateItem={(id, newBox) => {
+                        onUpdateItem={(id: string, newBox: { x: number; y: number; width: number; height: number }) => {
                             setLocalBoxes(prev => prev.map(box => box.id === id ? { ...box, ...newBox } : box));
                         }}
                         onRemoveItem={handleRemoveBox}

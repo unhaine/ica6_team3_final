@@ -1,6 +1,6 @@
 "use client";
 
-import { BottomNavProps } from './BottomNav.types';
+import { BottomNavProps } from './BottomNav.type';
 import { Icon } from '@/components/elements/Icon';
 import { Typography } from '@/components/elements/Typography';
 import { cn } from '@/lib/utils';
@@ -12,8 +12,8 @@ export const BottomNav = ({ className }: BottomNavProps) => {
 
     const navItems = [
         { label: '홈', icon: 'Snail', href: '/test' },
-        { label: '업로드', icon: 'Utensils', href: '/test' },
-        { label: '레시피', icon: 'Ham', href: '/test' },
+        { label: '업로드', icon: 'Utensils', href: '/test/upload' },
+        { label: '레시피', icon: 'Ham', href: '/test/recipes' },
     ] as const;
 
     return (

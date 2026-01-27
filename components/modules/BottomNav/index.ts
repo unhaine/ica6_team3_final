@@ -1,2 +1,2 @@
 export * from './BottomNav';
-export * from './BottomNav.types';
+export * from './BottomNav.type';

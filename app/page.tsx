@@ -2,11 +2,11 @@
 
 import { useState, useCallback } from 'react';
 import dynamic from 'next/dynamic';
-import ImageUploader from '@/components/ImageUploader';
-import ImagePreview from '@/components/ImagePreview';
+import ImageUploader from '@/components/custom/ImageUploader';
+import ImagePreview from '@/components/custom/ImagePreview';
 
 // Konva는 브라우저 API를 사용하므로 SSR을 비활성화해야 합니다.
-const BoundingBoxCanvas = dynamic(() => import('@/components/BoundingBoxCanvas'), {
+const BoundingBoxCanvas = dynamic(() => import('@/components/modules/BoundingBox'), {
     ssr: false,
 });
 
@@ -52,20 +52,6 @@ interface RecommendedRecipe {
     canCook: boolean;
 }
 
-interface CompareResult {
-    comparison: boolean;
-    cloudVision: {
-        detectedItems?: DetectedItem[];
-        allLabels?: string[];
-        error?: string;
-    };
-    geminiFlash: {
-        detectedItems?: DetectedItem[];
-        allLabels?: string[];
-        error?: string;
-    };
-}
-
 export default function Home() {
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -74,7 +60,6 @@ export default function Home() {
     const [detectedItems, setDetectedItems] = useState<DetectedItem[]>([]);
     const [allLabels, setAllLabels] = useState<string[]>([]);
     const [selectedApi, setSelectedApi] = useState<ApiType>('cloud-vision');
-    const [compareResult, setCompareResult] = useState<CompareResult | null>(null);
     const [analysisTime, setAnalysisTime] = useState<{ cloudVision?: number; geminiFlash?: number }>({});
     const [groceryItems, setGroceryItems] = useState<GroceryItem[]>([]);  // 영수증에서 추출한 식료품
     const [recommendedRecipes, setRecommendedRecipes] = useState<RecommendedRecipe[]>([]);  // 추천 레시피
@@ -86,7 +71,6 @@ export default function Home() {
         setDetectedItems([]);
         setAllLabels([]);
         setIsAnalyzed(false);
-        setCompareResult(null);
         setAnalysisTime({});
         setGroceryItems([]);
         setRecommendedRecipes([]);
@@ -101,7 +85,6 @@ export default function Home() {
         setDetectedItems([]);
         setAllLabels([]);
         setIsAnalyzed(false);
-        setCompareResult(null);
         setAnalysisTime({});
         setGroceryItems([]);
         setRecommendedRecipes([]);
@@ -117,7 +100,6 @@ export default function Home() {
         if (!imageFile) return;
 
         setIsAnalyzing(true);
-        setCompareResult(null);
         
         try {
             const reader = new FileReader();
@@ -151,7 +133,6 @@ export default function Home() {
                 setIsAnalyzed(true);
             } else if (selectedApi === 'compare') {
                 // 비교 모드
-                setCompareResult(data);
                 // 기본적으로 Gemini Flash 결과를 메인 캔버스에 표시
                 if (data.geminiFlash?.detectedItems) {
                     setDetectedItems(data.geminiFlash.detectedItems);
@@ -167,13 +148,14 @@ export default function Home() {
                 });
                 setIsAnalyzed(true);
             }
-        } catch (error: any) {
+        } catch (error) {
             console.error('분석 실패:', error);
             
-            let userMessage = error.message;
+            const err = error as Error;
+            let userMessage = err.message;
             
             // 할당량 에러인 경우 추가 안내
-            if (error.message.includes('할당량') || error.message.includes('quota')) {
+            if (err.message.includes('할당량') || err.message.includes('quota')) {
                 userMessage += '\n\n💡 Cloud Vision API로 전환하거나 잠시 후 다시 시도해주세요.';
             }
             
@@ -187,7 +169,6 @@ export default function Home() {
         setIsAnalyzed(false);
         setDetectedItems([]);
         setAllLabels([]);
-        setCompareResult(null);
         setGroceryItems([]);
         setRecommendedRecipes([]);
     }, []);
@@ -231,9 +212,10 @@ export default function Home() {
                 alert('😅 매칭되는 레시피가 없습니다. Recipe 테이블에 데이터를 넣어주세요.');
             }
 
-        } catch (error: any) {
+        } catch (error) {
             console.error('레시피 추천 실패:', error);
-            alert(`레시피 추천 중 오류가 발생했습니다:\n\n${error.message}`);
+            const err = error as Error;
+            alert(`레시피 추천 중 오류가 발생했습니다:\n\n${err.message}`);
         } finally {
             setIsRecommending(false);
         }
@@ -281,7 +263,12 @@ export default function Home() {
                                 <div className="transition-all duration-500 transform hover:scale-[1.01]">
                                     <BoundingBoxCanvas
                                         imageUrl={previewUrl}
-                                        items={detectedItems}
+                                        items={detectedItems.map(item => ({
+                                            id: item.id,
+                                            label: item.label,
+                                            confidence: item.confidence,
+                                            ...item.boundingBox
+                                        }))}
                                         onUpdateItem={handleUpdateItem}
                                         onHeightChange={setCanvasHeight}
                                     />

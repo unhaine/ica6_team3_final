@@ -1,4 +1,6 @@
-import { AppHeaderProps } from './AppHeader.types';
+'use client';
+
+import { AppHeaderProps } from './AppHeader.type';
 import { IconButton } from '../../elements/IconButton';
 import { Typography } from '@/components/elements/Typography';
 import { cn } from '@/lib/utils';

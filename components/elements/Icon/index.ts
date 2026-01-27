@@ -1,2 +1,3 @@
 export * from './Icon';
-export * from './Icon.types';
+export * from './Icon.type';
+// style은 컴포넌트 내부에서만 사용 (충돌 방지)

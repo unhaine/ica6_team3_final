@@ -45,3 +45,9 @@ supabase/functions/*/deno.lock
 
 # Generated
 /app/generated/prisma
+
+*storybook.log
+storybook-static
+test-results
+playwright-report
+blob-report

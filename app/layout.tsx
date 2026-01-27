@@ -19,6 +19,9 @@ export const metadata: Metadata = {
 
 import { SimulationProvider } from "@/providers/SimulationProvider";
 import { AuthProvider } from "@/providers/AuthProvider";
+import { ThemeProvider } from "@/providers/ThemeProvider";
+import { QueryProvider } from "@/providers/QueryProvider";
+import { Toaster } from "sonner";
 
 export default function RootLayout({
     children,
@@ -31,9 +34,19 @@ export default function RootLayout({
                 className={`${geistSans.variable} ${geistMono.variable} antialiased`}
             >
                 <AuthProvider>
-                    <SimulationProvider>
-                        {children}
-                    </SimulationProvider>
+                    <QueryProvider>
+                        <ThemeProvider
+                            attribute="class"
+                            defaultTheme="system"
+                            enableSystem
+                            disableTransitionOnChange
+                        >
+                            <SimulationProvider>
+                                {children}
+                            </SimulationProvider>
+                            <Toaster position="top-center" richColors />
+                        </ThemeProvider>
+                    </QueryProvider>
                 </AuthProvider>
             </body>
         </html>

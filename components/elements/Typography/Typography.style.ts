@@ -1,4 +1,4 @@
-import { TypographyVariant, TypographyWeight, TypographyColor, TypographyAlign } from './Typography.types';
+import { TypographyVariant, TypographyWeight, TypographyColor, TypographyAlign } from './Typography.type';
 
 export const typographyStyles = {
     variants: {
