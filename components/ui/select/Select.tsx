@@ -18,30 +18,43 @@ import {
     SelectScrollDownButtonProps,
 } from "./Select.type"
 
-function Select({
+/**
+ * 선택 컴포넌트
+ * @description 사용자에게 여러 옵션 중 하나를 선택하도록 하는 드롭다운 메뉴
+ */
+export const Select = ({
     ...props
-}: SelectProps) {
+}: SelectProps) => {
     return <SelectPrimitive.Root data-slot="select" {...props} />
 }
 
-function SelectGroup({
+/**
+ * 선택 그룹
+ */
+export const SelectGroup = ({
     ...props
-}: SelectGroupProps) {
+}: SelectGroupProps) => {
     return <SelectPrimitive.Group data-slot="select-group" {...props} />
 }
 
-function SelectValue({
+/**
+ * 선택된 값 표시
+ */
+export const SelectValue = ({
     ...props
-}: SelectValueProps) {
+}: SelectValueProps) => {
     return <SelectPrimitive.Value data-slot="select-value" {...props} />
 }
 
-function SelectTrigger({
+/**
+ * 선택 트리거
+ */
+export const SelectTrigger = ({
     className,
     size = "default",
     children,
     ...props
-}: SelectTriggerProps) {
+}: SelectTriggerProps) => {
     return (
         <SelectPrimitive.Trigger
             data-slot="select-trigger"
@@ -57,13 +70,16 @@ function SelectTrigger({
     )
 }
 
-function SelectContent({
+/**
+ * 선택 콘텐츠 영역
+ */
+export const SelectContent = ({
     className,
     children,
     position = "item-aligned",
     align = "center",
     ...props
-}: SelectContentProps) {
+}: SelectContentProps) => {
     return (
         <SelectPrimitive.Portal>
             <SelectPrimitive.Content
@@ -94,10 +110,13 @@ function SelectContent({
     )
 }
 
-function SelectLabel({
+/**
+ * 선택 라벨
+ */
+export const SelectLabel = ({
     className,
     ...props
-}: SelectLabelProps) {
+}: SelectLabelProps) => {
     return (
         <SelectPrimitive.Label
             data-slot="select-label"
@@ -107,11 +126,14 @@ function SelectLabel({
     )
 }
 
-function SelectItem({
+/**
+ * 선택 아이템
+ */
+export const SelectItem = ({
     className,
     children,
     ...props
-}: SelectItemProps) {
+}: SelectItemProps) => {
     return (
         <SelectPrimitive.Item
             data-slot="select-item"
@@ -131,10 +153,13 @@ function SelectItem({
     )
 }
 
-function SelectSeparator({
+/**
+ * 선택 구분선
+ */
+export const SelectSeparator = ({
     className,
     ...props
-}: SelectSeparatorProps) {
+}: SelectSeparatorProps) => {
     return (
         <SelectPrimitive.Separator
             data-slot="select-separator"
@@ -144,10 +169,13 @@ function SelectSeparator({
     )
 }
 
-function SelectScrollUpButton({
+/**
+ * 상단 스크롤 버튼
+ */
+export const SelectScrollUpButton = ({
     className,
     ...props
-}: SelectScrollUpButtonProps) {
+}: SelectScrollUpButtonProps) => {
     return (
         <SelectPrimitive.ScrollUpButton
             data-slot="select-scroll-up-button"
@@ -159,10 +187,13 @@ function SelectScrollUpButton({
     )
 }
 
-function SelectScrollDownButton({
+/**
+ * 하단 스크롤 버튼
+ */
+export const SelectScrollDownButton = ({
     className,
     ...props
-}: SelectScrollDownButtonProps) {
+}: SelectScrollDownButtonProps) => {
     return (
         <SelectPrimitive.ScrollDownButton
             data-slot="select-scroll-down-button"
@@ -172,17 +203,4 @@ function SelectScrollDownButton({
             <ChevronDownIcon className="size-4" />
         </SelectPrimitive.ScrollDownButton>
     )
-}
-
-export {
-    Select,
-    SelectContent,
-    SelectGroup,
-    SelectItem,
-    SelectLabel,
-    SelectScrollDownButton,
-    SelectScrollUpButton,
-    SelectSeparator,
-    SelectTrigger,
-    SelectValue,
 }

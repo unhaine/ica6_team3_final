@@ -6,11 +6,15 @@ import { cn } from "@/lib/utils"
 import { tabsListVariants, tabsStyles } from "./Tabs.style"
 import { TabsProps, TabsListProps, TabsTriggerProps, TabsContentProps } from "./Tabs.type"
 
-function Tabs({
+/**
+ * 탭 컴포넌트
+ * @description 콘텐츠를 탭 인터페이스로 나누어 보여주는 컴포넌트
+ */
+export const Tabs = ({
     className,
     orientation = "horizontal",
     ...props
-}: TabsProps) {
+}: TabsProps) => {
     return (
         <TabsPrimitive.Root
             data-slot="tabs"
@@ -22,11 +26,14 @@ function Tabs({
     )
 }
 
-function TabsList({
+/**
+ * 탭 리스트
+ */
+export const TabsList = ({
     className,
     variant = "default",
     ...props
-}: TabsListProps) {
+}: TabsListProps) => {
     return (
         <TabsPrimitive.List
             data-slot="tabs-list"
@@ -37,10 +44,13 @@ function TabsList({
     )
 }
 
-function TabsTrigger({
+/**
+ * 탭 트리거
+ */
+export const TabsTrigger = ({
     className,
     ...props
-}: TabsTriggerProps) {
+}: TabsTriggerProps) => {
     return (
         <TabsPrimitive.Trigger
             data-slot="tabs-trigger"
@@ -50,10 +60,13 @@ function TabsTrigger({
     )
 }
 
-function TabsContent({
+/**
+ * 탭 콘텐츠
+ */
+export const TabsContent = ({
     className,
     ...props
-}: TabsContentProps) {
+}: TabsContentProps) => {
     return (
         <TabsPrimitive.Content
             data-slot="tabs-content"
@@ -63,4 +76,4 @@ function TabsContent({
     )
 }
 
-export { Tabs, TabsList, TabsTrigger, TabsContent, tabsListVariants }
+export { tabsListVariants }

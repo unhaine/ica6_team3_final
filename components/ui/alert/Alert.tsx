@@ -3,11 +3,15 @@ import { cn } from "@/lib/utils"
 import { alertVariants } from "./Alert.style"
 import { AlertProps, AlertTitleProps, AlertDescriptionProps } from "./Alert.type"
 
-function Alert({
+/**
+ * 경고 컴포넌트
+ * @description 사용자에게 중요한 정보나 경고를 전달하는 알림 박스
+ */
+export const Alert = ({
     className,
     variant,
     ...props
-}: AlertProps) {
+}: AlertProps) => {
     return (
         <div
             data-slot="alert"
@@ -18,7 +22,10 @@ function Alert({
     )
 }
 
-function AlertTitle({ className, ...props }: AlertTitleProps) {
+/**
+ * 경고 제목
+ */
+export const AlertTitle = ({ className, ...props }: AlertTitleProps) => {
     return (
         <div
             data-slot="alert-title"
@@ -31,10 +38,13 @@ function AlertTitle({ className, ...props }: AlertTitleProps) {
     )
 }
 
-function AlertDescription({
+/**
+ * 경고 상세 설명
+ */
+export const AlertDescription = ({
     className,
     ...props
-}: AlertDescriptionProps) {
+}: AlertDescriptionProps) => {
     return (
         <div
             data-slot="alert-description"
@@ -46,5 +56,3 @@ function AlertDescription({
         />
     )
 }
-
-export { Alert, AlertTitle, AlertDescription }

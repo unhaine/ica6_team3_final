@@ -4,13 +4,17 @@ import { cn } from "@/lib/utils"
 import { buttonVariants } from "./Button.style"
 import { ButtonProps } from "./Button.type"
 
-function Button({
+/**
+ * 버튼 컴포넌트
+ * @description 다양한 스타일과 크기를 지원하는 인터랙티브 버튼
+ */
+export const Button = ({
     className,
     variant = "default",
     size = "default",
     asChild = false,
     ...props
-}: ButtonProps) {
+}: ButtonProps) => {
     const Comp = asChild ? Slot : "button"
 
     return (
@@ -24,4 +28,4 @@ function Button({
     )
 }
 
-export { Button, buttonVariants }
+export { buttonVariants }

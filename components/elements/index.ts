@@ -8,3 +8,9 @@ export * from './SocialButton';
 export * from './Spinner';
 export * from './Tag';
 export * from './Typography';
+// New mobile-first elements
+export * from './DataRow';
+export * from './SelectableChip';
+export * from './IconBox';
+export * from './AvatarThumbnail';
+export * from './RatingStars';
