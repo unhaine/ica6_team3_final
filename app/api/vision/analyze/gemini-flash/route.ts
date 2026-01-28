@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import sharp from 'sharp';
 
-// Gemini Flash 2.0을 사용한 객체 탐지 및 바운딩 박스 생성
-// API: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent
+// Gemini Flash 1.5를 사용한 객체 탐지 및 바운딩 박스 생성
+// API: https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent
 
 interface BoundingBox {
   x: number;
@@ -37,23 +37,11 @@ export async function POST(req: NextRequest) {
 
     // 이미지 최적화 (Gemini는 최대 20MB 지원하지만, 처리 속도를 위해 적정 크기로 조정)
     // .rotate()를 추가하여 EXIF 오리엔테이션 문제를 방지합니다.
-    // HEIC/HEIF 형식이 들어와도 자동으로 JPEG로 변환됩니다.
-    let optimizedBuffer: Buffer;
-    try {
-      optimizedBuffer = await sharp(imageBuffer)
-        .rotate()
-        .resize(1600, 1600, { fit: 'inside', withoutEnlargement: true })
-        .jpeg({ quality: 85 })
-        .toBuffer();
-    } catch (sharpError: any) {
-      console.error('이미지 처리 에러:', sharpError.message);
-      
-      // HEIC/HEIF 형식 에러인 경우 사용자에게 안내
-      if (sharpError.message.includes('heif') || sharpError.message.includes('bad seek')) {
-        throw new Error('HEIC/HEIF 형식은 지원되지 않습니다. JPG, PNG 등의 형식으로 변환 후 업로드해주세요.');
-      }
-      throw new Error('이미지 처리 중 오류가 발생했습니다: ' + sharpError.message);
-    }
+    const optimizedBuffer = await sharp(imageBuffer)
+      .rotate()
+      .resize(1600, 1600, { fit: 'inside', withoutEnlargement: true })
+      .jpeg({ quality: 85 })
+      .toBuffer();
     
     const metadata = await sharp(optimizedBuffer).metadata();
     const { width, height } = metadata;
@@ -61,8 +49,8 @@ export async function POST(req: NextRequest) {
 
     const optimizedBase64 = optimizedBuffer.toString('base64');
 
-    // Gemini Flash 2.0 API 호출
-    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${apiKey}`;
+    // Gemini Flash 1.5 API 호출 (v1 버전 사용)
+    const geminiUrl = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
     
     const prompt = `당신은 냉장고 내부 이미지를 분석하는 전문가입니다. 
 이 냉장고 이미지에서 모든 식료품과 물품을 찾아주세요.

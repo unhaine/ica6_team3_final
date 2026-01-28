@@ -89,7 +89,8 @@ export default function TestHomePage() {
             <div className="p-4 rounded-xl bg-card border shadow-sm space-y-4">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                        <Icon name={currentTheme === 'dark' ? 'Moon' : 'Sun'} className="text-primary" />
+                        {mounted && <Icon name={currentTheme === 'dark' ? 'Moon' : 'Sun'} className="text-primary" />}
+                        {!mounted && <Icon name="Sun" className="text-primary" />}
                         <Typography>다크 모드</Typography>
                     </div>
                     {mounted && (

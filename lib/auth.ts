@@ -1,6 +1,7 @@
 import NextAuth from "next-auth";
 import Google from "next-auth/providers/google";
 import Naver from "next-auth/providers/naver";
+import Kakao from "next-auth/providers/kakao";
 import Credentials from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/lib/prisma";
@@ -9,8 +10,8 @@ import bcrypt from "bcryptjs";
 export const { handlers, auth, signIn, signOut } = NextAuth({
   debug: true,
   trustHost: true,
-  adapter: PrismaAdapter(prisma),
-  session: { strategy: "jwt" },
+  adapter: PrismaAdapter(prisma),  // DB에 사용자 정보 저장
+  // session: { strategy: "jwt" },  // Database strategy 사용 (Adapter와 함께 사용 시)
   providers: [
     Google({
       clientId: process.env.AUTH_GOOGLE_ID,
@@ -19,6 +20,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     Naver({
       clientId: process.env.AUTH_NAVER_ID,
       clientSecret: process.env.AUTH_NAVER_SECRET,
+    }),
+    Kakao({
+      clientId: process.env.AUTH_KAKAO_ID!,
+      clientSecret: process.env.AUTH_KAKAO_SECRET!,
     }),
     Credentials({
       name: "Credentials",

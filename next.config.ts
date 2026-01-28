@@ -20,6 +20,10 @@ const nextConfig: NextConfig = {
         port: '',
         pathname: '/cache/recipe/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'lh3.googleusercontent.com',
+      },
     ],
   },
 };
