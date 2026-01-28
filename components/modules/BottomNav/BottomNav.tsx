@@ -11,9 +11,9 @@ export const BottomNav = ({ className }: BottomNavProps) => {
     const pathname = usePathname();
 
     const navItems = [
-        { label: '홈', icon: 'Snail', href: '/test' },
-        { label: '업로드', icon: 'Utensils', href: '/test/upload' },
-        { label: '레시피', icon: 'Ham', href: '/test/recipes' },
+        { label: '홈', icon: 'Snail', href: '/home' },
+        { label: '업로드', icon: 'Utensils', href: '/home/upload' },
+        { label: '레시피', icon: 'Ham', href: '/home/recipes' },
     ] as const;
 
     return (
@@ -24,7 +24,7 @@ export const BottomNav = ({ className }: BottomNavProps) => {
             )}
         >
             {navItems.map((item) => {
-                const isActive = pathname === item.href || (item.href !== '/test' && pathname?.startsWith(item.href));
+                const isActive = pathname === item.href || (item.href !== '/home' && pathname?.startsWith(item.href));
                 
                 return (
                 <Link

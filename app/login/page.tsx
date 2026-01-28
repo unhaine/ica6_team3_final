@@ -11,17 +11,18 @@ export default function LoginPage() {
 
     const handleSocialLogin = async (provider: string) => {
         if (provider === 'google') {
-            await signIn('google', { callbackUrl: '/test' });
+            await signIn('google', { callbackUrl: '/onboarding' });
         } else if (provider === 'naver') {
-            await signIn('naver', { callbackUrl: '/test' });
+            await signIn('naver', { callbackUrl: '/onboarding' });
+        } else if (provider === 'kakao') {
+            await signIn('kakao', { callbackUrl: '/onboarding' });
         } else {
-            // 카카오 등은 추가 설정 후 연동 가능
-            router.push('/test');
+            router.push('/onboarding');
         }
     };
 
     const handleGuestLogin = () => {
-        router.push('/test');
+        router.push('/home');
     };
 
     return (

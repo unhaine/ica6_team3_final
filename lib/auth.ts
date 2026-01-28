@@ -20,6 +20,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     Naver({
       clientId: process.env.AUTH_NAVER_ID,
       clientSecret: process.env.AUTH_NAVER_SECRET,
+      profile(profile) {
+        // Naver API 응답 구조: { response: { id, nickname, email, profile_image } }
+        return {
+          id: profile.response.id,
+          name: profile.response.nickname || profile.response.name,
+          email: profile.response.email,
+          image: profile.response.profile_image,
+        };
+      },
     }),
     Kakao({
       clientId: process.env.AUTH_KAKAO_ID!,
@@ -56,15 +65,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id;
-      }
-      return token;
-    },
-    async session({ session, token }) {
-      if (session.user) {
-        session.user.id = token.id as string;
+    async session({ session, user }) {
+      // Prisma Adapter 사용 시: user는 DB에서 가져온 실제 사용자 정보
+      if (session?.user && user) {
+        session.user.id = user.id;
+        session.user.email = user.email;
+        session.user.name = user.name;
+        session.user.image = user.image;
       }
       return session;
     },

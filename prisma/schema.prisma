@@ -22,6 +22,12 @@ model User {
   image         String?
   password      String?   // 소셜 로그인 사용 시 선택 사항
   
+  // 설문조사 정보
+  householdSize      Int?      // 가구 인원 (1, 2, 3, 4+)
+  allergies          String[]  @default([]) // 알러지 정보 (계란, 우유, 땅콩 등)
+  surveyCompleted    Boolean   @default(false) // 설문조사 완료 여부
+  surveyCompletedAt  DateTime? // 설문조사 완료 시각
+  
   // 관계
   accounts      Account[]
   sessions      Session[]

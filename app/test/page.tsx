@@ -19,6 +19,12 @@ export default function TestHomePage() {
   const { setTheme, theme, systemTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
+  // 🔍 디버깅: session 정보 확인
+  useEffect(() => {
+    console.log('🔍 Session Debug:', session);
+    console.log('🔍 User:', session?.user);
+  }, [session]);
+
   // Fix: Avoid calling setState synchronously in useEffect to prevent cascading renders
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -52,7 +58,8 @@ export default function TestHomePage() {
                     <Image 
                         src={session?.user?.image || "/rat.png"} 
                         alt="User" 
-                        fill 
+                        fill
+                        sizes="64px" 
                         className="object-cover" 
                     />
                 </div>
