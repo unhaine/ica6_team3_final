@@ -11,7 +11,10 @@ import { Icon } from '@/components/elements/Icon';
 import Image from 'next/image';
 import { IconButton } from '@/components/elements/IconButton';
 
+import { useSession, signOut } from 'next-auth/react';
+
 export default function TestHomePage() {
+  const { data: session } = useSession();
   const router = useRouter();
   const { setTheme, theme, systemTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
@@ -30,6 +33,7 @@ export default function TestHomePage() {
     <main className="flex flex-col min-h-screen bg-background pb-20">
       <AppHeader 
         title="홈" 
+        showLogout={true}
         rightAction={
             <IconButton 
                 icon="Settings"
@@ -42,14 +46,41 @@ export default function TestHomePage() {
 
       <div className="flex-1 flex flex-col p-4 gap-6 overflow-y-auto">
         {/* Welcome Section */}
-        <div className="flex items-center gap-4 py-2">
-            <div className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-primary">
-                <Image src="/rat.png" alt="User" fill className="object-cover" />
+        <div className="flex items-center justify-between py-2">
+            <div className="flex items-center gap-4">
+                <div className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-primary">
+                    <Image 
+                        src={session?.user?.image || "/rat.png"} 
+                        alt="User" 
+                        fill 
+                        className="object-cover" 
+                    />
+                </div>
+                <div>
+                    <Typography variant="h3" weight="bold">
+                        {session?.user?.name ? `${session.user.name} 셰프님!` : '안녕하세요, 셰프님!'}
+                    </Typography>
+                    <Typography variant="body2" color="muted">오늘도 맛있는 요리를 만들어보세요.</Typography>
+                </div>
             </div>
-            <div>
-                <Typography variant="h3" weight="bold">안녕하세요, 셰프님!</Typography>
-                <Typography variant="body2" color="muted">오늘도 맛있는 요리를 만들어보세요.</Typography>
-            </div>
+            
+            {session ? (
+                <button 
+                    onClick={() => signOut({ callbackUrl: '/login' })}
+                    className="p-2 text-muted-foreground hover:text-destructive transition-colors flex flex-col items-center gap-1"
+                >
+                    <Icon name="LogOut" size={20} />
+                    <span className="text-[10px] font-bold">로그아웃</span>
+                </button>
+            ) : (
+                <button 
+                    onClick={() => router.push('/login')}
+                    className="p-2 text-primary hover:text-primary/80 transition-colors flex flex-col items-center gap-1"
+                >
+                    <Icon name="LogIn" size={20} />
+                    <span className="text-[10px] font-bold">로그인</span>
+                </button>
+            )}
         </div>
 
         {/* Feature: Theme Toggle */}

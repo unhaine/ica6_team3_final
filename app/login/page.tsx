@@ -10,11 +10,12 @@ export default function LoginPage() {
     const router = useRouter();
 
     const handleSocialLogin = async (provider: string) => {
-        console.log(`${provider} login clicked`);
-            if (provider === 'google') {
+        if (provider === 'google') {
             await signIn('google', { callbackUrl: '/test' });
+        } else if (provider === 'naver') {
+            await signIn('naver', { callbackUrl: '/test' });
         } else {
-            // 카카오, 네이버 등은 추가 설정 후 연동 가능
+            // 카카오 등은 추가 설정 후 연동 가능
             router.push('/test');
         }
     };
@@ -31,29 +32,53 @@ export default function LoginPage() {
                 <div className="text-center space-y-3">
                     <div className="flex justify-center mb-24">
                     <Typography variant="h2" weight="black" color="primary" className="tracking-tighter italic">
-                    냉! 파! 고! 수!
+                    냉장고양이
                     </Typography>
                     </div>
                 </div>
 
-                {/* Login Container - Removed borders and shadows as requested */}
+                {/* Login Container */}
                 <div className="space-y-8 bg-transparent">
                     <div className="space-y-4">
                         <div className="space-y-3">
                             <SocialButton provider="kakao" onClick={() => handleSocialLogin('kakao')} />
                             <SocialButton provider="naver" onClick={() => handleSocialLogin('naver')} />
                             <SocialButton provider="google" onClick={() => handleSocialLogin('google')} />
+                            
+                            <div className="relative py-4">
+                                <div className="absolute inset-0 flex items-center">
+                                    <span className="w-full border-t border-slate-100"></span>
+                                </div>
+                                <div className="relative flex justify-center text-xs uppercase">
+                                    <span className="bg-white px-2 text-slate-400 font-medium tracking-wider">또는 이메일로 시작하기</span>
+                                </div>
+                            </div>
+
+                            <button
+                                onClick={() => router.push('/login/email')}
+                                className="flex items-center justify-center gap-3 w-full py-3.5 px-4 rounded-2xl font-semibold text-sm transition-all duration-300 border border-slate-200 hover:bg-slate-50 active:scale-[0.98] text-slate-700 shadow-sm"
+                            >
+                                <span className="grow text-center">이메일 로그인</span>
+                            </button>
                         </div>
                     </div>
 
-                    {/* Guest login action */}
-                    <div className="pt-4">
-                        <button
-                            onClick={handleGuestLogin}
-                            className="w-full py-3 text-slate-400 hover:text-primary text-sm font-medium transition-colors duration-200 border-none bg-transparent"
+                    <div className="space-y-4 text-center">
+                        <button 
+                            onClick={() => router.push('/login/signup')}
+                            className="text-sm text-slate-500 hover:text-primary transition-colors duration-200"
                         >
-                            둘러보기 (게스트 접속)
+                            계정이 없으신가요? <span className="font-bold underline decoration-primary/30 underline-offset-4">회원가입</span>
                         </button>
+                        
+                        <div className="pt-2">
+                            <button
+                                onClick={handleGuestLogin}
+                                className="w-full py-2 text-slate-400 hover:text-primary text-[13px] font-medium transition-colors duration-200 border-none bg-transparent"
+                            >
+                                둘러보기 (게스트 접속)
+                            </button>
+                        </div>
                     </div>
                 </div>
                 {/* Footer info - simple and clean */}

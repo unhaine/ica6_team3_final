@@ -38,7 +38,9 @@ const providerIcons: Record<SocialProvider, React.ReactNode> = {
         </svg>
     ),
     naver: (
-        <div className="w-5 h-5 flex items-center justify-center font-bold text-xs italic">N</div>
+        <svg viewBox="0 0 24 24" className="w-5 h-5" fill="currentColor">
+            <path d="M16.273 12.845L7.376 0H0v24h7.727V11.155L16.624 24H24V0h-7.727v12.845z" />
+        </svg>
     ),
     apple: (
         <svg viewBox="0 0 24 24" className="w-5 h-5" fill="currentColor">

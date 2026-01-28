@@ -10,7 +10,6 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-refrigerai}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-refrigerai123!}
       POSTGRES_DB: ${POSTGRES_DB:-refrigerai}
-      PGDATA: /var/lib/postgresql/data/pgdata
     ports:
       - "5432:5432"
     volumes:
@@ -36,10 +35,19 @@ services:
       # Database
       DATABASE_URL: postgresql://${POSTGRES_USER:-refrigerai}:${POSTGRES_PASSWORD:-refrigerai123!}@db:5432/${POSTGRES_DB:-refrigerai}?schema=public
 
-      # API Keys (from .env.production)
+      # API Keys
+      GOOGLE_API_KEY: ${GOOGLE_API_KEY}
       GEMINI_API_KEY: ${GEMINI_API_KEY}
       GOOGLE_VISION_API_KEY: ${GOOGLE_VISION_API_KEY}
       OPENAI_API_KEY: ${OPENAI_API_KEY}
+
+      # NextAuth
+      AUTH_SECRET: ${AUTH_SECRET}
+      AUTH_URL: ${AUTH_URL}
+      AUTH_GOOGLE_ID: ${AUTH_GOOGLE_ID}
+      AUTH_GOOGLE_SECRET: ${AUTH_GOOGLE_SECRET}
+      AUTH_NAVER_ID: ${AUTH_NAVER_ID}
+      AUTH_NAVER_SECRET: ${AUTH_NAVER_SECRET}
 
       # Next.js
       NODE_ENV: production

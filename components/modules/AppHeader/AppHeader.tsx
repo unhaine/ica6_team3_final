@@ -5,16 +5,19 @@ import { IconButton } from '../../elements/IconButton';
 import { Typography } from '@/components/elements/Typography';
 import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
+import { useSession, signOut } from 'next-auth/react';
 
 export const AppHeader = ({
     title,
     showBack = false,
     onBack,
     rightAction,
+    showLogout = false,
     transparent = false,
     className,
 }: AppHeaderProps) => {
     const router = useRouter();
+    const { data: session } = useSession();
 
     const handleBack = () => {
         if (onBack) {
@@ -22,6 +25,10 @@ export const AppHeader = ({
         } else {
             router.back();
         }
+    };
+
+    const handleLogout = async () => {
+        await signOut({ redirect: true, callbackUrl: '/login' });
     };
 
     return (
@@ -55,8 +62,17 @@ export const AppHeader = ({
                 )}
             </div>
 
-            <div className="flex items-center justify-end min-w-10">
+            <div className="flex items-center justify-end min-w-10 gap-1">
                 {rightAction}
+                {showLogout && session && (
+                    <IconButton
+                        icon="LogOut"
+                        variant="ghost"
+                        onClick={handleLogout}
+                        ariaLabel="로그아웃"
+                        className="text-muted-foreground hover:text-destructive transition-colors"
+                    />
+                )}
             </div>
         </header>
     );

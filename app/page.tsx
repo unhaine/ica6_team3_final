@@ -2,6 +2,8 @@
 
 import { useState, useCallback } from 'react';
 import dynamic from 'next/dynamic';
+import Image from 'next/image';
+import { useSession, signOut } from 'next-auth/react';
 import ImageUploader from '@/components/custom/ImageUploader';
 import ImagePreview from '@/components/custom/ImagePreview';
 
@@ -53,6 +55,7 @@ interface RecommendedRecipe {
 }
 
 export default function Home() {
+    const { data: session } = useSession();
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -245,12 +248,37 @@ export default function Home() {
                         <div className="inline-block px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-medium tracking-wide">
                             AI-Powered Smart Fridge
                         </div>
-                        <a 
-                            href="/login"
-                            className="px-4 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-full text-slate-300 text-[10px] font-bold uppercase tracking-wider transition-all hover:text-white"
-                        >
-                            Sign In
-                        </a>
+                        {session ? (
+                            <div className="flex items-center gap-3">
+                                <div className="text-right hidden sm:block">
+                                    <p className="text-slate-300 text-xs font-medium">{session.user?.name}님</p>
+                                    <p className="text-slate-500 text-[10px]">{session.user?.email}</p>
+                                </div>
+                                {session.user?.image && (
+                                    <div className="w-8 h-8 rounded-full overflow-hidden border border-emerald-500/30 relative">
+                                        <Image 
+                                            src={session.user.image} 
+                                            alt={session.user.name || 'User'} 
+                                            fill
+                                            className="w-full h-full object-cover" 
+                                        />
+                                    </div>
+                                )}
+                                <button 
+                                    onClick={() => signOut()}
+                                    className="px-4 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-full text-slate-300 text-[10px] font-bold uppercase tracking-wider transition-all hover:text-white"
+                                >
+                                    Sign Out
+                                </button>
+                            </div>
+                        ) : (
+                            <a 
+                                href="/login"
+                                className="px-4 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-full text-slate-300 text-[10px] font-bold uppercase tracking-wider transition-all hover:text-white"
+                            >
+                                Sign In
+                            </a>
+                        )}
                     </div>
                 </header>
 

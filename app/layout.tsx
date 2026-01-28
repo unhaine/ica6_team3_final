@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-    title: "RefrigerAI - 스마트 냉장고 식료품 인식",
+    title: "냉장고양이 - 스마트 냉장고 식료품 인식",
     description: "스마트폰으로 냉장고를 촬영하면 AI가 식료품을 자동으로 인식합니다",
 };
 
