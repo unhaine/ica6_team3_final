@@ -8,11 +8,11 @@ import { BottomNavBarProps } from "./BottomNavBar.type";
 import { STYLES } from "./BottomNavBar.style";
 
 const NAV_ITEMS = [
-  { label: "홈", icon: Home, href: "/mobile/dashboard" },
-  { label: "내 냉장고", icon: Refrigerator, href: "/mobile/fridge" },
-  { label: "추가", icon: Plus, href: "/mobile/scan", isFab: true },
-  { label: "레시피", icon: BookOpen, href: "/mobile/recipes" },
-  { label: "프로필", icon: User, href: "/mobile/profile" },
+  { label: "홈", icon: Home, href: "/test2" },
+  { label: "내 냉장고", icon: Refrigerator, href: "/test2/fridge" },
+  { label: "추가", icon: Plus, href: "/test2/scan", isFab: true },
+  { label: "레시피", icon: BookOpen, href: "/test2/recipes" },
+  { label: "프로필", icon: User, href: "/test2/profile" },
 ];
 
 /**
