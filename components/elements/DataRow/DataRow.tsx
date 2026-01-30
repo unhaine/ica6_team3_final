@@ -1,6 +1,5 @@
 "use client";
 
-import { useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { DataRowProps } from "./DataRow.type";
 import { STYLES } from "./DataRow.style";
@@ -13,6 +12,8 @@ import { STYLES } from "./DataRow.style";
 export const DataRow = ({
   left,
   children,
+  title, // ✨ Update
+  subTitle, // ✨ Update
   right,
   className,
   itemAction,
@@ -35,6 +36,8 @@ export const DataRow = ({
       {left && <div className={STYLES.left}>{left}</div>}
       
       <div className={STYLES.content}>
+        {title && <div className="text-sm font-semibold text-foreground leading-snug">{title}</div>}
+        {subTitle && <div className="text-xs text-muted-foreground">{subTitle}</div>}
         {children}
       </div>
 

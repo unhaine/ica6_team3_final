@@ -5,6 +5,15 @@ import { Icon } from '@/components/elements/Icon';
 import { Typography } from '@/components/elements/Typography';
 import { ActionButton } from '@/components/elements/ActionButton';
 
+const GradientBackground = () => (
+    <div className="absolute inset-0 z-0 pointer-events-none">
+        {/* Modern cleaner gradient */}
+        <div className="absolute inset-0 bg-linear-to-b from-blue-50/50 to-transparent" />
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-100/30 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-indigo-100/30 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
+    </div>
+);
+
 export default function LandingPage() {
   const router = useRouter();
 
@@ -34,7 +43,8 @@ export default function LandingPage() {
   ];
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-background to-muted/20 flex flex-col">
+    <main className="min-h-screen bg-linear-to-b from-background to-muted/20 flex flex-col relative overflow-hidden">
+      <GradientBackground />
       {/* Header */}
       <header className="p-6">
         <div className="flex items-center gap-3">
@@ -51,8 +61,8 @@ export default function LandingPage() {
       <div className="flex-1 flex flex-col items-center justify-center px-6 pb-20">
         {/* Hero Section with Floating Food Emojis */}
         <div className="relative mb-12 w-full max-w-md aspect-square flex items-center justify-center">
-          {/* Background Circle */}
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-primary/10 rounded-[60px] backdrop-blur-sm" />
+          {/* Background Circle - Replaced with new GradientBackground component */}
+          <div className="absolute inset-0 bg-linear-to-br from-primary/5 to-primary/10 rounded-[60px] backdrop-blur-sm" />
           
           {/* Food Emojis */}
           {foodEmojis.map((item, index) => (
@@ -67,25 +77,26 @@ export default function LandingPage() {
                 animationDelay: `${item.delay}s`,
               }}
             >
-              <div className="bg-white rounded-full p-4 shadow-lg">
+              <div className="text-4xl filter drop-shadow-lg animate-bounce-slow transform-gpu">
                 {item.emoji}
               </div>
             </div>
           ))}
-
-          {/* Center Camera Icon */}
-          <div className="relative z-10 w-48 h-48 rounded-3xl border-4 border-primary/30 bg-white/80 backdrop-blur-sm flex items-center justify-center shadow-xl">
-            <Icon name="Camera" className="text-primary" size={80} strokeWidth={1.5} />
+          
+          {/* Central Logo Call-to-Action */}
+          <div className="absolute inset-0 flex items-center justify-center">
+             <div className="w-32 h-32 bg-white/90 backdrop-blur-xl rounded-full shadow-2xl flex items-center justify-center z-10 border-4 border-white">
+                <span className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">
+                    N
+                </span>
+             </div>
           </div>
-        </div>
-
-        {/* Title */}
-        <div className="text-center mb-12">
-          <Typography variant="h1" weight="bold" className="mb-2 text-4xl">
-            냉장고 파먹기,
-          </Typography>
-          <Typography variant="h1" weight="bold" className="text-4xl bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-            AI로 3초 만에
+        </div>  
+        
+        <div className="space-y-6 text-center z-10 max-w-lg">
+          <Typography variant="h1" className="text-4xl md:text-5xl font-extrabold tracking-tight text-slate-900 leading-tight">
+            내 손안의 <br/>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">스마트 냉장고</span>
           </Typography>
         </div>
 

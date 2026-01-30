@@ -1,3 +1,5 @@
+'use client';
+
 import { useEffect, useState, useRef, RefObject, useCallback } from 'react';
 import type { KonvaEventObject } from 'konva/lib/Node';
 import { CanvasDimensions } from './BoundingBox.type';

@@ -10,7 +10,9 @@ export * from './Tag';
 export * from './Typography';
 // New mobile-first elements
 export * from './DataRow';
+export * from "./MediaCard";
 export * from './SelectableChip';
 export * from './IconBox';
 export * from './AvatarThumbnail';
 export * from './RatingStars';
+export * from './ActionCard';
