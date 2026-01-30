@@ -1,5 +1,5 @@
 export interface Recipe {
-  rcpSno: number;          // BigInt는 JSON 직렬화 문제로 number 또는 string으로 처리
+  rcpSno: number | string;  // BigInt는 JSON 직렬화 문제로 number 또는 string으로 처리
   rcpTtl?: string;
   ckgNm?: string;
   rgtrId?: string;

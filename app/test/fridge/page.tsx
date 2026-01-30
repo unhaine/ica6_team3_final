@@ -1,11 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { Search, Camera, Trash2, PenLine } from "lucide-react";
+import { Search, Trash2, PenLine, ScrollText } from "lucide-react";
 import { useHeader } from "@/components/modules/Header";
 import { DataList, FilterCarousel, SwipeableRow } from "@/components/modules";
-import { ActionCard, DataRow, AvatarThumbnail, SelectableChip } from "@/components/elements";
-import { IconButton } from "@/components/elements/IconButton";
+import { ActionCard, DataRow, AvatarThumbnail, SelectableChip, IconButton } from "@/components/elements";
 import { FILTERS, MOCK_ITEMS } from "./data";
 
 // --- Page Component ---
@@ -20,9 +19,6 @@ export default function FridgeTestPage() {
     right: <IconButton icon="Search" variant="ghost" ariaLabel="검색" />,
   });
 
-  // 2. 푸터 설정 (Global Layout에서 처리됨)
-  // useFooter 제거됨 ✨
-
   // 필터링 로직
   const filteredItems = activeFilter === "all" 
     ? items 
@@ -36,9 +32,9 @@ export default function FridgeTestPage() {
   };
 
   return (
-    <div className="flex flex-col h-full bg-gray-50/50">
-      {/* 1. Fixed Filter Area (Not Sticky anymore) */}
-      <div className="shrink-0 z-10 bg-white/95 backdrop-blur shadow-sm pt-2 pb-2">
+    <div className="flex flex-col h-full bg-gray-50/50 relative">
+      {/* 1. Category Filter Area */}
+      <div className="shrink-0 z-10 bg-white shadow-sm pt-2 pb-2">
         <FilterCarousel
           data={FILTERS}
           keyExtractor={(item) => item.id}
@@ -56,7 +52,6 @@ export default function FridgeTestPage() {
       {/* 2. Scrollable List Area */}
       <DataList
         data={filteredItems}
-        // flex-1 to take remaining space, overflow-y-auto to scroll internally
         className="flex-1 overflow-y-auto space-y-3 p-4 pb-24 scrollbar-hide" 
         
         ListEmptyComponent={
@@ -69,15 +64,24 @@ export default function FridgeTestPage() {
         renderItem={(item) => (
           <SwipeableRow
             key={item.id}
-            actionWidth={140} // 두 개의 버튼을 위한 너비 (70px * 2)
+            actionWidth={180} // 60px * 3 buttons
             
-            // Right Action: 수정(파랑) + 삭제(빨강)
+            // Right Action: 사용(초록) + 수정(파랑) + 삭제(빨강)
             rightAction={
               <div className="flex h-full w-full">
                 <button 
+                  className="flex-1 flex items-center justify-center bg-emerald-500 text-white shadow-inner active:bg-emerald-600 transition-colors"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    alert(`${item.name} 사용`);
+                  }}
+                >
+                  <ScrollText className="w-5 h-5" />
+                </button>
+                <button 
                   className="flex-1 flex items-center justify-center bg-blue-500 text-white shadow-inner active:bg-blue-600 transition-colors"
                   onClick={(e) => {
-                    e.stopPropagation(); // 카드 클릭 방지
+                    e.stopPropagation();
                     alert(`${item.name} 수정`);
                   }}
                 >
@@ -86,7 +90,7 @@ export default function FridgeTestPage() {
                 <button 
                   className="flex-1 flex items-center justify-center bg-red-500 text-white shadow-inner active:bg-red-600 transition-colors"
                   onClick={(e) => {
-                    e.stopPropagation(); // 카드 클릭 방지
+                    e.stopPropagation();
                     handleDelete(item.id);
                   }}
                 >
@@ -96,37 +100,36 @@ export default function FridgeTestPage() {
             }
           >
             {/* Front Card Content */}
-            <ActionCard className="bg-white">
+            <ActionCard className="bg-white overflow-hidden border-slate-100 shadow-sm">
               <DataRow
                 left={<AvatarThumbnail src={item.image} fallback={item.name[0]} />}
                 title={item.name}
-                subTitle={`${item.quantity} • ${item.remaining}`}
+                subTitle={<span className="text-slate-600 font-medium">{item.quantity}</span>}
                 right={
-                  <div className={`text-xs font-bold px-2 py-1 rounded-full ${
-                    item.type === 'frozen' ? 'bg-blue-100 text-blue-600' :
-                    item.type === 'room' ? 'bg-orange-100 text-orange-600' :
-                    'bg-green-100 text-green-600'
+                  <div className={`text-xs font-bold px-2.5 py-1 rounded-full shadow-sm ${
+                    parseInt(item.remaining.replace('D-', '')) <= 3 
+                      ? 'bg-rose-500 text-white' 
+                      : 'bg-emerald-500 text-white'
                   }`}>
-                     D-{item.id} 
+                     {item.remaining}
                   </div>
                 }
               />
             </ActionCard>
           </SwipeableRow>
         )}
-
-        // 마지막 Footer: 카메라 추가 카드
-        ListFooterComponent={
-          <ActionCard 
-            variant="dashed" 
-            className="mt-3 flex flex-row items-center justify-center gap-3 py-6 text-gray-500 hover:text-primary hover:bg-primary/5 hover:border-primary/50 transition-colors"
-            onClick={() => alert("카메라 촬영 시작")}
-          >
-            <Camera className="w-6 h-6" />
-            <span className="font-medium">식재료 촬영하여 추가하기</span>
-          </ActionCard>
-        }
       />
+
+      {/* 3. Floating Camera Button */}
+      <div className="absolute bottom-6 right-6 z-30">
+        <IconButton 
+          icon="Camera" 
+          variant="default" 
+          className="rounded-full shadow-xl w-16 h-16 flex items-center justify-center text-white bg-primary hover:bg-primary/90 transition-all active:scale-95"
+          onClick={() => alert("카메라 촬영 시작")}
+          ariaLabel="카메라"
+        />
+      </div>
     </div>
   );
 }

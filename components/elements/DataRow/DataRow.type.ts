@@ -1,6 +1,6 @@
 import { ComponentProps, ReactNode } from "react";
 
-export interface DataRowProps extends ComponentProps<"div"> {
+export interface DataRowProps extends Omit<ComponentProps<"div">, 'title'> {
   /** Slot for left content (e.g., Image, Checkbox, Icon) */
   left?: ReactNode;
   
@@ -11,13 +11,13 @@ export interface DataRowProps extends ComponentProps<"div"> {
    * Title text (Alternative to children) 
    * Automatically styled as primary text.
    */
-  title?: string;
+  title?: ReactNode;
   
   /** 
    * Subtitle text (Alternative to children) 
    * Automatically styled as secondary description.
    */
-  subTitle?: string;
+  subTitle?: ReactNode;
 
   /** Slot for right content (e.g., Action Button, Input, Arrow) */
   right?: ReactNode;

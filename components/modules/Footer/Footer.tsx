@@ -21,7 +21,9 @@ export const Footer = ({ className, ...props }: FooterProps) => {
     return (
         <nav className={cn(STYLES.container, className)} {...props}>
             {state.items.map((item) => {
-                const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
+                const isActive = item.href === '/test' 
+                    ? pathname === '/test'
+                    : pathname === item.href || pathname.startsWith(`${item.href}/`);
 
                 if (item.isFab) {
                     return <FooterFab key={item.href} item={item} />;

@@ -4,24 +4,25 @@ import { useState } from "react";
 import { Heart, Bookmark, Eye, Clock, ChefHat } from "lucide-react";
 import { useHeader } from "@/components/modules/Header";
 import { DataList, FilterCarousel } from "@/components/modules";
-import { SelectableChip, MediaCard } from "@/components/elements"; // MediaCard Import
-import { EmptyState } from "@/components/elements/EmptyState"; // EmptyState Import
+import { useQuery } from "@tanstack/react-query";
+import { SelectableChip, MediaCard } from "@/components/elements";
+import { EmptyState } from "@/components/elements/EmptyState";
 import { IconButton } from "@/components/elements/IconButton";
-import { MOCK_RECIPES, Recipe } from "./data";
+import { Recipe } from "./data";
+import { Spinner } from "@/components/elements/Spinner";
 
 // --- Filters ---
 const RECIPE_FILTERS = [
   { id: "all", label: "전체" },
-  { id: "korean", label: "🍚 한식" },
-  { id: "western", label: "🍝 양식" },
-  { id: "chinese", label: "🥘 중식" },
-  { id: "japanese", label: "🍣 일식" },
-  { id: "easy", label: "⏱️ 초간단" },
+  { id: "한식", label: "🍚 한식" },
+  { id: "양식", label: "🍝 양식" },
+  { id: "중식", label: "🥘 중식" },
+  { id: "일식", label: "🍣 일식" },
+  { id: "초급", label: "⏱️ 초급" },
 ];
 
 export default function RecipeTestPage() {
   const [activeFilter, setActiveFilter] = useState("all");
-  const [recipes] = useState<Recipe[]>(MOCK_RECIPES);
 
   // 1. 헤더 설정
   useHeader({
@@ -30,14 +31,46 @@ export default function RecipeTestPage() {
     right: <IconButton icon="Search" variant="ghost" ariaLabel="레시피 검색" />,
   });
 
-  // 2. 필터링 로직 (Mock)
-  const filteredRecipes = recipes.filter(recipe => {
-      if (activeFilter === "all") return true;
-      if (activeFilter === "korean") return recipe.ckgKndActoNm === "한식";
-      if (activeFilter === "western") return recipe.ckgKndActoNm === "양식";
-      if (activeFilter === "easy") return recipe.ckgDodfNm === "초급";
-      return true; 
+  // 2. API 데이터 페칭
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ["recipes", activeFilter],
+    queryFn: async () => {
+      const url = new URL("/api/recipes", window.location.origin);
+      url.searchParams.set("limit", "50");
+      if (activeFilter !== "all" && activeFilter !== "초급") {
+          url.searchParams.set("category", activeFilter);
+      }
+      const res = await fetch(url.toString());
+      if (!res.ok) throw new Error("Failed to fetch recipes");
+      return res.json();
+    },
   });
+
+  const recipes: Recipe[] = data?.data || [];
+
+  // 3. 필터링 로직 (난이도 '초급' 필터만 클라이언트에서 추가 처리)
+  const filteredRecipes = activeFilter === "초급" 
+    ? recipes.filter(r => r.ckgDodfNm === "초급")
+    : recipes;
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <Spinner size="lg" />
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <EmptyState 
+          title="데이터를 불러오지 못했습니다."
+          description="잠시 후 다시 시도해주세요."
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-full bg-gray-50/50">
