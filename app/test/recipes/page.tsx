@@ -76,38 +76,26 @@ export default function RecipeTestPage() {
             key={recipe.rcpSno}
             imageUrl={recipe.rcpImgUrl}
             title={recipe.rcpTtl}
-            description={recipe.ckgIpdc}
+            layout="horizontal"
             onClick={() => alert(`${recipe.rcpTtl} 상세 보기`)}
+            aspectRatio="square"
+            imageClassName="w-24 h-24" // 이미지 크기를 세밀하게 조정
             
-            // Badge: 카테고리 (한식/양식 등)
-            badge={
-                <span className="text-xs text-primary font-medium bg-primary/10 px-2 py-0.5 rounded">
-                    {recipe.ckgKndActoNm}
-                </span>
-            }
+            // 이제 태그들을 데이터로만 넘깁니다. 스타일은 안에서 처리함!
+            badge={recipe.ckgKndActoNm} 
+            metadata={[
+                { icon: Clock, label: recipe.ckgTimeNm },
+                { icon: ChefHat, label: recipe.ckgDodfNm }
+            ]}
 
-            // Overlay: 시간 & 난이도
-            overlay={
-                <>
-                    <span className="bg-black/50 backdrop-blur text-white text-[10px] px-2 py-1 rounded-full flex items-center gap-1">
-                        <Clock className="w-3 h-3" /> {recipe.ckgTimeNm}
-                    </span>
-                    <span className="bg-black/50 backdrop-blur text-white text-[10px] px-2 py-1 rounded-full flex items-center gap-1">
-                        <ChefHat className="w-3 h-3" /> {recipe.ckgDodfNm}
-                    </span>
-                </>
-            }
+            footerLeft={<strong>{recipe.rgtrNm}</strong>}
 
-            // Footer Left: 작성자
-            footerLeft={<span>{recipe.rgtrNm}</span>}
-
-            // Footer Right: 통계 아이콘
             footerRight={
-                <>
-                    <span className="flex items-center gap-1"><Heart className="w-3 h-3" /> {recipe.rcmmCnt}</span>
-                    <span className="flex items-center gap-1"><Bookmark className="w-3 h-3" /> {recipe.srapCnt}</span>
-                    <span className="flex items-center gap-1"><Eye className="w-3 h-3" /> {recipe.inqCnt}</span>
-                </>
+                <div className="flex gap-2">
+                    <span className="flex items-center gap-0.5"><Heart className="w-3 h-3 fill-red-400 stroke-red-400" /> {recipe.rcmmCnt}</span>
+                    <span className="flex items-center gap-0.5"><Bookmark className="w-3 h-3 fill-amber-400 stroke-amber-400" /> {recipe.srapCnt}</span>
+                    <span className="flex items-center gap-0.5"><Eye className="w-3 h-3" /> {recipe.inqCnt}</span>
+                </div>
             }
           />
         )}

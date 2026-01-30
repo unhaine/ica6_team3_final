@@ -19,14 +19,18 @@ export const MediaCard = ({
     footerLeft,
     footerRight,
     aspectRatio = "video",
+    layout = "vertical",
+    imageClassName,
+    contentClassName,
+    metadata,
     className,
     ...props
 }: MediaCardProps) => {
     return (
-        <ActionCard className={cn(STYLES.container, className)} {...props}>
+        <ActionCard className={cn(STYLES.container(layout), className)} {...props}>
             {/* 1. Media Section */}
             {imageUrl && (
-                <div className={STYLES.imageWrapper(aspectRatio)}>
+                <div className={cn(STYLES.imageWrapper(aspectRatio, layout), imageClassName)}>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img 
                         src={imageUrl} 
@@ -44,12 +48,31 @@ export const MediaCard = ({
             )}
 
             {/* 2. Content Section */}
-            <div className={STYLES.content}>
-                {/* Header: Title + Badge */}
+            <div className={cn(STYLES.content, contentClassName)}>
+                {/* Header: Title */}
                 <div className={STYLES.header}>
                     <h3 className={STYLES.title}>{title}</h3>
-                    {badge && <div className={STYLES.badge}>{badge}</div>}
                 </div>
+                
+                {/* Metadata & Tag Area (Badge + Metadata inside) */}
+                {(badge || metadata) && (
+                    <div className="flex flex-wrap gap-1.5 mt-1 mb-2">
+                        {badge && (
+                            <div className="text-[10px] text-primary font-bold bg-primary/10 px-1.5 py-0.5 rounded shrink-0">
+                                {badge}
+                            </div>
+                        )}
+                        {metadata?.map((meta, idx) => {
+                            const Icon = meta.icon;
+                            return (
+                                <div key={idx} className="text-[10px] text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded flex items-center gap-1 shrink-0">
+                                    {Icon && <Icon className="w-2.5 h-2.5" />}
+                                    {meta.label}
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
                 
                 {/* Description */}
                 {description && (
