@@ -3,6 +3,7 @@ node_modules
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+package-lock.json
 
 # Next.js
 .next
@@ -22,10 +23,13 @@ coverage
 *.pem
 .vscode
 .idea
+*.tar.gz
+*.zip
 
 # Git
 .git
 .gitignore
+.github
 
 # Docker
 Dockerfile
@@ -37,3 +41,13 @@ prisma/migrations/*_migration_lock.toml
 
 # Terminals
 .cursor
+
+# Templates and Docs
+VIBE_CODING_TEMPLATES
+docs
+README.md
+pics/*.png
+*.md
+
+# Scripts
+scripts
