@@ -5,7 +5,7 @@ services:
     container_name: refrigerai-db
     restart: always
     env_file:
-      - .env.production
+      - .env.local
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-refrigerai}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-refrigerai123!}
@@ -30,7 +30,7 @@ services:
     ports:
       - "3000:3000"
     env_file:
-      - .env.production
+      - .env.local
     environment:
       # Database
       DATABASE_URL: postgresql://${POSTGRES_USER:-refrigerai}:${POSTGRES_PASSWORD:-refrigerai123!}@db:5432/${POSTGRES_DB:-refrigerai}?schema=public
