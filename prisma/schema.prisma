@@ -17,7 +17,7 @@ model User {
   id            String    @id @default(cuid())
   name          String?
   username      String?   @unique
-  email         String?   @unique
+  email         String?   // 소셜 계정별 독립 유저 생성을 위해 @unique 제거
   emailVerified DateTime?
   image         String?
   password      String?   // 소셜 로그인 사용 시 선택 사항

@@ -20,10 +20,12 @@ export const HeaderProvider = ({ children }: { children: ReactNode }) => {
     const [state, setState] = useState<HeaderState>(defaultState);
 
     const setHeader = useCallback((newState: Partial<HeaderState>) => {
-        // Prevent unnecessary state updates if values are same (Simple shallow check could help, but strictly separating contexts is enough for the loop)
         setState(prev => {
-             // Optional: Deep compare or just return new state
-             return { ...prev, ...newState };
+             const updates = Object.fromEntries(
+                 Object.entries(newState).filter(([_, v]) => v !== undefined)
+             );
+             if (Object.keys(updates).length === 0) return prev;
+             return { ...prev, ...updates };
         });
     }, []);
 

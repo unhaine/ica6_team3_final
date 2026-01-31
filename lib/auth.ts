@@ -10,8 +10,11 @@ import bcrypt from "bcryptjs";
 export const { handlers, auth, signIn, signOut } = NextAuth({
   debug: true,
   trustHost: true,
-  adapter: PrismaAdapter(prisma),  // DB에 사용자 정보 저장
-  // session: { strategy: "jwt" },  // Database strategy 사용 (Adapter와 함께 사용 시)
+  adapter: {
+    ...PrismaAdapter(prisma),
+    getUserByEmail: () => null, // 이메일을 통한 자동 계정 통합 방지
+  }, 
+  // session: { strategy: "jwt" },
   providers: [
     Google({
       clientId: process.env.AUTH_GOOGLE_ID,
@@ -43,7 +46,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
 
-        const user = await prisma.user.findUnique({
+        const user = await prisma.user.findFirst({
           where: { email: credentials.email as string },
         });
 

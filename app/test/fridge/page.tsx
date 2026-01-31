@@ -2,13 +2,16 @@
 
 import { useState } from "react";
 import { Search, Trash2, PenLine, ScrollText } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useHeader } from "@/components/modules/Header";
+import { useFooter } from "@/components/modules/Footer";
 import { DataList, FilterCarousel, SwipeableRow } from "@/components/modules";
 import { ActionCard, DataRow, AvatarThumbnail, SelectableChip, IconButton } from "@/components/elements";
 import { FILTERS, MOCK_ITEMS } from "./data";
 
 // --- Page Component ---
 export default function FridgeTestPage() {
+  const router = useRouter();
   const [activeFilter, setActiveFilter] = useState("all");
   const [items, setItems] = useState(MOCK_ITEMS);
 
@@ -17,6 +20,10 @@ export default function FridgeTestPage() {
     isVisible: true,
     title: "나의 냉장고",
     right: <IconButton icon="Search" variant="ghost" ariaLabel="검색" />,
+  });
+
+  useFooter({
+    isVisible: true,
   });
 
   // 필터링 로직
@@ -126,7 +133,7 @@ export default function FridgeTestPage() {
           icon="Camera" 
           variant="default" 
           className="rounded-full shadow-xl w-16 h-16 flex items-center justify-center text-white bg-primary hover:bg-primary/90 transition-all active:scale-95"
-          onClick={() => alert("카메라 촬영 시작")}
+          onClick={() => router.push("/test/camera")}
           ariaLabel="카메라"
         />
       </div>

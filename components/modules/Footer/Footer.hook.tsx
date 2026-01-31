@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode, useCallback, useEffect } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useCallback, useEffect, useMemo } from 'react';
 import { FooterState } from './Footer.type';
 
 const defaultState: FooterState = {
@@ -17,12 +17,20 @@ export const FooterProvider = ({ children }: { children: ReactNode }) => {
 
     const setFooter = useCallback((newState: Partial<FooterState>) => {
         setState(prev => {
-             // Optional: Deep compare or just return new state
-             // Prevent unnecessary updates if values are loosely same (JSON stringify hack or deep equal)
-             if (JSON.stringify(prev) === JSON.stringify({ ...prev, ...newState })) {
+             // Create a filtered update without undefined values
+             const updates = Object.fromEntries(
+                 Object.entries(newState).filter(([_, v]) => v !== undefined)
+             );
+
+             if (Object.keys(updates).length === 0) return prev;
+
+             const next = { ...prev, ...updates };
+             
+             // Prevent unnecessary updates
+             if (JSON.stringify(prev) === JSON.stringify(next)) {
                  return prev;
              }
-             return { ...prev, ...newState };
+             return next;
         });
     }, []);
 
@@ -70,17 +78,14 @@ export const useFooterContext = () => {
  * @description Page-level hook to control the Footer (Navigation).
  */
 export const useFooter = (options: Partial<FooterState>) => {
-    const setFooter = useFooterDispatch(); // Only depends on Dispatch
+    const setFooter = useFooterDispatch();
     
-    // Destructure specifically to use in dependency array
-    // Note: 'items' array reference changes on every render if passed inline!
-    // We need to be careful. Ideally user should pass useMemo-ized items or constant.
-    // However, to be safe, we can rely on the setFooter's internal check or simplify here.
     const { isVisible, items } = options;
+    
+    // Memoize items stringification to avoid unnecessary re-renders
+    const itemsKey = useMemo(() => items ? JSON.stringify(items) : undefined, [items]);
 
     useEffect(() => {
         setFooter({ isVisible, items });
-        
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [isVisible, setFooter, JSON.stringify(items)]); // Deep compare items
+    }, [isVisible, items, itemsKey, setFooter]);
 };

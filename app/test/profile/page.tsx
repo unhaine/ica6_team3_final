@@ -1,14 +1,23 @@
 "use client";
 
 import { useHeader } from "@/components/modules/Header";
+import { useFooter } from "@/components/modules/Footer";
 import { AvatarThumbnail, Typography, ActionCard } from "@/components/elements";
 import { ChevronRight, LogOut, MessageSquare, Users, Utensils, AlertTriangle } from "lucide-react";
+import { signOut, useSession } from "next-auth/react";
 
 export default function ProfilePage() {
+    const { data: session } = useSession();
+    const user = session?.user;
+
     useHeader({
         isVisible: true,
         title: "프로필",
         left: null,
+    });
+
+    useFooter({
+        isVisible: true,
     });
 
     const SETTINGS = [
@@ -28,11 +37,15 @@ export default function ProfilePage() {
                 <AvatarThumbnail 
                     size="lg" 
                     className="w-24 h-24 mb-4 ring-8 ring-slate-100 shadow-lg"
-                    src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=200&q=80"
-                    fallback="홍"
+                    src={user?.image || ""}
+                    fallback={user?.name?.[0] || "?"}
                 />
-                <Typography variant="h3" weight="bold" className="text-slate-900">홍길동님</Typography>
-                <Typography variant="body2" className="text-slate-500 mt-1 font-medium italic">user@example.com</Typography>
+                <Typography variant="h3" weight="bold" className="text-slate-900">
+                    {user?.name || "사용자"}님
+                </Typography>
+                <Typography variant="body2" className="text-slate-500 mt-1 font-medium italic">
+                    {user?.email || "로그인이 필요합니다."}
+                </Typography>
             </section>
 
             {/* 2. Settings Section */}
@@ -67,7 +80,10 @@ export default function ProfilePage() {
                         </ActionCard>
                     ))}
 
-                    <ActionCard className="bg-white p-4 flex flex-row items-center justify-between border-red-100 shadow-sm hover:bg-red-50 transition-colors group mt-4">
+                    <ActionCard 
+                        className="bg-white p-4 flex flex-row items-center justify-between border-red-100 shadow-sm hover:bg-red-50 transition-colors group mt-4 cursor-pointer"
+                        onClick={() => signOut({ callbackUrl: "/" })}
+                    >
                         <div className="flex items-center gap-3">
                             <div className="bg-red-50 p-2.5 rounded-xl group-hover:bg-red-100 transition-colors">
                                 <LogOut className="w-5 h-5 text-red-500" />

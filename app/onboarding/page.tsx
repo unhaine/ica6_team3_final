@@ -54,7 +54,7 @@ export default function OnboardingPage() {
             const data = await response.json();
             if (data.user?.surveyCompleted) {
               // 이미 설문조사를 완료한 경우 홈으로 이동
-              router.push('/home');
+              router.push('/test'); // 임시로 테스트 페이지로 이동
               return;
             }
           }
@@ -81,7 +81,7 @@ export default function OnboardingPage() {
       });
 
       if (response.ok) {
-        router.push('/home');
+        router.push('/test'); // 임시로 테스트 페이지로 이동
       } else {
         toast.error('건너뛰기 처리 중 오류가 발생했습니다.');
       }
@@ -117,7 +117,7 @@ export default function OnboardingPage() {
 
       if (response.ok) {
         toast.success('설문조사가 완료되었습니다!');
-        router.push('/home');
+        router.push('/test'); // 임시로 테스트 페이지로 이동
       } else {
         const error = await response.json();
         toast.error(error.message || '설문조사 저장 중 오류가 발생했습니다.');

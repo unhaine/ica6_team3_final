@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Heart, MessageCircle } from "lucide-react";
 import { useHeader } from "@/components/modules/Header";
+import { useFooter } from "@/components/modules/Footer";
 import { FilterCarousel } from "@/components/modules";
 import { MediaCard, SelectableChip, IconButton, AvatarThumbnail, Typography } from "@/components/elements";
 
@@ -39,6 +40,10 @@ export default function CommunityPage() {
         isVisible: true,
         title: "커뮤니티",
         right: <IconButton icon="Search" variant="ghost" ariaLabel="검색" />,
+    });
+
+    useFooter({
+        isVisible: true,
     });
 
     return (

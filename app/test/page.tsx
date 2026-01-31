@@ -1,16 +1,23 @@
 "use client";
 
 import { useHeader } from "@/components/modules/Header";
+import { useFooter } from "@/components/modules/Footer";
 import { Typography, IconButton, ActionCard, ActionButton, Tag } from "@/components/elements";
 import { Timer, Flame, Users, RefreshCw, Sparkles } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function TestPage() {
+    const router = useRouter();
     // 1. 헤더 제어
     useHeader({
         isVisible: true,
         title: "태규님, 오늘의 메뉴 👨‍🍳",
-        left: <IconButton icon="Camera" variant="ghost" ariaLabel="카메라" onClick={() => alert("카메라 스캔")} />,
+        left: <IconButton icon="Camera" variant="ghost" ariaLabel="카메라" onClick={() => router.push("/test/camera")} />,
         right: <IconButton icon="Bell" variant="ghost" ariaLabel="알림" />,
+    });
+
+    useFooter({
+        isVisible: true,
     });
 
     return (

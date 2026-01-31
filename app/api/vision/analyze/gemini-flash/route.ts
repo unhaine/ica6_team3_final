@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import sharp from 'sharp';
 
-// Gemini Flash 1.5를 사용한 객체 탐지 및 바운딩 박스 생성
-// API: https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent
+// Gemini Flash 2.0을 사용한 객체 탐지 및 바운딩 박스 생성
+// API: https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent
 
 interface BoundingBox {
   x: number;
@@ -49,8 +49,8 @@ export async function POST(req: NextRequest) {
 
     const optimizedBase64 = optimizedBuffer.toString('base64');
 
-    // Gemini Flash 1.5 API 호출 (v1 버전 사용)
-    const geminiUrl = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+    // Gemini Flash 2.0 API 호출 (v1 버전 사용)
+    const geminiUrl = `https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
     
     const prompt = `당신은 냉장고 내부 이미지를 분석하는 전문가입니다. 
 이 냉장고 이미지에서 모든 식료품과 물품을 찾아주세요.

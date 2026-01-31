@@ -22,7 +22,7 @@ export default function LoginPage() {
     };
 
     const handleGuestLogin = () => {
-        router.push('/home');
+        router.push('/test'); // 임시로 테스트 페이지로 이동
     };
 
     return (

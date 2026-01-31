@@ -14,9 +14,9 @@ export async function GET() {
       );
     }
 
-    // 사용자 정보 조회
+    // 사용자 정보 조회 (세션 ID 기반으로 변경하여 중복 이메일 대응)
     const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
+      where: { id: session.user.id },
       select: {
         id: true,
         name: true,

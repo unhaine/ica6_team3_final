@@ -17,9 +17,9 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { householdSize, allergies, skip } = body;
 
-    // 사용자 찾기
+    // 사용자 찾기 (세션 ID 기반)
     const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
+      where: { id: session.user.id },
     });
 
     if (!user) {

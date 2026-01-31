@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode } from "react";
+import { ReactNode, useMemo } from "react";
 import { HeaderProvider, Header } from "@/components/modules/Header";
 import { FooterProvider, Footer } from "@/components/modules/Footer";
 
@@ -12,13 +12,12 @@ import { NAV_ITEMS } from "./constants";
 
 // Helper component to initialize Footer state once
 const GlobalFooterController = () => {
-    
-  // Map string icons to actual components
-  const footerItems = NAV_ITEMS.map(item => ({
+  // Map string icons to actual components (memoized)
+  const footerItems = useMemo(() => NAV_ITEMS.map(item => ({
       ...item,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       icon: (LucideIcons as any)[item.icon]
-  }));
+  })), []);
 
   useFooter({
     isVisible: true,

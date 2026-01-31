@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Heart, Bookmark, Eye, Clock, ChefHat } from "lucide-react";
 import { useHeader } from "@/components/modules/Header";
+import { useFooter } from "@/components/modules/Footer";
 import { DataList, FilterCarousel } from "@/components/modules";
 import { useQuery } from "@tanstack/react-query";
 import { SelectableChip, MediaCard } from "@/components/elements";
@@ -29,6 +30,10 @@ export default function RecipeTestPage() {
     isVisible: true,
     title: "추천 레시피",
     right: <IconButton icon="Search" variant="ghost" ariaLabel="레시피 검색" />,
+  });
+
+  useFooter({
+    isVisible: true,
   });
 
   // 2. API 데이터 페칭
