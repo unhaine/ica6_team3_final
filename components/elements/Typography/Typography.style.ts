@@ -42,9 +42,11 @@ export const typographyStyles = {
     } as Record<TypographyWeight, string>,
 
     colors: {
-        primary: 'text-foreground',
-        secondary: 'text-secondary-foreground',
+        primary: 'text-text-primary',
+        secondary: 'text-text-secondary',
+        tertiary: 'text-text-tertiary',
         muted: 'text-muted-foreground',
+        inverse: 'text-text-inverse',
         error: 'text-destructive',
         success: 'text-green-600 dark:text-green-400',
         warning: 'text-yellow-600 dark:text-yellow-400',

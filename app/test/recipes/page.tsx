@@ -11,6 +11,7 @@ import { EmptyState } from "@/components/elements/EmptyState";
 import { IconButton } from "@/components/elements/IconButton";
 import { Recipe } from "./data";
 import { Spinner } from "@/components/elements/Spinner";
+import { STYLES as FilterStyles } from "@/components/modules/FilterCarousel/FilterCarousel.style";
 
 // --- Filters ---
 const RECIPE_FILTERS = [
@@ -78,14 +79,13 @@ export default function RecipeTestPage() {
   }
 
   return (
-    <div className="flex flex-col h-full bg-gray-50/50">
+    <div className="flex flex-col h-full">
       
       {/* 1. Fixed Filter Area */}
-      <div className="shrink-0 z-10 bg-white/95 backdrop-blur shadow-sm pt-2 pb-2 border-b">
+      <div className={FilterStyles.stickySection}>
         <FilterCarousel
           data={RECIPE_FILTERS}
           keyExtractor={(item) => item.id}
-          className="px-4"
           renderItem={(filter) => (
             <SelectableChip
               label={filter.label}

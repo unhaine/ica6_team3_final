@@ -143,11 +143,22 @@ export async function POST(req: NextRequest) {
           h = (h * c.h) / height!;
         }
 
+const CONTAINER_KEYWORDS = [
+  'container', 'box', 'bottle', 'jar', 'can', 'bag', 'package', 'carton', 'tub', 'cup',
+  'plastic', 'glass', 'tupperware', 'storage', 'wrap', 'foil', 'lid', 'cap'
+];
+
+// ... inside the function ...
+
         // 라벨 보정: 범용 라벨이면 더 구체적인 이름으로 변환
         let refinedLabel = obj.name;
         if (LABEL_REFINEMENT[obj.name]) {
           refinedLabel = LABEL_REFINEMENT[obj.name];
         }
+
+        const lowerLabel = obj.name.toLowerCase();
+        const isContainer = CONTAINER_KEYWORDS.some(k => lowerLabel.includes(k)) || 
+                           ['packaged goods', 'bottle', 'jar', 'can', 'box', 'container'].includes(lowerLabel);
 
         combined.push({
           id: `cv-${idx}-${objIdx}-${Math.random().toString(36).substr(2, 4)}`,
@@ -155,7 +166,8 @@ export async function POST(req: NextRequest) {
           originalLabel: obj.name,  // 원본 라벨 보존 (디버깅용)
           confidence: obj.score,
           boundingBox: { x, y, width: w, height: h },
-          source: 'cloud-vision'  // 어떤 API에서 감지했는지 표시
+          source: 'cloud-vision',  // 어떤 API에서 감지했는지 표시
+          isContainer: isContainer
         });
       });
     });

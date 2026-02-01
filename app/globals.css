@@ -44,6 +44,17 @@
   --radius-2xl: calc(var(--radius) + 8px);
   --radius-3xl: calc(var(--radius) + 12px);
   --radius-4xl: calc(var(--radius) + 16px);
+
+  /* Semantic Design Tokens (Aliases & New) */
+  --color-surface: var(--card);
+  --color-surface-alt: var(--surface-alt);
+
+  --color-text-primary: var(--foreground);
+  --color-text-secondary: var(--muted-foreground);
+  --color-text-tertiary: var(--text-tertiary);
+  --color-text-inverse: var(--text-inverse);
+
+  --color-border-subtle: var(--border-subtle);
 }
 
 body {
@@ -125,6 +136,12 @@ body {
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+
+  /* Semantic Tokens (Base) */
+  --surface-alt: oklch(0.97 0 0); /* Muted Page Background */
+  --text-tertiary: oklch(0.7 0 0); /* Low contrast text */
+  --text-inverse: oklch(1 0 0); /* Text on dark bg */
+  --border-subtle: oklch(0.95 0 0);
 }
 
 .dark {
@@ -159,12 +176,18 @@ body {
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+
+  /* Semantic Tokens (Dark Mode) */
+  --surface-alt: oklch(0.12 0 0); /* Darker Page Background */
+  --text-tertiary: oklch(0.4 0 0);
+  --text-inverse: oklch(0.145 0 0);
+  --border-subtle: oklch(1 0 0 / 5%);
 }
 
 @layer utilities {
   .scrollbar-hide {
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
   }
   .scrollbar-hide::-webkit-scrollbar {
     display: none;

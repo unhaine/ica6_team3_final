@@ -6,6 +6,7 @@ import { useHeader } from "@/components/modules/Header";
 import { useFooter } from "@/components/modules/Footer";
 import { FilterCarousel } from "@/components/modules";
 import { MediaCard, SelectableChip, IconButton, AvatarThumbnail, Typography } from "@/components/elements";
+import { STYLES as FilterStyles } from "@/components/modules/FilterCarousel/FilterCarousel.style";
 
 const COMMUNITY_FILTERS = [
     { id: "all", label: "전체" },
@@ -47,13 +48,12 @@ export default function CommunityPage() {
     });
 
     return (
-        <div className="flex flex-col h-full bg-slate-50/30 overflow-y-auto pb-20">
+        <div className="flex flex-col h-full overflow-y-auto pb-20 scrollbar-hide">
             {/* Filter Section */}
-            <div className="shrink-0 z-10 bg-white border-b py-2 pr-4">
+            <div className={FilterStyles.stickySection}>
                 <FilterCarousel
                     data={COMMUNITY_FILTERS}
                     keyExtractor={(it) => it.id}
-                    className="px-4"
                     renderItem={(filter) => (
                         <SelectableChip
                             label={filter.label}
@@ -82,15 +82,15 @@ export default function CommunityPage() {
                             imageUrl={post.image}
                             title={null}
                             aspectRatio="square"
-                            className="bg-white border-none shadow-none overflow-hidden rounded-2xl"
+                            className="bg-surface border-none shadow-none overflow-hidden rounded-2xl"
                             contentClassName="px-0 pt-0"
                             footerLeft={
                                 <div className="flex items-center gap-4 mt-2">
-                                    <button className="flex items-center gap-1.5 text-slate-600 active:scale-90 transition-transform">
+                                    <button className="flex items-center gap-1.5 text-text-secondary active:scale-90 transition-transform">
                                         <Heart className="w-5 h-5" />
                                         <span className="text-sm font-medium">{post.likes}</span>
                                     </button>
-                                    <button className="flex items-center gap-1.5 text-slate-600 active:scale-90 transition-transform">
+                                    <button className="flex items-center gap-1.5 text-text-secondary active:scale-90 transition-transform">
                                         <MessageCircle className="w-5 h-5" />
                                         <span className="text-sm font-medium">{post.comments}</span>
                                     </button>
@@ -100,7 +100,7 @@ export default function CommunityPage() {
 
                         {/* Caption */}
                         <div className="px-1 pb-10">
-                            <Typography variant="body2" className="text-slate-800 leading-relaxed font-medium">
+                            <Typography variant="body2" color="primary" className="leading-relaxed font-medium">
                                 {post.caption}
                             </Typography>
                         </div>

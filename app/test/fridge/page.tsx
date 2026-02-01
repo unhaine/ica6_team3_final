@@ -7,6 +7,7 @@ import { useHeader } from "@/components/modules/Header";
 import { useFooter } from "@/components/modules/Footer";
 import { DataList, FilterCarousel, SwipeableRow } from "@/components/modules";
 import { ActionCard, DataRow, AvatarThumbnail, SelectableChip, IconButton } from "@/components/elements";
+import { STYLES } from "@/components/modules/FilterCarousel/FilterCarousel.style";
 import { FILTERS, MOCK_ITEMS } from "./data";
 
 // --- Page Component ---
@@ -39,13 +40,12 @@ export default function FridgeTestPage() {
   };
 
   return (
-    <div className="flex flex-col h-full bg-gray-50/50 relative">
+    <div className="flex flex-col h-full relative">
       {/* 1. Category Filter Area */}
-      <div className="shrink-0 z-10 bg-white shadow-sm pt-2 pb-2">
+      <div className={STYLES.stickySection}>
         <FilterCarousel
           data={FILTERS}
           keyExtractor={(item) => item.id}
-          className="px-4"
           renderItem={(filter) => (
             <SelectableChip
               label={filter.label}
@@ -62,7 +62,7 @@ export default function FridgeTestPage() {
         className="flex-1 overflow-y-auto space-y-3 p-4 pb-24 scrollbar-hide" 
         
         ListEmptyComponent={
-          <div className="flex flex-col items-center justify-center py-20 text-gray-400">
+          <div className="flex flex-col items-center justify-center py-20 text-text-tertiary">
             <Search className="w-12 h-12 mb-2 opacity-20" />
             <p>보관 중인 식재료가 없습니다.</p>
           </div>
@@ -107,11 +107,11 @@ export default function FridgeTestPage() {
             }
           >
             {/* Front Card Content */}
-            <ActionCard className="bg-white overflow-hidden border-slate-100 shadow-sm">
+            <ActionCard className="bg-surface overflow-hidden border-border-subtle shadow-sm">
               <DataRow
                 left={<AvatarThumbnail src={item.image} fallback={item.name[0]} />}
                 title={item.name}
-                subTitle={<span className="text-slate-600 font-medium">{item.quantity}</span>}
+                subTitle={<span className="text-text-secondary font-medium">{item.quantity}</span>}
                 right={
                   <div className={`text-xs font-bold px-2.5 py-1 rounded-full shadow-sm ${
                     parseInt(item.remaining.replace('D-', '')) <= 3 

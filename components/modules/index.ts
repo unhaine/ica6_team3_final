@@ -4,6 +4,7 @@
 // Header & Footer (New Standard)
 export * from './Header';
 export * from './Footer';
+export * from './SearchModal';
 
 // Canvas
 export { BoundingBoxCanvas as BoundingBox } from './BoundingBox';

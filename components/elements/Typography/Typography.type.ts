@@ -6,7 +6,7 @@ export type TypographyVariant =
 
 export type TypographyWeight = 'thin' | 'light' | 'normal' | 'medium' | 'semibold' | 'bold' | 'black';
 
-export type TypographyColor = 'primary' | 'secondary' | 'muted' | 'error' | 'success' | 'warning' | 'inherit' | 'white';
+export type TypographyColor = 'primary' | 'secondary' | 'tertiary' | 'muted' | 'inverse' | 'error' | 'success' | 'warning' | 'inherit' | 'white';
 
 export type TypographyAlign = 'left' | 'center' | 'right' | 'justify';
 

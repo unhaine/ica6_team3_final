@@ -41,8 +41,22 @@ const BoundingBoxItem: React.FC<BoundingBoxItemProps> = ({
   const rectWidth = item.width * dimensions.width;
   const rectHeight = item.height * dimensions.height;
 
-  const currentBoxStyle = isSelected ? BOX_STYLES.selected : BOX_STYLES.default;
-  const currentLabelColor = isSelected ? COLORS.primaryLight : COLORS.primary;
+  const getBoxStyle = () => {
+    if (item.isContainer) {
+      return isSelected ? BOX_STYLES.containerSelected : BOX_STYLES.container;
+    }
+    return isSelected ? BOX_STYLES.selected : BOX_STYLES.default;
+  };
+  
+  const getLabelColor = () => {
+    if (item.isContainer) {
+      return isSelected ? COLORS.containerLight : COLORS.container;
+    }
+    return isSelected ? COLORS.primaryLight : COLORS.primary;
+  };
+
+  const currentBoxStyle = getBoxStyle();
+  const currentLabelColor = getLabelColor();
   const labelWidth = item.label.length * LABEL_STYLES.charWidth + LABEL_STYLES.extraPadding;
 
   const handleDragEnd = (e: KonvaEventObject<DragEvent>) => {
@@ -142,6 +156,7 @@ const BoundingBoxCanvas: React.FC<BoundingBoxCanvasProps> = ({
   items,
   onUpdateItem,
   onRemoveItem,
+  onEditItem,
   onLabelChange,
   onHeightChange,
 }) => {
@@ -189,7 +204,13 @@ const BoundingBoxCanvas: React.FC<BoundingBoxCanvasProps> = ({
               item={item}
               isSelected={selectedId === item.id}
               dimensions={dimensions}
-              onSelect={() => setSelectedId(item.id)}
+              onSelect={() => {
+                if (selectedId === item.id) {
+                  onEditItem?.(item);
+                } else {
+                  setSelectedId(item.id);
+                }
+              }}
               onDragEnd={(newX, newY) => {
                 onUpdateItem(item.id, {
                   x: newX,

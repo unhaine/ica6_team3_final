@@ -139,6 +139,9 @@ export async function POST(req: NextRequest) {
       throw new Error('Gemini 응답 JSON 파싱 실패');
     }
 
+// 컨테이너 키워드 정의
+const CONTAINER_KEYWORDS = ['통', '병', '박스', '봉지', '캔', '컵', '팩', '용기', 'box', 'container', 'bottle', 'jar', 'can', 'bag'];
+
     // 결과 형식화
     const detectedItems: DetectedItem[] = parsedItems
       .filter((item: any) => item.box_2d && Array.isArray(item.box_2d) && item.box_2d.length === 4)
@@ -151,9 +154,13 @@ export async function POST(req: NextRequest) {
         const width = (xmax - xmin) / 1000;
         const height = (ymax - ymin) / 1000;
 
+        const label = item.label || '알 수 없음';
+        // 컨테이너 여부 판단
+        const isContainer = CONTAINER_KEYWORDS.some(k => label.includes(k));
+
         return {
           id: `gf-${idx}-${Math.random().toString(36).substr(2, 4)}`,
-          label: item.label || '알 수 없음',
+          label: label,
           confidence: Math.min(1, Math.max(0, item.confidence || 0.5)),
           boundingBox: {
             x: Math.min(1, Math.max(0, x)),
@@ -161,7 +168,8 @@ export async function POST(req: NextRequest) {
             width: Math.min(1, Math.max(0, width)),
             height: Math.min(1, Math.max(0, height))
           },
-          source: 'gemini-flash'
+          source: 'gemini-flash',
+          isContainer: isContainer
         };
       });
 

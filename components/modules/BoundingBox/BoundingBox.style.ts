@@ -2,6 +2,8 @@
 export const COLORS = {
   primary: '#10b981',
   primaryLight: '#34d399',
+  container: '#f59e0b', // Amber-500
+  containerLight: '#fbbf24', // Amber-400
   danger: '#ef4444',
   white: 'white',
 } as const;
@@ -17,6 +19,16 @@ export const BOX_STYLES = {
     stroke: COLORS.primaryLight,
     strokeWidth: 4,
     fill: 'rgba(52, 211, 153, 0.2)',
+  },
+  container: {
+    stroke: COLORS.container,
+    strokeWidth: 2,
+    fill: 'rgba(245, 158, 11, 0.1)',
+  },
+  containerSelected: {
+    stroke: COLORS.containerLight,
+    strokeWidth: 4,
+    fill: 'rgba(251, 191, 36, 0.2)',
   },
 } as const;
 
