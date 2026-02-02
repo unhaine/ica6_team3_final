@@ -7,6 +7,7 @@ import { Typography } from '@/components/elements/Typography';
 import { ActionButton } from '@/components/elements/ActionButton';
 import { Icon } from '@/components/elements/Icon';
 import { toast } from 'sonner';
+import { COOKING_SITUATION_OPTIONS } from '@/data/constants/cookingSituations';
 
 const HOUSEHOLD_OPTIONS = [
   { value: 1, label: '1인', icon: 'User' },
@@ -29,11 +30,13 @@ const ALLERGY_OPTIONS = [
 export default function OnboardingPage() {
   const router = useRouter();
   const { data: session, status } = useSession();
-  const [step, setStep] = useState(1); // 1: 인원, 2: 알러지, 3: 완료
+  const [step, setStep] = useState(1); // 1: 인원, 2: 알러지, 3: 요리 선호
   const [householdSize, setHouseholdSize] = useState<number | null>(null);
   const [allergies, setAllergies] = useState<string[]>([]);
+  const [cookingPreference, setCookingPreference] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+
 
   // 로그인 여부 및 설문조사 완료 여부 확인
   useEffect(() => {
@@ -99,6 +102,12 @@ export default function OnboardingPage() {
       }
       setStep(2);
     } else if (step === 2) {
+      setStep(3);
+    } else if (step === 3) {
+      if (!cookingPreference) {
+        toast.error('요리 선호를 선택해주세요.');
+        return;
+      }
       handleSubmit();
     }
   };
@@ -112,6 +121,7 @@ export default function OnboardingPage() {
         body: JSON.stringify({
           householdSize,
           allergies,
+          cookingPreference,
         }),
       });
 
@@ -252,6 +262,42 @@ export default function OnboardingPage() {
           </>
         )}
 
+        {step === 3 && (
+          <>
+            <div className="mb-12">
+              <Typography variant="h2" weight="bold" className="mb-2">
+                선호하는 요리 상황을
+              </Typography>
+              <Typography variant="h2" weight="bold">
+                선택해주세요
+              </Typography>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 mb-8">
+              {COOKING_SITUATION_OPTIONS.map((option) => (
+                <button
+                  key={option}
+                  onClick={() => setCookingPreference(option)}
+                  className={`
+                    py-4 px-6 rounded-xl border-2 transition-all text-left
+                    ${cookingPreference === option
+                      ? 'border-primary bg-primary/5 text-primary'
+                      : 'border-border hover:border-primary/30'
+                    }
+                  `}
+                >
+                  <Typography 
+                    variant="body1" 
+                    weight={cookingPreference === option ? 'semibold' : 'medium'}
+                  >
+                    {option}
+                  </Typography>
+                </button>
+              ))}
+            </div>
+          </>
+        )}
+
         {/* Bottom Button */}
         <div className="mt-auto">
           <ActionButton
@@ -261,7 +307,7 @@ export default function OnboardingPage() {
             onClick={handleNext}
             disabled={isSubmitting}
           >
-            {step === 1 ? '다음' : step === 2 ? '완료' : '시작하기'}
+            {step === 1 ? '다음' : step === 2 ? '다음' : step === 3 ? '완료' : '시작하기'}
           </ActionButton>
         </div>
       </div>

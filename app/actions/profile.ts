@@ -1,7 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
+import { getCurrentUser } from "@/lib/auth-helpers";
 
 /**
  * 사용자 프로필 이미지 업데이트
@@ -11,24 +11,13 @@ export async function updateProfileImage(imageUrl: string): Promise<{
     error?: string;
 }> {
     try {
-        const session = await auth();
+        const user = await getCurrentUser();
         
-        if (!session?.user?.email) {
+        if (!user) {
+            console.error('[Update Profile Image] 사용자 없음');
             return {
                 success: false,
                 error: "로그인이 필요합니다.",
-            };
-        }
-
-        // 먼저 이메일로 사용자 찾기
-        const user = await prisma.user.findFirst({
-            where: { email: session.user.email },
-        });
-
-        if (!user) {
-            return {
-                success: false,
-                error: "사용자를 찾을 수 없습니다.",
             };
         }
 
