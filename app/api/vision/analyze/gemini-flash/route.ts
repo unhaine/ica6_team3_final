@@ -22,7 +22,7 @@ interface DetectedItem {
 export async function POST(req: NextRequest) {
   try {
     const { image } = await req.json();
-    const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_VISION_API_KEY;
+    const apiKey = process.env.GEMINI_API_KEY;
 
     console.log('★★★ [Gemini Flash 2.0 - 객체 탐지 모드] 분석 요청 수신 ★★★');
 

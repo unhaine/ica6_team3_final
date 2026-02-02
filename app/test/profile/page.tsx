@@ -6,13 +6,21 @@ import { AvatarThumbnail, Typography, ActionCard } from "@/components/elements";
 import { ChevronRight, LogOut, MessageSquare, Users, Utensils, AlertTriangle, Edit2 } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { EditSurveyModal } from "./components/EditSurveyModal";
 
 export default function ProfilePage() {
     const { data: session } = useSession();
     const user = session?.user;
     const router = useRouter();
     const [isHovering, setIsHovering] = useState(false);
+    const [userData, setUserData] = useState<{
+        householdSize: number | null;
+        allergies: string[];
+        cookingPreference: string | null;
+    } | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [editingType, setEditingType] = useState<'household' | 'allergies' | 'cookingPreference' | null>(null);
 
     useHeader({
         isVisible: true,
@@ -24,10 +32,88 @@ export default function ProfilePage() {
         isVisible: true,
     });
 
+    // 사용자 데이터 불러오기
+    useEffect(() => {
+        const fetchUserData = async () => {
+            try {
+                const response = await fetch('/api/user/profile');
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success && data.user) {
+                        setUserData({
+                            householdSize: data.user.householdSize,
+                            allergies: data.user.allergies || [],
+                            cookingPreference: data.user.cookingPreference || null,
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error('사용자 데이터 조회 에러:', error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        if (user) {
+            fetchUserData();
+        }
+    }, [user]);
+
+    // 설문조사 값 저장
+    const handleSaveSurvey = async (type: 'household' | 'allergies' | 'cookingPreference', value: number | string[] | string) => {
+        try {
+            const response = await fetch('/api/user/survey', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    householdSize: type === 'household' ? value : userData?.householdSize,
+                    allergies: type === 'allergies' ? value : userData?.allergies,
+                    cookingPreference: type === 'cookingPreference' ? value : userData?.cookingPreference,
+                }),
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                setUserData({
+                    householdSize: data.user.householdSize,
+                    allergies: data.user.allergies || [],
+                    cookingPreference: data.user.cookingPreference || null,
+                });
+                setEditingType(null);
+                alert('✅ 수정되었습니다.');
+            } else {
+                alert(`❌ 수정 실패: ${data.error}`);
+            }
+        } catch (error) {
+            console.error('설문조사 수정 에러:', error);
+            alert('❌ 수정 중 오류가 발생했습니다.');
+        }
+    };
+
     const SETTINGS = [
-        { icon: Users, label: "가구 인원", value: "2명" },
-        { icon: Utensils, label: "요리 선호", value: "간편 요리" },
-        { icon: AlertTriangle, label: "알러지/비선호", value: "땅콩" },
+        { 
+            icon: Users, 
+            label: "가구 인원", 
+            value: userData?.householdSize 
+                ? `${userData.householdSize}${userData.householdSize === 4 ? '인+' : '인'}`
+                : "미설정",
+            onClick: () => setEditingType('household'),
+        },
+        { 
+            icon: Utensils, 
+            label: "요리 선호", 
+            value: userData?.cookingPreference || "미설정",
+            onClick: () => setEditingType('cookingPreference'),
+        },
+        { 
+            icon: AlertTriangle, 
+            label: "알러지/비선호", 
+            value: userData?.allergies && userData.allergies.length > 0
+                ? userData.allergies.join(', ')
+                : "없음",
+            onClick: () => setEditingType('allergies'),
+        },
     ];
 
     const MENU = [
@@ -70,7 +156,11 @@ export default function ProfilePage() {
             <div className="p-4 space-y-6">
                 <div className="space-y-2">
                     {SETTINGS.map((item, idx) => (
-                        <ActionCard key={idx} className="bg-surface p-4 flex flex-row items-center justify-between border-border-subtle shadow-sm hover:bg-surface-active transition-colors">
+                        <ActionCard 
+                            key={idx} 
+                            className="bg-surface p-4 flex flex-row items-center justify-between border-border-subtle shadow-sm hover:bg-surface-active transition-colors cursor-pointer"
+                            onClick={item.onClick}
+                        >
                             <div className="flex items-center gap-3">
                                 <div className="bg-surface-alt p-2.5 rounded-xl">
                                     <item.icon className="w-5 h-5 text-text-secondary" />
@@ -78,7 +168,7 @@ export default function ProfilePage() {
                                 <Typography weight="semibold" color="primary">{item.label}</Typography>
                             </div>
                             <div className="flex items-center gap-2">
-                                <Typography className="text-primary font-bold">{item.value}</Typography>
+                                <Typography className="text-primary font-bold max-w-[200px] truncate">{item.value}</Typography>
                                 <ChevronRight className="w-4 h-4 text-text-tertiary" />
                             </div>
                         </ActionCard>
@@ -115,6 +205,23 @@ export default function ProfilePage() {
             <div className="py-10 flex justify-center">
                 <Typography variant="caption" color="tertiary">앱 버전 1.0.0 (MVP)</Typography>
             </div>
+
+            {/* 설문조사 수정 모달 */}
+            {editingType && (
+                <EditSurveyModal
+                    isOpen={editingType !== null}
+                    type={editingType}
+                    currentValue={
+                        editingType === 'household' 
+                            ? userData?.householdSize || null
+                            : editingType === 'allergies'
+                            ? userData?.allergies || []
+                            : userData?.cookingPreference || null
+                    }
+                    onClose={() => setEditingType(null)}
+                    onSave={(value) => handleSaveSurvey(editingType, value)}
+                />
+            )}
         </div>
     );
 }

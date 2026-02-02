@@ -75,7 +75,6 @@ POSTGRES_DB=refrigerai
 
 # AI API Keys
 GEMINI_API_KEY=your_actual_gemini_key
-GOOGLE_VISION_API_KEY=your_actual_google_vision_key
 OPENAI_API_KEY=your_actual_openai_key
 
 # Next.js

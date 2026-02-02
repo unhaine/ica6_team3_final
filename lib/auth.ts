@@ -3,18 +3,14 @@ import Google from "next-auth/providers/google";
 import Naver from "next-auth/providers/naver";
 import Kakao from "next-auth/providers/kakao";
 import Credentials from "next-auth/providers/credentials";
-import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   debug: true,
   trustHost: true,
-  adapter: {
-    ...PrismaAdapter(prisma),
-    getUserByEmail: () => null, // 이메일을 통한 자동 계정 통합 방지
-  }, 
-  // session: { strategy: "jwt" },
+  // PrismaAdapter 제거 - JWT 전략만 사용 (모든 로그인 방식 통일)
+  session: { strategy: "jwt" },
   providers: [
     Google({
       clientId: process.env.AUTH_GOOGLE_ID,
@@ -68,15 +64,103 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
-    async session({ session, user }) {
-      // Prisma Adapter 사용 시: user는 DB에서 가져온 실제 사용자 정보
-      if (session?.user && user) {
-        session.user.id = user.id;
-        session.user.email = user.email;
-        session.user.name = user.name;
-        session.user.image = user.image;
+    async signIn({ user, account, profile }) {
+      // 소셜 로그인 시 사용자 DB에 저장/업데이트
+      if (account?.provider && account.provider !== 'credentials') {
+        try {
+          const existingUser = await prisma.user.findFirst({
+            where: {
+              accounts: {
+                some: {
+                  provider: account.provider,
+                  providerAccountId: account.providerAccountId,
+                },
+              },
+            },
+          });
+
+          if (!existingUser) {
+            // 새 사용자 생성
+            await prisma.user.create({
+              data: {
+                name: user.name,
+                email: user.email,
+                image: user.image,
+                accounts: {
+                  create: {
+                    type: account.type,
+                    provider: account.provider,
+                    providerAccountId: account.providerAccountId,
+                    access_token: account.access_token,
+                    refresh_token: account.refresh_token,
+                    expires_at: account.expires_at,
+                    token_type: account.token_type,
+                    scope: account.scope,
+                    id_token: account.id_token,
+                  },
+                },
+              },
+            });
+          }
+        } catch (error) {
+          console.error('사용자 생성/업데이트 에러:', error);
+        }
+      }
+      return true;
+    },
+    async jwt({ token, user, account }) {
+      // 초기 로그인 시 user 정보 저장
+      if (user) {
+        token.id = user.id;
+        token.email = user.email;
+        token.name = user.name;
+        token.image = user.image; // 이미지 URL은 작으므로 포함
+      }
+      
+      // 소셜 로그인 시 DB에서 사용자 정보 가져오기
+      if (account?.provider && account.provider !== 'credentials' && !user) {
+        const dbUser = await prisma.user.findFirst({
+          where: {
+            accounts: {
+              some: {
+                provider: account.provider,
+                providerAccountId: account.providerAccountId,
+              },
+            },
+          },
+        });
+        
+        if (dbUser) {
+          token.id = dbUser.id;
+          token.email = dbUser.email;
+          token.name = dbUser.name;
+          token.image = dbUser.image;
+        }
+      }
+      
+      return token;
+    },
+    async session({ session, token }) {
+      // JWT 전략 사용 시: token에서 사용자 정보 가져오기
+      if (session?.user && token) {
+        session.user.id = token.id as string;
+        session.user.email = token.email as string;
+        session.user.name = token.name as string;
+        session.user.image = token.image as string;
       }
       return session;
+    },
+  },
+  cookies: {
+    sessionToken: {
+      name: `next-auth.session-token`,
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: 30 * 24 * 60 * 60, // 30일
+      },
     },
   },
   secret: process.env.AUTH_SECRET,

@@ -154,7 +154,6 @@ if [ ! -f ".env.production" ]; then
     echo "필수 입력 항목:"
     echo "  - POSTGRES_PASSWORD"
     echo "  - GEMINI_API_KEY"
-    echo "  - GOOGLE_VISION_API_KEY"
     echo "  - OPENAI_API_KEY"
 fi
 EOF

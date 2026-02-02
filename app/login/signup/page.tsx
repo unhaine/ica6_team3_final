@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { signIn } from 'next-auth/react';
 import { Typography } from '@/components/elements/Typography';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
@@ -44,8 +45,22 @@ export default function SignupPage() {
             if (!response.ok) {
                 toast.error(data.message || '회원가입에 실패했습니다.');
             } else {
-                toast.success('회원가입이 완료되었습니다! 로그인해 주세요.');
-                router.push('/login/email');
+                // 회원가입 성공 후 자동 로그인
+                toast.success('회원가입이 완료되었습니다!');
+                
+                const loginResult = await signIn('credentials', {
+                    email,
+                    password,
+                    redirect: false,
+                });
+
+                if (loginResult?.error) {
+                    toast.error('자동 로그인에 실패했습니다. 로그인 페이지로 이동합니다.');
+                    router.push('/login/email');
+                } else {
+                    toast.success('로그인되었습니다.');
+                    router.push('/test');
+                }
             }
         } catch (error) {
             console.error(error);

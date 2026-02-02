@@ -114,10 +114,36 @@ export default function CameraTestPage() {
     };
 
     // 저장 완료 처리
-    const handleConfirmSave = () => {
-        // 실제로는 여기서 DB 저장 API 호출
-        alert(`${detectedItems.length}개의 재료가 냉장고에 저장되었습니다.`);
-        router.push("/test/fridge");
+    const handleConfirmSave = async () => {
+        try {
+            // 재료 저장 API 호출
+            const response = await fetch('/api/ingredients', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    items: detectedItems.map(item => ({
+                        name: item.label,
+                        quantity: item.quantity || 1,
+                        category: null, // 카테고리는 나중에 추가 가능
+                        source: 'fridge-photo', // 냉장고 사진에서 추출
+                    })),
+                }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || '재료 저장에 실패했습니다.');
+            }
+
+            alert(`✅ ${detectedItems.length}개의 재료가 냉장고에 저장되었습니다.`);
+            router.push("/test/fridge");
+        } catch (error) {
+            console.error('재료 저장 에러:', error);
+            alert(`❌ 재료 저장 중 오류가 발생했습니다: ${error instanceof Error ? error.message : '알 수 없는 오류'}`);
+        }
     };
 
     return (

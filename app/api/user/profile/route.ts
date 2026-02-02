@@ -1,22 +1,19 @@
 import { NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
+import { requireAuth } from '@/lib/auth-helpers';
 import { prisma } from '@/lib/prisma';
 
 export async function GET() {
   try {
-    // 세션 확인
-    const session = await auth();
-    
-    if (!session || !session.user?.email) {
-      return NextResponse.json(
-        { error: '인증이 필요합니다.' },
-        { status: 401 }
-      );
+    // 세션 확인 및 사용자 찾기
+    const authResult = await requireAuth();
+    if ('error' in authResult) {
+      return authResult.error;
     }
+    const currentUser = authResult.user;
 
-    // 사용자 정보 조회 (세션 ID 기반으로 변경하여 중복 이메일 대응)
+    // 사용자 정보 조회 (select로 필요한 필드만 가져오기)
     const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
+      where: { id: currentUser.id },
       select: {
         id: true,
         name: true,
@@ -24,6 +21,7 @@ export async function GET() {
         image: true,
         householdSize: true,
         allergies: true,
+        cookingPreference: true,
         surveyCompleted: true,
         surveyCompletedAt: true,
         createdAt: true,

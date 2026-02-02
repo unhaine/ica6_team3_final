@@ -25,6 +25,7 @@ model User {
   // 설문조사 정보
   householdSize      Int?      // 가구 인원 (1, 2, 3, 4+)
   allergies          String[]  @default([]) // 알러지 정보 (계란, 우유, 땅콩 등)
+  cookingPreference  String?   // 요리 선호 (Recipe의 ckg_sta_acto_nm 값)
   surveyCompleted    Boolean   @default(false) // 설문조사 완료 여부
   surveyCompletedAt  DateTime? // 설문조사 완료 시각
   
