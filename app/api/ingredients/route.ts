@@ -91,30 +91,11 @@ export async function POST(req: NextRequest) {
  */
 export async function PATCH(req: NextRequest) {
   try {
-    const session = await auth();
-    
-    if (!session?.user?.id && !session?.user?.email) {
-      return NextResponse.json(
-        { error: '인증이 필요합니다.' },
-        { status: 401 }
-      );
+    const authResult = await requireAuth();
+    if ('error' in authResult) {
+      return authResult.error;
     }
-
-    // 사용자 찾기
-    const user = session.user.id
-      ? await prisma.user.findUnique({
-          where: { id: session.user.id },
-        })
-      : await prisma.user.findFirst({
-          where: { email: session.user.email! },
-        });
-
-    if (!user) {
-      return NextResponse.json(
-        { error: '사용자를 찾을 수 없습니다.' },
-        { status: 404 }
-      );
-    }
+    const user = authResult.user;
 
     const { searchParams } = new URL(req.url);
     const id = searchParams.get('id');

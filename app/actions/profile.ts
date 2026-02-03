@@ -2,6 +2,49 @@
 
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth-helpers";
+import { writeFile, mkdir } from "fs/promises";
+import { join } from "path";
+import { randomUUID } from "crypto";
+
+/**
+ * Base64 이미지를 파일로 저장하고 URL을 반환
+ */
+async function saveImageFile(base64Data: string): Promise<string> {
+    try {
+        // "data:image/png;base64," 헤더 제거
+        const matches = base64Data.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+        
+        if (!matches || matches.length !== 3) {
+            throw new Error('Invalid base64 string');
+        }
+        
+        const buffer = Buffer.from(matches[2], 'base64');
+        
+        // 저장 경로 설정 (public/uploads/profile)
+        // Next.js standalone mode에서 process.cwd()는 실행 위치(server.js가 있는 곳)
+        const uploadDir = join(process.cwd(), 'public', 'uploads', 'profile');
+        
+        // 개발 환경 로그
+        console.log('[Save Image File] Saving to:', uploadDir);
+        
+        // 디렉토리 생성
+        await mkdir(uploadDir, { recursive: true });
+        
+        // 파일명 생성
+        const fileName = `${randomUUID()}.png`;
+        const filePath = join(uploadDir, fileName);
+        
+        // 파일 저장
+        await writeFile(filePath, buffer);
+        
+        // API Route를 통해 서빙되도록 경로 변경
+        // /uploads/profile/... -> /api/uploads/profile/...
+        return `/api/uploads/profile/${fileName}`;
+    } catch (error) {
+        console.error('[Save Image File] Error:', error);
+        throw new Error('이미지 파일 저장 실패');
+    }
+}
 
 /**
  * 사용자 프로필 이미지 업데이트
@@ -9,6 +52,7 @@ import { getCurrentUser } from "@/lib/auth-helpers";
 export async function updateProfileImage(imageUrl: string): Promise<{
     success: boolean;
     error?: string;
+    savedUrl?: string; // 클라이언트 세션 업데이트용
 }> {
     try {
         const user = await getCurrentUser();
@@ -21,13 +65,20 @@ export async function updateProfileImage(imageUrl: string): Promise<{
             };
         }
 
+        let finalImageUrl = imageUrl;
+
+        // Base64 이미지인 경우 파일로 저장
+        if (imageUrl.startsWith('data:image')) {
+            finalImageUrl = await saveImageFile(imageUrl);
+        }
+
         // 사용자 프로필 이미지 업데이트 (id로 업데이트)
         await prisma.user.update({
             where: { id: user.id },
-            data: { image: imageUrl },
+            data: { image: finalImageUrl },
         });
 
-        return { success: true };
+        return { success: true, savedUrl: finalImageUrl };
     } catch (error) {
         console.error('[Update Profile Image] Error:', error);
         return {

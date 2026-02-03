@@ -115,7 +115,7 @@ export default function ProfileSelectPage() {
             
             if (result.success) {
                 await update({
-                    image: generatedImageUrl,
+                    image: result.savedUrl || generatedImageUrl,
                 });
                 
                 alert("✅ AI 생성 프로필이 적용되었습니다!");

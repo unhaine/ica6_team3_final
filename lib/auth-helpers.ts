@@ -34,7 +34,7 @@ export async function getCurrentUser() {
  * @returns { user: User } 또는 { error: NextResponse } - 인증 실패 또는 사용자 없음
  */
 export async function requireAuth(): Promise<
-  | { user: Awaited<ReturnType<typeof getCurrentUser>> }
+  | { user: NonNullable<Awaited<ReturnType<typeof getCurrentUser>>> }
   | { error: NextResponse }
 > {
   const session = await auth();

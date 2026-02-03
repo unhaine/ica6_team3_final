@@ -35,6 +35,7 @@ export const AvatarThumbnail = ({
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           className={STYLES.image}
           onError={() => setHasError(true)}
+          unoptimized={typeof src === 'string' && src.startsWith('/uploads/')}
         />
       ) : (
         <div className={STYLES.fallback}>

@@ -108,34 +108,37 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       }
       return true;
     },
-    async jwt({ token, user, account }) {
-      // 초기 로그인 시 user 정보 저장
+    async jwt({ token, user, trigger, session }) {
+      // 초기 로그인 시 또는 토큰 업데이트 시
       if (user) {
         token.id = user.id;
         token.email = user.email;
         token.name = user.name;
-        token.image = user.image; // 이미지 URL은 작으므로 포함
-      }
-      
-      // 소셜 로그인 시 DB에서 사용자 정보 가져오기
-      if (account?.provider && account.provider !== 'credentials' && !user) {
-        const dbUser = await prisma.user.findFirst({
-          where: {
-            accounts: {
-              some: {
-                provider: account.provider,
-                providerAccountId: account.providerAccountId,
-              },
-            },
-          },
-        });
-        
-        if (dbUser) {
-          token.id = dbUser.id;
-          token.email = dbUser.email;
-          token.name = dbUser.name;
-          token.image = dbUser.image;
+        token.image = user.image;
+
+        // 이메일로 DB 사용자 찾아서 ID 교체 (Provider ID -> DB ID)
+        if (user.email) {
+          try {
+            const dbUser = await prisma.user.findFirst({
+              where: { email: user.email },
+            });
+            
+            if (dbUser) {
+              token.id = dbUser.id;
+              // 필요한 경우 다른 정보도 업데이트
+              // token.name = dbUser.name || token.name;
+              token.image = dbUser.image || token.image;
+            }
+          } catch (error) {
+            console.error('Error fetching user in JWT callback:', error);
+          }
         }
+      }
+
+      // 세션 업데이트 (client-side update() 호출 시)
+      if (trigger === "update" && session) {
+        if (session.image) token.image = session.image;
+        if (session.name) token.name = session.name;
       }
       
       return token;
@@ -158,7 +161,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         httpOnly: true,
         sameSite: 'lax',
         path: '/',
-        secure: process.env.NODE_ENV === 'production',
+        secure: process.env.NODE_ENV === 'production' && process.env.AUTH_URL?.startsWith('https://') === true,
         maxAge: 30 * 24 * 60 * 60, // 30일
       },
     },

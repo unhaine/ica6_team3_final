@@ -8,8 +8,8 @@ WORKDIR /app
 COPY package.json package-lock.json* ./
 COPY prisma ./prisma/
 
-# Install dependencies
-RUN npm ci
+# Install dependencies (npm ci를 쓰면 도커 업로드할 때 에러가 나더라구요. ㅠㅜ) 
+RUN npm ci 
 
 # Generate Prisma Client
 RUN npx prisma generate
@@ -46,6 +46,9 @@ COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
+
+# Ensure permissions for uploads (Create uploads directory and set ownership)
+RUN mkdir -p ./public/uploads && chown -R nextjs:nodejs ./public
 
 # Copy startup script
 COPY --chown=nextjs:nodejs docker-entrypoint.sh ./
