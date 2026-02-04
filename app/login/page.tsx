@@ -9,13 +9,13 @@ import { Typography } from '@/components/elements/Typography';
 export default function LoginPage() {
     const router = useRouter();
 
-    const handleSocialLogin = async (provider: string) => {
+    const handleSocialLogin = (provider: string) => {
         if (provider === 'google') {
-            await signIn('google', { callbackUrl: '/onboarding' });
+            signIn('google', { callbackUrl: '/onboarding' });
         } else if (provider === 'naver') {
-            await signIn('naver', { callbackUrl: '/onboarding' });
+            signIn('naver', { callbackUrl: '/onboarding' });
         } else if (provider === 'kakao') {
-            await signIn('kakao', { callbackUrl: '/onboarding' });
+            signIn('kakao', { callbackUrl: '/onboarding' });
         } else {
             router.push('/onboarding');
         }
