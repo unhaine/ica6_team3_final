@@ -5,14 +5,15 @@ import prisma from '@/lib/prisma';
 // POST /api/community/posts/[id]/comment - 댓글 작성
 export async function POST(
     req: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
         const authResult = await requireAuth();
         if ('error' in authResult) return authResult.error;
         const user = authResult.user;
 
-        const postId = params.id;
+        const { id } = await params;
+        const postId = id;
         const { content } = await req.json();
 
         if (!content) {

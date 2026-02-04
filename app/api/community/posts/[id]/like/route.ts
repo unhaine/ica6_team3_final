@@ -5,14 +5,15 @@ import prisma from '@/lib/prisma';
 // POST /api/community/posts/[id]/like - 좋아요 토글
 export async function POST(
     req: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
         const authResult = await requireAuth();
         if ('error' in authResult) return authResult.error;
         const user = authResult.user;
 
-        const postId = params.id;
+        const { id } = await params;
+        const postId = id;
 
         // 기존 좋아요 확인
         const existingLike = await prisma.postLike.findUnique({
