@@ -115,7 +115,7 @@ export default function CommunityPage() {
                                     </div>
                                 </div>
                                 <button className="text-slate-300 hover:text-slate-600">
-                                    <Icon name="MoreHorizontal" size={20} />
+                                    <Icon name="MoveHorizontal" size={20} />
                                 </button>
                             </div>
 
@@ -158,7 +158,7 @@ export default function CommunityPage() {
             {/* Floating Action Button (FAB) */}
             <button
                 onClick={() => router.push('/community/create')}
-                className="fixed bottom-24 right-6 w-14 h-14 bg-emerald-500 text-white rounded-full shadow-lg flex items-center justify-center hover:bg-emerald-600 transition-all active:scale-95 border-2 border-white z-[100]"
+                className="fixed bottom-24 right-6 w-14 h-14 bg-emerald-500 text-white rounded-full shadow-lg flex items-center justify-center hover:bg-emerald-600 transition-all active:scale-95 border-2 border-white z-100"
                 aria-label="게시글 작성"
             >
                 <Icon name="Pencil" size={24} />
