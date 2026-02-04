@@ -74,9 +74,6 @@ volumes:
   postgres_data:
     driver: local
 
-    networks:
-      - default
-
 networks:
   default:
     name: refrigerai-net
