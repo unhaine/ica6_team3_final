@@ -10,6 +10,26 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   debug: true,
   trustHost: true,
   useSecureCookies: false, // HTTP 환경에서 필수
+  cookies: {
+    state: {
+      name: "next-auth.state",
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: false, // HTTP 환경
+      },
+    },
+    pkceCodeVerifier: {
+      name: "next-auth.pkce.code_verifier",
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: false,
+      },
+    },
+  },
   // PrismaAdapter 제거 - JWT 전략만 사용 (모든 로그인 방식 통일)
   session: { strategy: "jwt" },
   providers: [
