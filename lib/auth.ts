@@ -29,10 +29,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         };
       },
     }),
-    Kakao({
-      clientId: process.env.AUTH_KAKAO_ID!,
-      clientSecret: process.env.AUTH_KAKAO_SECRET!,
-    }),
+    // Kakao는 환경 변수가 설정된 경우에만 활성화
+    ...(process.env.AUTH_KAKAO_ID && process.env.AUTH_KAKAO_SECRET
+      ? [
+          Kakao({
+            clientId: process.env.AUTH_KAKAO_ID,
+            clientSecret: process.env.AUTH_KAKAO_SECRET,
+          }),
+        ]
+      : []),
     Credentials({
       name: "Credentials",
       credentials: {
