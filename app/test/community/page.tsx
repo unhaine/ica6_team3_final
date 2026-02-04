@@ -158,7 +158,7 @@ export default function CommunityPage() {
             {/* Floating Action Button (FAB) */}
             <button
                 onClick={() => window.location.href = '/test/community/create'}
-                className="absolute bottom-6 right-6 w-14 h-14 bg-emerald-500 text-white rounded-full shadow-lg flex items-center justify-center hover:bg-emerald-600 transition-all active:scale-95 border-2 border-white z-[100]"
+                className="absolute bottom-6 right-6 w-14 h-14 bg-emerald-500 text-white rounded-full shadow-lg flex items-center justify-center hover:bg-emerald-600 transition-all active:scale-95 border-2 border-white z-100"
                 aria-label="게시글 작성"
             >
                 <Pencil className="w-6 h-6" />
