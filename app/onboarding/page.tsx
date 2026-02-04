@@ -41,31 +41,45 @@ export default function OnboardingPage() {
   // 로그인 여부 및 설문조사 완료 여부 확인
   useEffect(() => {
     const checkSurveyStatus = async () => {
+      console.log('[Onboarding] Status:', status);
+      console.log('[Onboarding] Session:', session);
+      
       if (status === 'loading') return;
       
       if (status === 'unauthenticated') {
         // 로그인하지 않은 경우 로그인 페이지로 이동
+        console.log('[Onboarding] Unauthenticated, redirecting to login');
         router.push('/login');
         return;
       }
 
       if (session?.user?.email) {
         try {
+          console.log('[Onboarding] Checking survey status for:', session.user.email);
           // 사용자의 설문조사 완료 여부 확인
           const response = await fetch('/api/user/profile');
+          console.log('[Onboarding] Profile API response status:', response.status);
+          
           if (response.ok) {
             const data = await response.json();
+            console.log('[Onboarding] Profile data:', data);
             if (data.user?.surveyCompleted) {
               // 이미 설문조사를 완료한 경우 홈으로 이동
+              console.log('[Onboarding] Survey already completed, redirecting to /test');
               router.push('/test'); // 임시로 테스트 페이지로 이동
               return;
             }
+          } else {
+            // 404나 401 에러는 정상 - 신규 사용자이거나 DB에 아직 없는 경우
+            console.log('[Onboarding] Profile not found or unauthorized - proceeding with survey');
           }
         } catch (error) {
-          console.error('Failed to check survey status:', error);
+          console.error('[Onboarding] Failed to check survey status:', error);
+          // 에러가 발생해도 설문조사는 진행
         }
       }
       
+      console.log('[Onboarding] Loading complete, showing survey');
       setIsLoading(false);
     };
 
