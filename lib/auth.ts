@@ -15,6 +15,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     Google({
       clientId: process.env.AUTH_GOOGLE_ID,
       clientSecret: process.env.AUTH_GOOGLE_SECRET,
+      checks: ["state"], // HTTP 환경에서 PKCE 대신 state 검증만 사용
     }),
     Naver({
       clientId: process.env.AUTH_NAVER_ID,
