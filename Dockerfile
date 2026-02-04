@@ -9,7 +9,7 @@ COPY package.json package-lock.json* ./
 COPY prisma ./prisma/
 
 # Install dependencies (npm ci를 쓰면 도커 업로드할 때 에러가 나더라구요. ㅠㅜ) 
-RUN npm ci 
+RUN npm install 
 
 # Generate Prisma Client
 RUN npx prisma generate
