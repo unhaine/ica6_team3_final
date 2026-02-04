@@ -166,8 +166,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         httpOnly: true,
         sameSite: 'lax',
         path: '/',
-        secure: process.env.NODE_ENV === 'production' && process.env.AUTH_URL?.startsWith('https://') === true,
-        maxAge: 30 * 24 * 60 * 60, // 30일
+        secure: process.env.AUTH_URL?.startsWith('https://') || false,
       },
     },
   },
