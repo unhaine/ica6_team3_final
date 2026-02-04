@@ -5,7 +5,7 @@ services:
     container_name: refrigerai-db
     restart: always
     env_file:
-      - .env.local
+      - .env
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-refrigerai}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-refrigerai123!}
@@ -30,7 +30,7 @@ services:
     ports:
       - "3010:3000"
     env_file:
-      - .env.local
+      - .env
     environment:
       # Database
       DATABASE_URL: postgresql://${POSTGRES_USER:-refrigerai}:${POSTGRES_PASSWORD:-refrigerai123!}@db:5432/${POSTGRES_DB:-refrigerai}?schema=public
@@ -64,6 +64,19 @@ services:
 volumes:
   postgres_data:
     driver: local
+
+    networks:
+      - default
+
+  # DDNS Service (Keeps your domain synced with EC2 IP)
+  duckdns:
+    image: lscr.io/linuxserver/duckdns:latest
+    container_name: duckdns
+    environment:
+      - SUBDOMAINS=${DUCKDNS_SUBDOMAIN} # e.g., refrigerai-test
+      - TOKEN=${DUCKDNS_TOKEN}          # Copy from duckdns.org
+      - LOG_FILE=false
+    restart: always
 
 networks:
   default:
