@@ -59,18 +59,18 @@ RUN addgroup --system --gid 1001 nodejs \
     && adduser  --system --uid 1001 nextjs
 
 # Next standalone 결과물
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/.next/standalone ./
-COPY --from=builder /app/.next/static ./.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
 # Prisma runtime 파일
-COPY --from=builder /app/prisma ./prisma
-COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
-COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
+COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/@prisma ./node_modules/@prisma
 
-# uploads 디렉토리 권한
-RUN mkdir -p ./public/uploads \
-    && chown -R nextjs:nodejs ./public
+# uploads 디렉토리 및 캐시 디렉토리 권한 설정
+RUN mkdir -p ./public/uploads ./.next/cache \
+    && chown -R nextjs:nodejs ./public ./.next/cache
 
 # 엔트리포인트
 COPY --chown=nextjs:nodejs docker-entrypoint.sh ./
