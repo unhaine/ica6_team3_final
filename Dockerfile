@@ -1,65 +1,84 @@
-# RefrigerAI - Next.js Dockerfile
+# =========================
 # Stage 1: Dependencies
+# =========================
 FROM node:20-alpine AS deps
+
 RUN apk add --no-cache libc6-compat openssl
 WORKDIR /app
 
-# Copy package files
+# package 파일만 먼저 복사 (캐시 최적화)
 COPY package.json package-lock.json* ./
 COPY prisma ./prisma/
 
-# Install dependencies (npm ci를 쓰면 도커 업로드할 때 에러가 나더라구요. ㅠㅜ) 
-RUN npm install 
+# 의존성 설치 (EC2 친화 옵션)
+RUN npm install --no-audit --no-fund
 
-# Generate Prisma Client
-RUN npx prisma generate
 
+# =========================
 # Stage 2: Builder
+# =========================
 FROM node:20-alpine AS builder
 WORKDIR /app
+
+# deps 단계에서 설치한 node_modules 복사
 COPY --from=deps /app/node_modules ./node_modules
+
+# 나머지 소스 복사
 COPY . .
 
-# Set environment variables for build
-ENV NEXT_TELEMETRY_DISABLED 1
-ENV NODE_ENV production
+# 빌드 환경 변수
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
 
-# Build Next.js
+# 🔥 EC2 생존 핵심 옵션
+ENV NODE_OPTIONS="--max_old_space_size=768"
+ENV NEXT_DISABLE_TURBOPACK=1
+
+# Prisma Client 생성
+RUN npx prisma generate
+
+# Next.js build
 RUN npm run build
 
+
+# =========================
 # Stage 3: Runner
+# =========================
 FROM node:20-alpine AS runner
 WORKDIR /app
 
 RUN apk add --no-cache postgresql-client
 
-ENV NODE_ENV production
-ENV NEXT_TELEMETRY_DISABLED 1
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV PORT=3000
+ENV HOSTNAME=0.0.0.0
 
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
+# non-root user
+RUN addgroup --system --gid 1001 nodejs \
+    && adduser  --system --uid 1001 nextjs
 
-# Copy necessary files
+# Next standalone 결과물
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
+
+# Prisma runtime 파일
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 
-# Ensure permissions for uploads (Create uploads directory and set ownership)
-RUN mkdir -p ./public/uploads && chown -R nextjs:nodejs ./public
+# uploads 디렉토리 권한
+RUN mkdir -p ./public/uploads \
+    && chown -R nextjs:nodejs ./public
 
-# Copy startup script
+# 엔트리포인트
 COPY --chown=nextjs:nodejs docker-entrypoint.sh ./
 RUN chmod +x docker-entrypoint.sh
 
 USER nextjs
 
 EXPOSE 3000
-
-ENV PORT 3000
-ENV HOSTNAME "0.0.0.0"
 
 ENTRYPOINT ["./docker-entrypoint.sh"]
 CMD ["node", "server.js"]
