@@ -12,7 +12,7 @@ const connectionString = process.env.DATABASE_URL || '';
 const pool = new Pool({ connectionString });
 const adapter = new PrismaPg(pool);
 
-export const prisma = globalForPrisma.prisma ?? new PrismaClient({ 
+export const prisma = globalForPrisma.prisma ?? new PrismaClient({
   adapter,
   log: ['query', 'error', 'warn']
 });

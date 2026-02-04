@@ -1,12 +1,33 @@
 "use client";
 
-import { useState } from "react";
-import { Heart, MessageCircle } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Heart, MessageCircle, Pencil, User, Cpu } from "lucide-react";
 import { useHeader } from "@/components/modules/Header";
 import { useFooter } from "@/components/modules/Footer";
 import { FilterCarousel } from "@/components/modules";
 import { MediaCard, SelectableChip, IconButton, AvatarThumbnail, Typography } from "@/components/elements";
 import { STYLES as FilterStyles } from "@/components/modules/FilterCarousel/FilterCarousel.style";
+import { useRouter } from 'next/navigation';
+
+interface Post {
+    id: string;
+    userId: string;
+    content: string;
+    imageUrl: string;
+    createdAt: string;
+    recipeId: string | null;
+    user: {
+        name: string | null;
+        image: string | null;
+    };
+    recipe?: {
+        ckgNm: string;
+    };
+    _count: {
+        likes: number;
+        comments: number;
+    };
+}
 
 const COMMUNITY_FILTERS = [
     { id: "all", label: "전체" },
@@ -15,27 +36,10 @@ const COMMUNITY_FILTERS = [
     { id: "hot", label: "HOT" },
 ];
 
-const MOCK_POSTS = [
-    {
-        id: 1,
-        user: { name: "요리왕김씨", avatar: "" },
-        image: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=500&q=80",
-        likes: 128,
-        comments: 24,
-        caption: "오늘 만든 제육볶음~ 너무 맛있었어요! 상추에 싸먹으니까 꿀맛입니다. 다들 저녁 뭐 드세요?",
-    },
-    {
-        id: 2,
-        user: { name: "집밥요정", avatar: "" },
-        image: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=500&q=80",
-        likes: 89,
-        comments: 12,
-        caption: "냉장고 파먹기 성공! 남은 야채 다 넣고 비빔밥 해먹었네요 ㅎㅎ",
-    },
-];
-
 export default function CommunityPage() {
     const [activeFilter, setActiveFilter] = useState("all");
+    const [posts, setPosts] = useState<Post[]>([]);
+    const [loading, setLoading] = useState(true);
 
     useHeader({
         isVisible: true,
@@ -46,6 +50,24 @@ export default function CommunityPage() {
     useFooter({
         isVisible: true,
     });
+
+    useEffect(() => {
+        fetchPosts();
+    }, []);
+
+    const fetchPosts = async () => {
+        try {
+            const response = await fetch('/api/community/posts');
+            const data = await response.json();
+            if (data.success) {
+                setPosts(data.data);
+            }
+        } catch (error) {
+            console.error('Failed to fetch posts:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     return (
         <div className="flex flex-col h-full overflow-y-auto pb-20 scrollbar-hide">
@@ -66,47 +88,81 @@ export default function CommunityPage() {
 
             {/* Posts List */}
             <div className="p-4 space-y-6">
-                {MOCK_POSTS.map((post) => (
-                    <div key={post.id} className="space-y-3">
-                        {/* User Header */}
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                                <AvatarThumbnail src={post.user.avatar} fallback={post.user.name[0]} size="sm" />
-                                <Typography weight="bold" variant="body2">{post.user.name}</Typography>
-                            </div>
-                            <IconButton icon="MoveHorizontal" ariaLabel="더보기" size="sm" />
-                        </div>
-
-                        {/* Image Post */}
-                        <MediaCard
-                            imageUrl={post.image}
-                            title={null}
-                            aspectRatio="square"
-                            className="bg-surface border-none shadow-none overflow-hidden rounded-2xl"
-                            contentClassName="px-0 pt-0"
-                            footerLeft={
-                                <div className="flex items-center gap-4 mt-2">
-                                    <button className="flex items-center gap-1.5 text-text-secondary active:scale-90 transition-transform">
-                                        <Heart className="w-5 h-5" />
-                                        <span className="text-sm font-medium">{post.likes}</span>
-                                    </button>
-                                    <button className="flex items-center gap-1.5 text-text-secondary active:scale-90 transition-transform">
-                                        <MessageCircle className="w-5 h-5" />
-                                        <span className="text-sm font-medium">{post.comments}</span>
-                                    </button>
-                                </div>
-                            }
-                        />
-
-                        {/* Caption */}
-                        <div className="px-1 pb-10">
-                            <Typography variant="body2" color="primary" className="leading-relaxed font-medium">
-                                {post.caption}
-                            </Typography>
-                        </div>
+                {loading ? (
+                    <div className="text-center py-20 text-text-secondary">피드를 불러오는 중...</div>
+                ) : posts.length === 0 ? (
+                    <div className="text-center py-20 bg-surface rounded-3xl border border-border shadow-sm">
+                        <p className="text-text-secondary mb-4">아직 올라온 소식이 없어요.</p>
+                        <button
+                            onClick={() => window.location.href = '/test/community/create'}
+                            className="text-primary font-medium hover:underline"
+                        >
+                            첫 소식 전하기
+                        </button>
                     </div>
-                ))}
+                ) : (
+                    posts.map((post) => (
+                        <div key={post.id} className="space-y-3">
+                            {/* User Header */}
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                    <AvatarThumbnail src={post.user.image || ''} fallback={post.user.name?.[0] || 'U'} size="sm" />
+                                    <div className="flex flex-col">
+                                        <Typography weight="bold" variant="body2">{post.user.name || '익명 고수'}</Typography>
+                                        <Typography variant="caption" className="text-text-tertiary">
+                                            {new Date(post.createdAt).toLocaleDateString()}
+                                        </Typography>
+                                    </div>
+                                </div>
+                                <IconButton icon="MoveHorizontal" ariaLabel="더보기" size="sm" />
+                            </div>
+
+                            {/* Image Post */}
+                            <MediaCard
+                                imageUrl={post.imageUrl}
+                                title={null}
+                                aspectRatio="square"
+                                className="bg-surface border-none shadow-none overflow-hidden rounded-2xl"
+                                contentClassName="px-0 pt-0"
+                                footerLeft={
+                                    <div className="flex items-center gap-4 mt-2">
+                                        <button className="flex items-center gap-1.5 text-text-secondary active:scale-90 transition-transform">
+                                            <Heart className="w-5 h-5" />
+                                            <span className="text-sm font-medium">{post._count.likes}</span>
+                                        </button>
+                                        <button className="flex items-center gap-1.5 text-text-secondary active:scale-90 transition-transform">
+                                            <MessageCircle className="w-5 h-5" />
+                                            <span className="text-sm font-medium">{post._count.comments}</span>
+                                        </button>
+                                    </div>
+                                }
+                            />
+
+                            {/* Caption */}
+                            <div className="px-1 pb-10">
+                                {post.recipeId && (
+                                    <div className="mb-2 inline-flex items-center gap-1 px-2 py-1 bg-primary/10 text-primary rounded-lg text-xs font-semibold">
+                                        <Cpu size={12} />
+                                        <span>먹이 추천으로 만듦</span>
+                                    </div>
+                                )}
+                                <Typography variant="body2" color="primary" className="leading-relaxed font-medium whitespace-pre-wrap">
+                                    {post.content}
+                                </Typography>
+                            </div>
+                        </div>
+                    ))
+                )}
             </div>
+
+            {/* Floating Action Button (FAB) */}
+            <button
+                onClick={() => window.location.href = '/test/community/create'}
+                className="absolute bottom-6 right-6 w-14 h-14 bg-emerald-500 text-white rounded-full shadow-lg flex items-center justify-center hover:bg-emerald-600 transition-all active:scale-95 border-2 border-white z-[100]"
+                aria-label="게시글 작성"
+            >
+                <Pencil className="w-6 h-6" />
+            </button>
         </div>
     );
 }

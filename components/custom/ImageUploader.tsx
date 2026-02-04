@@ -8,6 +8,7 @@ interface ImageUploaderProps {
   isAnalyzing?: boolean;
   hasImage: boolean;
   showUploader?: boolean;
+  uploadText?: string;
 }
 
 export default function ImageUploader({
@@ -16,6 +17,7 @@ export default function ImageUploader({
   isAnalyzing = false,
   hasImage,
   showUploader = true,
+  uploadText = "냉장고 사진을 업로드하세요", // Added this line
 }: ImageUploaderProps) {
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -33,7 +35,7 @@ export default function ImageUploader({
           // Canvas를 사용하여 JPEG로 변환
           const img = new Image();
           const objectUrl = URL.createObjectURL(file);
-          
+
           await new Promise((resolve, reject) => {
             img.onload = resolve;
             img.onerror = reject;
@@ -45,7 +47,7 @@ export default function ImageUploader({
           canvas.height = img.height;
           const ctx = canvas.getContext('2d');
           ctx?.drawImage(img, 0, 0);
-          
+
           URL.revokeObjectURL(objectUrl);
 
           // JPEG Blob 생성
@@ -122,10 +124,9 @@ export default function ImageUploader({
           className={`
             relative cursor-pointer rounded-2xl border-2 border-dashed
             transition-all duration-300 ease-out
-            ${
-              isDragging
-                ? "border-emerald-400 bg-emerald-500/10 scale-[1.02]"
-                : "border-gray-600 bg-gray-800/50 hover:border-emerald-500/50 hover:bg-gray-700/50"
+            ${isDragging
+              ? "border-emerald-400 bg-emerald-500/10 scale-[1.02]"
+              : "border-gray-600 bg-gray-800/50 hover:border-emerald-500/50 hover:bg-gray-700/50"
             }
             p-12
           `}
@@ -148,9 +149,8 @@ export default function ImageUploader({
               `}
             >
               <svg
-                className={`w-10 h-10 transition-colors duration-300 ${
-                  isDragging ? "text-emerald-400" : "text-gray-400"
-                }`}
+                className={`w-10 h-10 transition-colors duration-300 ${isDragging ? "text-emerald-400" : "text-gray-400"
+                  }`}
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -196,10 +196,9 @@ export default function ImageUploader({
           className={`
             w-full py-2 px-3 rounded-xl font-semibold text-lg
             transition-all duration-300 ease-out
-            ${
-              hasImage && !isAnalyzing
-                ? "bg-linear-to-r from-emerald-500 to-teal-500 text-white hover:from-emerald-600 hover:to-teal-600 hover:shadow-lg hover:shadow-emerald-500/25 active:scale-[0.98]"
-                : "bg-gray-700 text-gray-400 cursor-not-allowed"
+            ${hasImage && !isAnalyzing
+              ? "bg-linear-to-r from-emerald-500 to-teal-500 text-white hover:from-emerald-600 hover:to-teal-600 hover:shadow-lg hover:shadow-emerald-500/25 active:scale-[0.98]"
+              : "bg-gray-700 text-gray-400 cursor-not-allowed"
             }
           `}
         >

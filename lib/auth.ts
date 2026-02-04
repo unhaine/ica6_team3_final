@@ -3,7 +3,7 @@ import Google from "next-auth/providers/google";
 import Naver from "next-auth/providers/naver";
 import Kakao from "next-auth/providers/kakao";
 import Credentials from "next-auth/providers/credentials";
-import { prisma } from "@/lib/prisma";
+import prisma from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
@@ -122,7 +122,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             const dbUser = await prisma.user.findFirst({
               where: { email: user.email },
             });
-            
+
             if (dbUser) {
               token.id = dbUser.id;
               // 필요한 경우 다른 정보도 업데이트
@@ -140,7 +140,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         if (session.image) token.image = session.image;
         if (session.name) token.name = session.name;
       }
-      
+
       return token;
     },
     async session({ session, token }) {

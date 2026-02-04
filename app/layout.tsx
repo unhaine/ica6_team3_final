@@ -21,6 +21,7 @@ import { AuthProvider } from "@/providers/AuthProvider";
 import { ThemeProvider } from "@/providers/ThemeProvider";
 import { QueryProvider } from "@/providers/QueryProvider";
 import { Toaster } from "sonner";
+import { BottomNav } from "@/components/layout/BottomNav";
 
 export default function RootLayout({
     children,
@@ -30,7 +31,7 @@ export default function RootLayout({
     return (
         <html lang="ko" suppressHydrationWarning>
             <body
-                className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+                className={`${geistSans.variable} ${geistMono.variable} antialiased pb-20`}
             >
                 <AuthProvider>
                     <QueryProvider>
@@ -42,6 +43,7 @@ export default function RootLayout({
                         >
                             <Toaster position="top-center" richColors />
                             {children}
+                            <BottomNav />
                         </ThemeProvider>
                     </QueryProvider>
                 </AuthProvider>

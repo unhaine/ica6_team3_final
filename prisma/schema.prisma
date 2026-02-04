@@ -36,6 +36,9 @@ model User {
   receiptScans        ReceiptScan[]
   fridgeAnalyses      FridgePhotoAnalysis[]
   favoriteRecipes     FavoriteRecipe[]
+  posts               CommunityPost[]
+  likes               PostLike[]
+  comments            PostComment[]
   
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
@@ -179,6 +182,7 @@ model Recipe {
   
   // 관계
   favorites       FavoriteRecipe[]
+  posts           CommunityPost[]
   
   @@index([ckgNm])
   @@index([ckgMtrlActoNm])
@@ -200,4 +204,71 @@ model FavoriteRecipe {
   @@unique([userId, recipeId])
   @@index([userId])
   @@index([recipeId])
+}
+
+// ================================
+// 커뮤니티 (인증샷 및 소통)
+// ================================
+
+// 커뮤니티 게시글 (인증샷)
+model CommunityPost {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  recipeId BigInt? @map("recipe_id") // 추천 레시피 기반인 경우 레시피 ID
+  recipe   Recipe? @relation(fields: [recipeId], references: [rcpSno], onDelete: SetNull)
+
+  imageUrl String // 요리 완성 사진 URL
+  content  String @db.VarChar(1000) // 게시글 본문
+
+  // 메타데이터
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // 관계
+  likes    PostLike[]
+  comments PostComment[]
+
+  @@index([userId])
+  @@index([recipeId])
+  @@index([createdAt])
+  @@map("community_posts")
+}
+
+// 게시글 좋아요
+model PostLike {
+  id     String @id @default(cuid())
+  userId String
+  postId String
+
+  user User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, postId])
+  @@index([userId])
+  @@index([postId])
+  @@map("post_likes")
+}
+
+// 게시글 댓글
+model PostComment {
+  id     String @id @default(cuid())
+  userId String
+  postId String
+
+  content String @db.VarChar(500)
+
+  user User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([postId])
+  @@index([createdAt])
+  @@map("post_comments")
 }

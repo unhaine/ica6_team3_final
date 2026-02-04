@@ -1,5 +1,5 @@
 import { auth } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
+import prisma from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 
 /**
@@ -10,7 +10,7 @@ import { NextResponse } from 'next/server';
  */
 export async function getCurrentUser() {
   const session = await auth();
-  
+
   if (!session || (!session.user?.id && !session.user?.email)) {
     return null;
   }
@@ -18,11 +18,11 @@ export async function getCurrentUser() {
   // id가 있으면 id로, 없으면 email로 사용자 찾기
   const user = session.user.id
     ? await prisma.user.findUnique({
-        where: { id: session.user.id },
-      })
+      where: { id: session.user.id },
+    })
     : await prisma.user.findFirst({
-        where: { email: session.user.email! },
-      });
+      where: { email: session.user.email! },
+    });
 
   return user;
 }
@@ -38,7 +38,7 @@ export async function requireAuth(): Promise<
   | { error: NextResponse }
 > {
   const session = await auth();
-  
+
   if (!session || (!session.user?.id && !session.user?.email)) {
     return {
       error: NextResponse.json(
@@ -49,7 +49,7 @@ export async function requireAuth(): Promise<
   }
 
   const user = await getCurrentUser();
-  
+
   if (!user) {
     return {
       error: NextResponse.json(
