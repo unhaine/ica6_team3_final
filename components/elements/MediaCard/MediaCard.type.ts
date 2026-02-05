@@ -32,7 +32,7 @@ export interface MediaCardProps extends Omit<ActionCardProps, 'children' | 'titl
     contentClassName?: string;
     /** 메타 정보 리스트 (아이콘 + 라벨 쌍) */
     metadata?: Array<{
-        icon?: any; // LucideIcon
+        icon?: React.ComponentType<{ className?: string; size?: number | string }>;
         label: ReactNode;
     }>;
 }

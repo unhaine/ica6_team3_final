@@ -40,6 +40,7 @@ export async function requireAuth(): Promise<
   const session = await auth();
 
   if (!session || (!session.user?.id && !session.user?.email)) {
+    console.error('[requireAuth] No valid session found');
     return {
       error: NextResponse.json(
         { error: '인증이 필요합니다.' },
@@ -48,9 +49,11 @@ export async function requireAuth(): Promise<
     };
   }
 
+  console.warn(`[requireAuth] Session found for: ${session.user.email || session.user.id}`);
   const user = await getCurrentUser();
 
   if (!user) {
+    console.error(`[requireAuth] User not found in DB for: ${session.user.email || session.user.id}`);
     return {
       error: NextResponse.json(
         { error: '사용자를 찾을 수 없습니다.' },
@@ -59,5 +62,6 @@ export async function requireAuth(): Promise<
     };
   }
 
+  console.warn(`[requireAuth] User found: ${user.id} (${user.email})`);
   return { user };
 }

@@ -36,6 +36,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     Google({
       clientId: process.env.AUTH_GOOGLE_ID,
       clientSecret: process.env.AUTH_GOOGLE_SECRET,
+      checks: [],
     }),
     Naver({
       clientId: process.env.AUTH_NAVER_ID,
@@ -90,10 +91,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
-    async signIn({ user, account, profile }) {
+    async signIn({ user, account, profile: _profile }) {
       // 소셜 로그인 시 사용자 DB에 저장/업데이트
       if (account?.provider && account.provider !== 'credentials') {
         try {
+          console.warn(`[SignIn] Provider: ${account.provider}, Email: ${user.email}`);
+          
           const existingUser = await prisma.user.findFirst({
             where: {
               accounts: {
@@ -107,7 +110,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
           if (!existingUser) {
             // 새 사용자 생성
-            await prisma.user.create({
+            console.warn(`[SignIn] Creating new user for ${account.provider}`);
+            const newUser = await prisma.user.create({
               data: {
                 name: user.name,
                 email: user.email,
@@ -127,14 +131,19 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                 },
               },
             });
+            console.warn(`[SignIn] User created successfully with ID: ${newUser.id}`);
+          } else {
+            console.warn(`[SignIn] Existing user found with ID: ${existingUser.id}`);
           }
         } catch (error) {
-          console.error('사용자 생성/업데이트 에러:', error);
+          console.error(`[SignIn] Error for ${account.provider}:`, error);
+          // 에러 발생 시 로그인 실패
+          return false;
         }
       }
       return true;
     },
-    async jwt({ token, user, trigger, session }) {
+    async jwt({ token, user, trigger, session, account }) {
       // 초기 로그인 시 또는 토큰 업데이트 시
       if (user) {
         token.id = user.id;
@@ -145,18 +154,41 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         // 이메일로 DB 사용자 찾아서 ID 교체 (Provider ID -> DB ID)
         if (user.email) {
           try {
+            console.warn(`[JWT] Looking up user by email: ${user.email}`);
             const dbUser = await prisma.user.findFirst({
               where: { email: user.email },
             });
 
             if (dbUser) {
+              console.warn(`[JWT] Found DB user with ID: ${dbUser.id}`);
               token.id = dbUser.id;
               // 필요한 경우 다른 정보도 업데이트
               // token.name = dbUser.name || token.name;
               token.image = dbUser.image || token.image;
+            } else {
+              console.warn(`[JWT] No DB user found for email: ${user.email}`);
+              // account 정보가 있다면 provider account로 재시도
+              if (account?.provider && account?.providerAccountId) {
+                console.warn(`[JWT] Retrying with provider account: ${account.provider}`);
+                const userByAccount = await prisma.user.findFirst({
+                  where: {
+                    accounts: {
+                      some: {
+                        provider: account.provider,
+                        providerAccountId: account.providerAccountId,
+                      },
+                    },
+                  },
+                });
+                if (userByAccount) {
+                  console.warn(`[JWT] Found DB user by account with ID: ${userByAccount.id}`);
+                  token.id = userByAccount.id;
+                  token.image = userByAccount.image || token.image;
+                }
+              }
             }
           } catch (error) {
-            console.error('Error fetching user in JWT callback:', error);
+            console.error('[JWT] Error fetching user:', error);
           }
         }
       }

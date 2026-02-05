@@ -8,9 +8,11 @@ export async function POST(request: NextRequest) {
     // 세션 확인 및 사용자 찾기
     const authResult = await requireAuth();
     if ('error' in authResult) {
+      console.error('[Survey API] Auth failed');
       return authResult.error;
     }
     const user = authResult.user;
+    console.warn(`[Survey API] User authenticated: ${user.id} (${user.email})`);
 
     const body = await request.json();
     const { householdSize, allergies, cookingPreference, skip } = body;
