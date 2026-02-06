@@ -12,8 +12,7 @@ export async function POST(
         if ('error' in authResult) return authResult.error;
         const user = authResult.user;
 
-        const { id } = await params;
-        const postId = id;
+        const { id: postId } = await params;
         const { content } = await req.json();
 
         if (!content) {
