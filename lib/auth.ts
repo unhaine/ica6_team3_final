@@ -152,8 +152,43 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.name = user.name;
         token.image = user.image;
 
-        // 이메일로 DB 사용자 찾아서 ID 교체 (Provider ID -> DB ID)
-        if (user.email) {
+        // 우선순위 1: Account 정보(Provider)로 DB 사용자 찾기 (가장 정확함)
+        if (account?.provider && account?.providerAccountId) {
+          try {
+            console.warn(`[JWT] Looking up user by account: ${account.provider} / ${account.providerAccountId}`);
+            const userByAccount = await prisma.user.findFirst({
+              where: {
+                accounts: {
+                  some: {
+                    provider: account.provider,
+                    providerAccountId: account.providerAccountId,
+                  },
+                },
+              },
+            });
+
+            if (userByAccount) {
+              console.warn(`[JWT] Found DB user by account with ID: ${userByAccount.id}`);
+              token.id = userByAccount.id;
+              token.image = userByAccount.image || token.image;
+            } else if (user.email) {
+              // Account로 못 찾았는데 이메일이 있는 경우 (기존 계정 연동 고려)
+              console.warn(`[JWT] No DB user found by account, retrying with email: ${user.email}`);
+              const dbUser = await prisma.user.findFirst({
+                where: { email: user.email },
+              });
+              if (dbUser) {
+                console.warn(`[JWT] Found DB user by email with ID: ${dbUser.id}`);
+                token.id = dbUser.id;
+                token.image = dbUser.image || token.image;
+              }
+            }
+          } catch (error) {
+            console.error('[JWT] Error fetching user by account:', error);
+          }
+        }
+        // 우선순위 2: 이메일로 찾기 (Account 정보가 없는 경우)
+        else if (user.email) {
           try {
             console.warn(`[JWT] Looking up user by email: ${user.email}`);
             const dbUser = await prisma.user.findFirst({
@@ -163,33 +198,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             if (dbUser) {
               console.warn(`[JWT] Found DB user with ID: ${dbUser.id}`);
               token.id = dbUser.id;
-              // 필요한 경우 다른 정보도 업데이트
-              // token.name = dbUser.name || token.name;
               token.image = dbUser.image || token.image;
-            } else {
-              console.warn(`[JWT] No DB user found for email: ${user.email}`);
-              // account 정보가 있다면 provider account로 재시도
-              if (account?.provider && account?.providerAccountId) {
-                console.warn(`[JWT] Retrying with provider account: ${account.provider}`);
-                const userByAccount = await prisma.user.findFirst({
-                  where: {
-                    accounts: {
-                      some: {
-                        provider: account.provider,
-                        providerAccountId: account.providerAccountId,
-                      },
-                    },
-                  },
-                });
-                if (userByAccount) {
-                  console.warn(`[JWT] Found DB user by account with ID: ${userByAccount.id}`);
-                  token.id = userByAccount.id;
-                  token.image = userByAccount.image || token.image;
-                }
-              }
             }
           } catch (error) {
-            console.error('[JWT] Error fetching user:', error);
+            console.error('[JWT] Error fetching user by email:', error);
           }
         }
       }
