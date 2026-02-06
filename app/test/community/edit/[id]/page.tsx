@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import React, { useState, useEffect } from 'react';
+import { useRouter, useParams } from 'next/navigation';
 import { Icon } from '@/components/elements/Icon';
 import RichTextEditor from '@/components/custom/RichTextEditor';
 import { useSession } from 'next-auth/react';
@@ -9,9 +9,9 @@ import { toast } from 'sonner';
 import { useHeader } from "@/components/modules/Header";
 import { useFooter } from "@/components/modules/Footer";
 
-export default function CreatePostTestPage() {
+export default function EditPostPage() {
     const router = useRouter();
-    const searchParams = useSearchParams();
+    const params = useParams();
     const { data: session } = useSession();
 
     // Test Layout Control: Hide default header/footer
@@ -20,7 +20,40 @@ export default function CreatePostTestPage() {
 
     const [content, setContent] = useState('');
     const [title, setTitle] = useState('');
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
+
+    useEffect(() => {
+        if (params?.id) {
+            fetchPost(params.id as string);
+        }
+    }, [params]);
+
+    const fetchPost = async (id: string) => {
+        try {
+            const res = await fetch(`/api/community/posts/${id}`);
+            const data = await res.json();
+
+            if (data.success) {
+                // Verify ownership (optional here, blocked by logic later/server, but good for UI)
+                if (session?.user?.id && data.data.userId !== session.user.id) {
+                    toast.error('수정 권한이 없습니다.');
+                    router.back();
+                    return;
+                }
+                setContent(data.data.content);
+                setTitle(data.data.title || ''); // Fetch title
+            } else {
+                toast.error('게시글을 불러오지 못했습니다.');
+                router.back();
+            }
+        } catch (error) {
+            console.error(error);
+            toast.error('오류가 발생했습니다.');
+        } finally {
+            setLoading(false);
+        }
+    };
 
     // HTML 내용에서 썸네일 URL 추출 (선택된 이미지 > 첫 번째 이미지 > null)
     const extractThumbnail = (htmlContent: string): string | null => {
@@ -52,11 +85,11 @@ export default function CreatePostTestPage() {
         }
 
         try {
-            setLoading(true);
+            setSaving(true);
             const imageUrl = extractThumbnail(content);
 
-            const res = await fetch('/api/community/posts', {
-                method: 'POST',
+            const res = await fetch(`/api/community/posts/${params.id}`, {
+                method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
                 },
@@ -64,25 +97,27 @@ export default function CreatePostTestPage() {
                     title,
                     content,
                     imageUrl,
-                    recipeId: searchParams.get('recipeId'),
                 }),
             });
 
             if (!res.ok) {
                 const errorData = await res.json();
-                throw new Error(errorData.error || '게시글 작성 실패');
+                throw new Error(errorData.error || '게시글 수정 실패');
             }
 
-            toast.success('게시글이 등록되었습니다!');
-            // Return to test community feed
+            toast.success('게시글이 수정되었습니다!');
             window.location.href = '/test/community';
         } catch (error: any) {
             console.error(error);
-            toast.error(error.message || '게시글 등록 중 오류가 발생했습니다.');
+            toast.error(error.message || '게시글 수정 중 오류가 발생했습니다.');
         } finally {
-            setLoading(false);
+            setSaving(false);
         }
     };
+
+    if (loading) {
+        return <div className="flex justify-center items-center h-full">로딩 중...</div>;
+    }
 
     return (
         <div className="flex flex-col h-full bg-slate-50 relative">
@@ -94,18 +129,18 @@ export default function CreatePostTestPage() {
                 >
                     <Icon name="ArrowLeft" size={24} />
                 </button>
-                <h1 className="text-lg font-bold text-slate-900">글쓰기</h1>
+                <h1 className="text-lg font-bold text-slate-900">글 수정</h1>
                 <button
                     onClick={handleSubmit}
-                    disabled={loading}
+                    disabled={saving}
                     className={`
                         px-4 py-1.5 rounded-full text-sm font-bold transition-all
-                        ${loading
+                        ${saving
                             ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
                             : 'bg-emerald-500 text-white hover:bg-emerald-600 shadow-sm active:scale-95'}
                     `}
                 >
-                    {loading ? '등록 중...' : '등록'}
+                    {saving ? '저장 중...' : '완료'}
                 </button>
             </header>
 
@@ -121,21 +156,9 @@ export default function CreatePostTestPage() {
                     <RichTextEditor
                         content={content}
                         onChange={setContent}
-                        placeholder="오늘의 요리는 어떠셨나요? 사진과 함께 이야기를 들려주세요!"
+                        placeholder="내용을 수정해주세요..."
                     />
                 </section>
-
-                <div className="mt-6">
-                    <button className="w-full py-4 px-4 bg-white border border-slate-200 rounded-2xl flex items-center justify-between text-slate-500 hover:bg-slate-50 hover:border-slate-300 transition-all group shadow-sm">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-emerald-500 group-hover:scale-105 transition-transform">
-                                <Icon name="Link" size={20} />
-                            </div>
-                            <span className="font-medium">레시피 연결하기 (선택)</span>
-                        </div>
-                        <Icon name="ChevronRight" size={20} className="text-slate-400" />
-                    </button>
-                </div>
             </main>
         </div>
     );

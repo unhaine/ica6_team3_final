@@ -17,7 +17,7 @@ export default function ImageUploader({
   isAnalyzing = false,
   hasImage,
   showUploader = true,
-  uploadText = "냉장고 사진을 업로드하세요", // Added this line
+  uploadText = "사진을 업로드하세요", // Default changed to generic text
 }: ImageUploaderProps) {
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -167,13 +167,10 @@ export default function ImageUploader({
             {/* 텍스트 */}
             <div className="text-center">
               <p className="text-lg font-medium text-gray-200">
-                {isDragging ? "여기에 놓으세요!" : "냉장고 사진을 업로드하세요"}
+                {isDragging ? "여기에 놓으세요!" : uploadText}
               </p>
-              <p className="mt-2 text-sm text-gray-400">
-                드래그 앤 드롭 또는{" "}
-                <span className="text-emerald-400 font-medium">
-                  클릭하여 선택
-                </span>
+              <p className="mt-2 text-sm text-emerald-400 font-medium">
+                클릭하여 선택
               </p>
               <p className="mt-1 text-xs text-gray-500">
                 PNG, JPG, WEBP, HEIC 형식 지원

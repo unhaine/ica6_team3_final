@@ -6,8 +6,10 @@ export * from "./Card"
 export * from "./CarouselView"
 export * from "./Checkbox"
 export * from "./Collapsible"
-export * from "./Drawer"
-export * from "./Input"
+export * from "./Drawer";
+export * from "./DropdownMenu";
+export * from "./Input";
+export * from './Popover';
 export * from "./Label"
 export * from "./Progress"
 export * from "./RadioGroup"

@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/auth-helpers';
 import prisma from '@/lib/prisma';
 
-// POST /api/community/posts/[id]/like - 좋아요 토글
 export async function POST(
     req: NextRequest,
     { params }: { params: Promise<{ id: string }> }
@@ -11,40 +10,58 @@ export async function POST(
         const authResult = await requireAuth();
         if ('error' in authResult) return authResult.error;
         const user = authResult.user;
-
         const { id } = await params;
-        const postId = id;
 
-        // 기존 좋아요 확인
+        // Check if already liked
         const existingLike = await prisma.postLike.findUnique({
             where: {
                 userId_postId: {
                     userId: user.id,
-                    postId: postId,
+                    postId: id,
                 },
             },
         });
 
+        let liked = false;
+
         if (existingLike) {
-            // 좋아요 취소
+            // Unlink
             await prisma.postLike.delete({
-                where: { id: existingLike.id },
+                where: {
+                    userId_postId: {
+                        userId: user.id,
+                        postId: id,
+                    },
+                },
             });
-            return NextResponse.json({ success: true, liked: false });
+            liked = false;
         } else {
-            // 좋아요 추가
+            // Like
             await prisma.postLike.create({
                 data: {
                     userId: user.id,
-                    postId: postId,
+                    postId: id,
                 },
             });
-            return NextResponse.json({ success: true, liked: true });
+            liked = true;
         }
+
+        // Get updated count
+        const likeCount = await prisma.postLike.count({
+            where: { postId: id },
+        });
+
+        return NextResponse.json({
+            success: true,
+            data: {
+                liked,
+                likeCount,
+            },
+        });
     } catch (error) {
         console.error('Like toggle error:', error);
         return NextResponse.json(
-            { success: false, error: '좋아요 처리에 실패했습니다.' },
+            { success: false, error: '좋아요 처리 중 오류가 발생했습니다.' },
             { status: 500 }
         );
     }

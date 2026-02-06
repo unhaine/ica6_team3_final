@@ -43,9 +43,9 @@ export default function OnboardingPage() {
     const checkSurveyStatus = async () => {
       console.log('[Onboarding] Status:', status);
       console.log('[Onboarding] Session:', session);
-      
+
       if (status === 'loading') return;
-      
+
       if (status === 'unauthenticated') {
         // 로그인하지 않은 경우 로그인 페이지로 이동
         console.log('[Onboarding] Unauthenticated, redirecting to login');
@@ -59,7 +59,7 @@ export default function OnboardingPage() {
           // 사용자의 설문조사 완료 여부 확인
           const response = await fetch('/api/user/profile');
           console.log('[Onboarding] Profile API response status:', response.status);
-          
+
           if (response.ok) {
             const data = await response.json();
             console.log('[Onboarding] Profile data:', data);
@@ -78,7 +78,7 @@ export default function OnboardingPage() {
           // 에러가 발생해도 설문조사는 진행
         }
       }
-      
+
       console.log('[Onboarding] Loading complete, showing survey');
       setIsLoading(false);
     };
@@ -174,11 +174,11 @@ export default function OnboardingPage() {
   }
 
   return (
-    <main className="min-h-screen bg-background flex flex-col">
+    <main className="min-h-screen bg-background flex flex-col max-w-md mx-auto w-full shadow-sm">
       {/* Header with Skip Button */}
       <div className="flex justify-between items-center p-6">
         <div className="w-20" /> {/* Spacer for centering */}
-        
+
         {/* Step Indicator */}
         <div className="flex gap-2">
           <div className={`w-2 h-2 rounded-full transition-colors ${step >= 1 ? 'bg-primary' : 'bg-muted'}`} />
@@ -221,13 +221,13 @@ export default function OnboardingPage() {
                   `}
                 >
                   <div className="flex flex-col items-center gap-4">
-                    <Icon 
-                      name={option.icon as any} 
-                      size={64} 
+                    <Icon
+                      name={option.icon as any}
+                      size={64}
                       className={householdSize === option.value ? 'text-primary' : 'text-muted-foreground'}
                     />
-                    <Typography 
-                      variant="h4" 
+                    <Typography
+                      variant="h4"
                       weight="semibold"
                       className={householdSize === option.value ? 'text-primary' : ''}
                     >
@@ -264,8 +264,8 @@ export default function OnboardingPage() {
                     }
                   `}
                 >
-                  <Typography 
-                    variant="body1" 
+                  <Typography
+                    variant="body1"
                     weight={allergies.includes(option.value) ? 'semibold' : 'medium'}
                   >
                     {option.label}
@@ -300,8 +300,8 @@ export default function OnboardingPage() {
                     }
                   `}
                 >
-                  <Typography 
-                    variant="body1" 
+                  <Typography
+                    variant="body1"
                     weight={cookingPreference === option ? 'semibold' : 'medium'}
                   >
                     {option}

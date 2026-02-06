@@ -10,23 +10,45 @@ export async function GET(req: NextRequest) {
     try {
         const postModel = getPostModel(prisma);
         if (!postModel) {
-            const availableModels = Object.keys(prisma).filter(k => !k.startsWith('_'));
-            console.error('CommunityPost model not found on prisma client. Available:', availableModels);
-            return NextResponse.json(
-                { success: false, error: 'Database model not found', availableModels },
-                { status: 500 }
-            );
+            // ... error handling
+            return NextResponse.json({ success: false, error: 'Database model not found' }, { status: 500 });
         }
+
+        // Check auth for isLiked status (optional)
+        const authResult = await requireAuth();
+        const user = 'user' in authResult ? authResult.user : null;
 
         const { searchParams } = new URL(req.url);
         const limit = parseInt(searchParams.get('limit') || '10');
         const cursor = searchParams.get('cursor');
+        const sort = searchParams.get('sort') || 'all';
+
+        let whereClause: any = {};
+        let orderByClause: any = { createdAt: 'desc' };
+
+        if (sort === 'new') {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            whereClause = {
+                createdAt: {
+                    gte: today,
+                },
+            };
+            orderByClause = { createdAt: 'desc' };
+        } else if (sort === 'hot') {
+            orderByClause = {
+                likes: {
+                    _count: 'desc',
+                },
+            };
+        }
 
         const posts = await postModel.findMany({
             take: limit,
             skip: cursor ? 1 : 0,
             cursor: cursor ? { id: cursor } : undefined,
-            orderBy: { createdAt: 'desc' },
+            where: whereClause,
+            orderBy: orderByClause,
             include: {
                 user: {
                     select: {
@@ -47,10 +69,15 @@ export async function GET(req: NextRequest) {
                         ckgNm: true,
                     },
                 },
+                // Include likes for current user if logged in
+                likes: user ? {
+                    where: { userId: user.id },
+                    select: { userId: true }
+                } : false,
             },
         });
 
-        // BigInt 변환 (Recipe ID가 BigInt일 수 있음)
+        // BigInt 변환 & isLiked mapping
         const serializedPosts = posts.map((post: any) => ({
             ...post,
             recipe: post.recipe ? {
@@ -58,6 +85,8 @@ export async function GET(req: NextRequest) {
                 rcpSno: post.recipe.rcpSno.toString()
             } : null,
             recipeId: post.recipeId ? post.recipeId.toString() : null,
+            isLiked: user && post.likes?.length > 0, // Add isLiked boolean
+            likes: undefined, // Remove raw likes array
         }));
 
         return NextResponse.json({
@@ -82,11 +111,11 @@ export async function POST(req: NextRequest) {
         const user = authResult.user;
 
         const body = await req.json();
-        const { content, imageUrl, recipeId } = body;
+        const { title, content, imageUrl, recipeId } = body;
 
-        if (!content || !imageUrl) {
+        if (!title || !content) {
             return NextResponse.json(
-                { success: false, error: '내용과 이미지는 필수입니다.' },
+                { success: false, error: '제목과 내용은 필수입니다.' },
                 { status: 400 }
             );
         }
@@ -102,6 +131,7 @@ export async function POST(req: NextRequest) {
         const post = await postModel.create({
             data: {
                 userId: user.id,
+                title,
                 content,
                 imageUrl,
                 recipeId: recipeId ? BigInt(recipeId) : null,

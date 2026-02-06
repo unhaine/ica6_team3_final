@@ -219,8 +219,9 @@ model CommunityPost {
   recipeId BigInt? @map("recipe_id") // 추천 레시피 기반인 경우 레시피 ID
   recipe   Recipe? @relation(fields: [recipeId], references: [rcpSno], onDelete: SetNull)
 
-  imageUrl String // 요리 완성 사진 URL
-  content  String @db.VarChar(1000) // 게시글 본문
+  title    String  @db.VarChar(255) // 게시글 제목
+  imageUrl String? // 요리 완성 사진 URL (썸네일용, 선택)
+  content  String  @db.Text // 게시글 본문 (HTML 포함, 길이 제한 없음)
 
   // 메타데이터
   createdAt DateTime @default(now())
