@@ -3,14 +3,14 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   // Docker 배포를 위한 standalone 모드
   output: 'standalone',
-  
+
   // 헤더 크기 제한 증가 (431 에러 방지)
   experimental: {
     serverActions: {
       bodySizeLimit: '2mb',
     },
   },
-  
+
   images: {
     remotePatterns: [
       {
@@ -34,6 +34,10 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: 'shopping-phinf.pstatic.net',
+      },
+      {
+        protocol: 'https',
+        hostname: 'api.dicebear.com',
       },
     ],
   },

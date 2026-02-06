@@ -38,6 +38,7 @@ interface Post {
     user: {
         name: string | null;
         image: string | null;
+        isFollowing?: boolean;
     };
     recipe?: {
         ckgNm: string;
@@ -46,7 +47,7 @@ interface Post {
         likes: number;
         comments: number;
     };
-    isLiked: boolean; // Added isLiked
+    isLiked: boolean;
 }
 
 export default function PostDetailPage() {
@@ -62,6 +63,7 @@ export default function PostDetailPage() {
     const [comments, setComments] = useState<Comment[]>([]);
     const [commentText, setCommentText] = useState("");
     const [submittingComment, setSubmittingComment] = useState(false);
+    const [isFollowing, setIsFollowing] = useState(false);
 
     useHeader({ isVisible: false });
     useFooter({ isVisible: false });
@@ -80,7 +82,8 @@ export default function PostDetailPage() {
                 setPost(data.data);
                 setIsLiked(data.data.isLiked);
                 setLikeCount(data.data._count.likes);
-                fetchComments(id); // Fetch comments as well
+                setIsFollowing(data.data.user.isFollowing || false);
+                fetchComments(id);
             } else {
                 toast.error("게시글을 찾을 수 없습니다.");
                 router.back();
@@ -92,6 +95,29 @@ export default function PostDetailPage() {
             setLoading(false);
         }
     };
+
+    const handleFollow = async () => {
+        if (!session) {
+            toast.error("로그인이 필요합니다.");
+            return;
+        }
+        if (!post) return;
+
+        const prevFollowing = isFollowing;
+        setIsFollowing(!prevFollowing); // Optimistic
+
+        try {
+            const res = await fetch(`/api/users/${post.userId}/follow`, {
+                method: 'POST',
+            });
+            if (!res.ok) throw new Error();
+        } catch (error) {
+            setIsFollowing(prevFollowing); // Revert
+            toast.error("팔로우 처리 중 오류가 발생했습니다.");
+        }
+    };
+
+    // ... (keep fetchComments, handleLike, handleSubmitComment, handleDeleteComment, handleDelete) ...
 
     const fetchComments = async (id: string) => {
         try {
@@ -105,13 +131,12 @@ export default function PostDetailPage() {
         }
     };
 
-    const handleLike = async () => {
+    const handleLike = async () => { /* ... existing code ... */
         if (!session) {
             toast.error("로그인이 필요합니다.");
             return;
         }
-
-        // Optimistic UI interaction
+        // ...
         const prevLiked = isLiked;
         const prevCount = likeCount;
 
@@ -124,13 +149,13 @@ export default function PostDetailPage() {
             });
             if (!res.ok) throw new Error();
         } catch (error) {
-            // Revert on error
             setIsLiked(prevLiked);
             setLikeCount(prevCount);
             toast.error("오류가 발생했습니다.");
         }
     };
 
+    // ... (rest of the functions) ...
     const handleSubmitComment = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!commentText.trim() || !session) return;
@@ -147,7 +172,6 @@ export default function PostDetailPage() {
             if (data.success) {
                 setComments(prev => [...prev, data.data]);
                 setCommentText("");
-                // Scroll to bottom of comments?
             }
         } catch (error) {
             console.error(error);
@@ -198,9 +222,11 @@ export default function PostDetailPage() {
     if (loading) return <div className="flex justify-center items-center h-full">로딩 중...</div>;
     if (!post) return null;
 
+    const isMe = session?.user?.id === post.userId;
+
     return (
         <div className="flex flex-col h-full bg-slate-50 relative">
-            {/* Header */}
+            {/* ... Header ... */}
             <header className="absolute top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-100 flex justify-between items-center px-4 h-[60px]">
                 <button
                     onClick={() => router.back()}
@@ -209,14 +235,11 @@ export default function PostDetailPage() {
                     <ArrowLeft size={24} />
                 </button>
                 <div className="flex gap-2">
-                    {/* Empty placeholder for now or remove entirely if not needed */}
                 </div>
             </header>
 
             <main className="flex-1 overflow-y-auto pt-[80px] px-0 pb-20 scrollbar-hide">
-                {/* Post Content Container */}
                 <div className="bg-white pb-8">
-                    {/* Title Area */}
                     <div className="px-4 py-4">
                         {post.recipeId && (
                             <div className="mb-3 inline-flex items-center gap-1 px-2 py-1 bg-primary/10 text-primary rounded-lg text-xs font-semibold">
@@ -228,17 +251,32 @@ export default function PostDetailPage() {
                             {post.title}
                         </h1>
 
-                        {/* User Info */}
+                        {/* User Info & Follow Button */}
                         <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                                <AvatarThumbnail src={post.user.image || ''} fallback={post.user.name?.[0] || 'U'} size="sm" />
-                                <div className="flex flex-col">
-                                    <Typography weight="bold" variant="body2">{post.user.name || '익명 고수'}</Typography>
-                                    <Typography variant="caption" className="text-text-tertiary">
-                                        {new Date(post.createdAt).toLocaleDateString()}
-                                    </Typography>
+                            <div className="flex items-center gap-3">
+                                <div className="flex items-center gap-2">
+                                    <AvatarThumbnail src={post.user.image || ''} fallback={post.user.name?.[0] || 'U'} size="sm" />
+                                    <div className="flex flex-col">
+                                        <Typography weight="bold" variant="body2">{post.user.name || '익명 고수'}</Typography>
+                                        <Typography variant="caption" className="text-text-tertiary">
+                                            {new Date(post.createdAt).toLocaleDateString()}
+                                        </Typography>
+                                    </div>
                                 </div>
+
+                                {!isMe && session && (
+                                    <button
+                                        onClick={handleFollow}
+                                        className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${isFollowing
+                                                ? 'bg-slate-100 text-slate-600 border border-slate-200'
+                                                : 'bg-emerald-500 text-white hover:bg-emerald-600'
+                                            }`}
+                                    >
+                                        {isFollowing ? '팔로잉' : '팔로우'}
+                                    </button>
+                                )}
                             </div>
+
 
                             {/* Edit/Delete Menu (Previously in Header) */}
                             {session?.user?.id === post.userId && (

@@ -41,6 +41,25 @@ export async function GET(req: NextRequest) {
                     _count: 'desc',
                 },
             };
+        } else if (sort === 'following') {
+            if (!user) {
+                return NextResponse.json(
+                    { success: false, error: 'Unauthorized' },
+                    { status: 401 }
+                );
+            }
+            // Get IDs of users I follow
+            const following = await prisma.follow.findMany({
+                where: { followerId: user.id },
+                select: { followingId: true },
+            });
+            const followingIds = following.map((f: any) => f.followingId);
+
+            whereClause = {
+                userId: {
+                    in: followingIds,
+                },
+            };
         }
 
         const posts = await postModel.findMany({
@@ -55,6 +74,11 @@ export async function GET(req: NextRequest) {
                         id: true,
                         name: true,
                         image: true,
+                        // Check if I follow this author
+                        followedBy: user ? {
+                            where: { followerId: user.id },
+                            select: { followerId: true }
+                        } : false
                     },
                 },
                 _count: {
@@ -77,7 +101,7 @@ export async function GET(req: NextRequest) {
             },
         });
 
-        // BigInt 변환 & isLiked mapping
+        // BigInt 변환 & isLiked/isFollowing mapping
         const serializedPosts = posts.map((post: any) => ({
             ...post,
             recipe: post.recipe ? {
@@ -87,6 +111,11 @@ export async function GET(req: NextRequest) {
             recipeId: post.recipeId ? post.recipeId.toString() : null,
             isLiked: user && post.likes?.length > 0, // Add isLiked boolean
             likes: undefined, // Remove raw likes array
+            user: {
+                ...post.user,
+                isFollowing: user && post.user.followedBy?.length > 0, // Add isFollowing boolean
+                followedBy: undefined, // Cleanup
+            }
         }));
 
         return NextResponse.json({

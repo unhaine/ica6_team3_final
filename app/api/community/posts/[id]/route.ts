@@ -29,6 +29,11 @@ export async function GET(
                         id: true,
                         name: true,
                         image: true,
+                        // Check if I follow this author
+                        followedBy: user ? {
+                            where: { followerId: user.id },
+                            select: { followerId: true }
+                        } : false
                     },
                 },
                 _count: {
@@ -64,6 +69,11 @@ export async function GET(
             recipeId: post.recipeId ? post.recipeId.toString() : null,
             isLiked: user && post.likes?.length > 0,
             likes: undefined,
+            user: {
+                ...post.user,
+                isFollowing: user && post.user.followedBy?.length > 0,
+                followedBy: undefined,
+            }
         };
 
         return NextResponse.json({ success: true, data: serializedPost });

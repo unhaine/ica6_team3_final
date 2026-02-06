@@ -44,6 +44,7 @@ const COMMUNITY_FILTERS = [
     { id: "all", label: "All" },
     { id: "new", label: "New ✨" },
     { id: "hot", label: "Hot 🔥" },
+    { id: "following", label: "Following 🤝" },
 ];
 
 export default function CommunityPage() {
@@ -162,7 +163,13 @@ export default function CommunityPage() {
                         <SelectableChip
                             label={filter.label}
                             selected={activeFilter === filter.id}
-                            onClick={() => setActiveFilter(filter.id)}
+                            onClick={() => {
+                                if (filter.id === 'following' && !session) {
+                                    toast.error("로그인이 필요합니다.");
+                                    return;
+                                }
+                                setActiveFilter(filter.id);
+                            }}
                         />
                     )}
                 />
