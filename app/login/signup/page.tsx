@@ -59,7 +59,7 @@ export default function SignupPage() {
                     router.push('/login/email');
                 } else {
                     toast.success('로그인되었습니다.');
-                    router.push('/test');
+                    router.push('/onboarding');
                 }
             }
         } catch (error) {
