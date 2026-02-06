@@ -36,15 +36,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     Google({
       clientId: process.env.AUTH_GOOGLE_ID,
       clientSecret: process.env.AUTH_GOOGLE_SECRET,
-      checks: [],
+      checks: [], // HTTP 환경에서 PKCE 검증 비활성화
     }),
     Naver({
       clientId: process.env.AUTH_NAVER_ID,
       clientSecret: process.env.AUTH_NAVER_SECRET,
+      checks: [], // HTTP 환경에서 PKCE 검증 비활성화 (구글과 동일)
       profile(profile) {
         // Naver API 응답 구조: { response: { id, nickname, email, profile_image } }
         return {
-          id: profile.response.id,
+          id: profile.response.id, // Provider ID (JWT 콜백에서 DB ID로 교체됨)
           name: profile.response.nickname || profile.response.name,
           email: profile.response.email,
           image: profile.response.profile_image,
@@ -190,6 +191,32 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           } catch (error) {
             console.error('[JWT] Error fetching user:', error);
           }
+        }
+      }
+
+      // 토큰 검증: 토큰의 ID가 실제 DB ID인지 확인 (기존 사용자 로그인 시)
+      if (!user && token.id && token.email) {
+        try {
+          // 먼저 ID로 사용자가 존재하는지 확인
+          const userById = await prisma.user.findUnique({
+            where: { id: token.id as string },
+          });
+
+          if (!userById) {
+            // ID로 찾지 못하면 Provider ID일 가능성 → email로 재조회
+            console.warn(`[JWT] Token ID not found in DB: ${token.id}, retrying with email: ${token.email}`);
+            const userByEmail = await prisma.user.findFirst({
+              where: { email: token.email as string },
+            });
+
+            if (userByEmail) {
+              console.warn(`[JWT] Corrected token ID from ${token.id} to ${userByEmail.id}`);
+              token.id = userByEmail.id;
+              token.image = userByEmail.image || token.image;
+            }
+          }
+        } catch (error) {
+          console.error('[JWT] Error validating token ID:', error);
         }
       }
 
