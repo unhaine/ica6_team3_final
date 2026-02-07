@@ -9,39 +9,16 @@ import bcrypt from "bcryptjs";
 export const { handlers, auth, signIn, signOut } = NextAuth({
   debug: true,
   trustHost: true,
-  useSecureCookies: false, // HTTP 환경에서 필수
-  cookies: {
-    state: {
-      name: "next-auth.state",
-      options: {
-        httpOnly: true,
-        sameSite: "lax",
-        path: "/",
-        secure: false, // HTTP 환경
-      },
-    },
-    pkceCodeVerifier: {
-      name: "next-auth.pkce.code_verifier",
-      options: {
-        httpOnly: true,
-        sameSite: "lax",
-        path: "/",
-        secure: false,
-      },
-    },
-  },
   // PrismaAdapter 제거 - JWT 전략만 사용 (모든 로그인 방식 통일)
   session: { strategy: "jwt" },
   providers: [
     Google({
       clientId: process.env.AUTH_GOOGLE_ID,
       clientSecret: process.env.AUTH_GOOGLE_SECRET,
-      checks: [], // HTTP 환경에서 PKCE 검증 비활성화
     }),
     Naver({
       clientId: process.env.AUTH_NAVER_ID,
       clientSecret: process.env.AUTH_NAVER_SECRET,
-      checks: [], // HTTP 환경에서 PKCE 검증 비활성화 (구글과 동일)
       profile(profile) {
         // Naver API 응답 구조: { response: { id, nickname, email, profile_image } }
         return {
@@ -55,11 +32,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     // Kakao는 환경 변수가 설정된 경우에만 활성화
     ...(process.env.AUTH_KAKAO_ID && process.env.AUTH_KAKAO_SECRET
       ? [
-          Kakao({
-            clientId: process.env.AUTH_KAKAO_ID,
-            clientSecret: process.env.AUTH_KAKAO_SECRET,
-          }),
-        ]
+        Kakao({
+          clientId: process.env.AUTH_KAKAO_ID,
+          clientSecret: process.env.AUTH_KAKAO_SECRET,
+        }),
+      ]
       : []),
     Credentials({
       name: "Credentials",
@@ -97,7 +74,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (account?.provider && account.provider !== 'credentials') {
         try {
           console.warn(`[SignIn] Provider: ${account.provider}, Email: ${user.email}`);
-          
+
           const existingUser = await prisma.user.findFirst({
             where: {
               accounts: {

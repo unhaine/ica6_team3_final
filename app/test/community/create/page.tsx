@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Icon } from '@/components/elements/Icon';
 import RichTextEditor from '@/components/custom/RichTextEditor';
@@ -9,7 +9,7 @@ import { toast } from 'sonner';
 import { useHeader } from "@/components/modules/Header";
 import { useFooter } from "@/components/modules/Footer";
 
-export default function CreatePostTestPage() {
+function CreatePostContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const { data: session } = useSession();
@@ -22,18 +22,21 @@ export default function CreatePostTestPage() {
     const [title, setTitle] = useState('');
     const [loading, setLoading] = useState(false);
 
-    // HTML 내용에서 썸네일 URL 추출 (선택된 이미지 > 첫 번째 이미지 > null)
+    // HTML 내용에서 썸네일 URL 추출 (data-is-thumbnail="true" 우선, 그 다음 첫 번째 img)
     const extractThumbnail = (htmlContent: string): string | null => {
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(htmlContent, 'text/html');
+        try {
+            // 1. Check for data-is-thumbnail="true"
+            const thumbnailMatch = htmlContent.match(/<img[^>]+data-is-thumbnail="true"[^>]+src="([^">]+)"/i) ||
+                htmlContent.match(/<img[^>]+src="([^">]+)"[^>]+data-is-thumbnail="true"/i);
+            if (thumbnailMatch) return thumbnailMatch[1];
 
-        // 1. Check for explicitly selected thumbnail
-        const selectedImg = doc.querySelector('img[data-is-thumbnail="true"]');
-        if (selectedImg) return (selectedImg as HTMLImageElement).src;
-
-        // 2. Fallback to first image
-        const img = doc.querySelector('img');
-        return img ? img.src : null;
+            // 2. Fallback to first image
+            const firstImgMatch = htmlContent.match(/<img[^>]+src="([^">]+)"/i);
+            return firstImgMatch ? firstImgMatch[1] : null;
+        } catch (e) {
+            console.error('Thumbnail extraction error:', e);
+            return null;
+        }
     };
 
     const handleSubmit = async () => {
@@ -53,7 +56,9 @@ export default function CreatePostTestPage() {
 
         try {
             setLoading(true);
+            console.log('Submitting post:', { title, content: content.substring(0, 50) + '...', recipeId: searchParams.get('recipeId') });
             const imageUrl = extractThumbnail(content);
+            console.log('Extracted thumbnail:', imageUrl);
 
             const res = await fetch('/api/community/posts', {
                 method: 'POST',
@@ -75,7 +80,7 @@ export default function CreatePostTestPage() {
 
             toast.success('게시글이 등록되었습니다!');
             // Return to test community feed
-            window.location.href = '/test/community';
+            router.push('/test/community');
         } catch (error: any) {
             console.error(error);
             toast.error(error.message || '게시글 등록 중 오류가 발생했습니다.');
@@ -138,5 +143,13 @@ export default function CreatePostTestPage() {
                 </div>
             </main>
         </div>
+    );
+}
+
+export default function CreatePostTestPage() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <CreatePostContent />
+        </Suspense>
     );
 }

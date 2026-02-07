@@ -200,6 +200,8 @@ model Recipe {
   rcpImgUrl       String?  @db.VarChar(500) @map("rcp_img_url")   // 레시피 이미지 URL
   
   // 관계
+  ingredients     RecipeIngredient[]
+  steps           RecipeStep[]
   favorites       FavoriteRecipe[]
   posts           CommunityPost[]
   
@@ -207,6 +209,31 @@ model Recipe {
   @@index([ckgMtrlActoNm])
   @@index([ckgKndActoNm])
   @@map("Recipe")
+}
+
+// 레시피 식재료
+model RecipeIngredient {
+  rcpSno    BigInt  @map("rcp_sno")
+  ingId     Int     @map("ing_id")
+  ingName   String  @map("ing_name")
+  ingUnit   String? @map("ing_unit")
+
+  recipe    Recipe  @relation(fields: [rcpSno], references: [rcpSno], onDelete: Cascade)
+
+  @@id([rcpSno, ingId])
+  @@map("RecipeIngredient")
+}
+
+// 레시피 조리 단계 (HowTo)
+model RecipeStep {
+  rcpSno    BigInt  @map("rcp_sno")
+  stepId    Int     @map("step_id")
+  stepDesc  String  @db.Text @map("step_desc")
+
+  recipe    Recipe  @relation(fields: [rcpSno], references: [rcpSno], onDelete: Cascade)
+
+  @@id([rcpSno, stepId])
+  @@map("RecipeStep")
 }
 
 // 사용자 즐겨찾기 레시피

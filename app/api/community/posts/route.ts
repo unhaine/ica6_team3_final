@@ -9,6 +9,7 @@ const getPostModel = (p: any) => p.communityPost || p.CommunityPost || p.post ||
 export async function GET(req: NextRequest) {
     try {
         const postModel = getPostModel(prisma);
+        console.log('API: Using post model:', postModel ? 'found' : 'missing', Object.keys(prisma).filter(k => k.toLowerCase().includes('post')));
         if (!postModel) {
             // ... error handling
             return NextResponse.json({ success: false, error: 'Database model not found' }, { status: 500 });
@@ -49,7 +50,7 @@ export async function GET(req: NextRequest) {
                 );
             }
             // Get IDs of users I follow
-            const following = await prisma.follow.findMany({
+            const following = await (prisma as any).follow.findMany({
                 where: { followerId: user.id },
                 select: { followingId: true },
             });
@@ -140,6 +141,7 @@ export async function POST(req: NextRequest) {
         const user = authResult.user;
 
         const body = await req.json();
+        console.log('API: Received post creation request:', { ...body, content: body.content?.substring(0, 50) + '...' });
         const { title, content, imageUrl, recipeId } = body;
 
         if (!title || !content) {
@@ -166,6 +168,7 @@ export async function POST(req: NextRequest) {
                 recipeId: recipeId ? BigInt(recipeId) : null,
             },
         });
+        console.log('API: Post created successfully:', post.id);
 
         return NextResponse.json({
             success: true,
