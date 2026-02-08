@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { Step, DetectedItem } from "./components/types";
+import { Step, DetectedItem } from "@/components/modules/CameraSection";
 
 export const useCamera = () => {
     const router = useRouter();

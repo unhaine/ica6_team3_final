@@ -25,11 +25,13 @@ export interface MediaCardProps extends Omit<ActionCardProps, 'children' | 'titl
     /** 이미지 비율 (기본: video) */
     aspectRatio?: "square" | "video" | "portrait" | "auto";
     /** 카드 레이아웃 방향 (기본: vertical) */
-    layout?: "vertical" | "horizontal";
+    layout?: "vertical" | "horizontal" | "full";
     /** 이미지 영역 추가 스타일 (너비, 높이 조정 등) */
     imageClassName?: string;
     /** 컨텐츠 영역 추가 스타일 (패딩, 정렬 등) */
     contentClassName?: string;
+    /** 푸터 영역 추가 스타일 */
+    footerClassName?: string;
     /** 메타 정보 리스트 (아이콘 + 라벨 쌍) */
     metadata?: Array<{
         icon?: React.ComponentType<{ className?: string; size?: number | string }>;

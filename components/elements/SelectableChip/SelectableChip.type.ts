@@ -8,5 +8,5 @@ export interface SelectableChipProps extends Omit<ComponentProps<"button">, "pre
   /** Icon to show before the label (optional) */
   icon?: ReactNode;
   /** Size variant */
-  size?: "sm" | "md";
+  size?: "sm" | "md" | "lg";
 }

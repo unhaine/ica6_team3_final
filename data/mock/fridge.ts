@@ -1,0 +1,83 @@
+export const FILTERS = [
+  { id: "all", label: "전체" },
+  { id: "meat", label: "🥩 육류" },
+  { id: "seafood", label: "🐟 생선" },
+  { id: "vegetable", label: "🥬 채소" },
+  { id: "dairy", label: "🥚 유제품" },
+  { id: "fruit", label: "🍎 과일" },
+];
+
+export const MOCK_INGREDIENTS = [
+  {
+    id: "1",
+    name: "소고기 국거리",
+    quantity: "300g",
+    category: "meat",
+    expiryDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // 3일 후
+    createdAt: new Date(),
+  },
+  {
+    id: "2",
+    name: "삼겹살",
+    quantity: "600g",
+    category: "meat",
+    expiryDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
+    createdAt: new Date(),
+  },
+  {
+    id: "3",
+    name: "고등어",
+    quantity: "1마리",
+    category: "seafood",
+    expiryDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
+    createdAt: new Date(),
+  },
+  {
+    id: "4",
+    name: "양파",
+    quantity: "2개",
+    category: "vegetable",
+    expiryDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    createdAt: new Date(),
+  },
+  {
+    id: "5",
+    name: "대파",
+    quantity: "1단",
+    category: "vegetable",
+    expiryDate: new Date(Date.now() + 6 * 24 * 60 * 60 * 1000),
+    createdAt: new Date(),
+  },
+  {
+    id: "6",
+    name: "우유",
+    quantity: "1L",
+    category: "dairy",
+    expiryDate: new Date(Date.now() + 4 * 24 * 60 * 60 * 1000),
+    createdAt: new Date(),
+  },
+  {
+    id: "7",
+    name: "계란",
+    quantity: "10구",
+    category: "dairy",
+    expiryDate: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000),
+    createdAt: new Date(),
+  },
+  {
+    id: "8",
+    name: "사과",
+    quantity: "3개",
+    category: "fruit",
+    expiryDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
+    createdAt: new Date(),
+  },
+  {
+    id: "9",
+    name: "배",
+    quantity: "2개",
+    category: "fruit",
+    expiryDate: new Date(Date.now() + 12 * 24 * 60 * 60 * 1000),
+    createdAt: new Date(),
+  },
+];

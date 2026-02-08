@@ -1,98 +1,104 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { signIn } from 'next-auth/react';
-import { SocialButton } from '@/components/elements/SocialButton';
-import { Typography } from '@/components/elements/Typography';
+import { ActionButton, Typography } from '@/components/elements';
+import { AuthContainer, AuthField } from '@/components/modules';
+import { toast } from 'sonner';
+import { ChevronLeft } from 'lucide-react';
+import { useHeader } from '@/components/modules/Header/Header.hook';
 
-export default function LoginPage() {
+export default function EmailLoginPage() {
     const router = useRouter();
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
 
-    const handleSocialLogin = (provider: string) => {
-        if (provider === 'google') {
-            signIn('google', { callbackUrl: '/onboarding' });
-        } else if (provider === 'naver') {
-            signIn('naver', { callbackUrl: '/onboarding' });
-        } else if (provider === 'kakao') {
-            signIn('kakao', { callbackUrl: '/onboarding' });
-        } else {
-            router.push('/onboarding');
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsLoading(true);
+
+        try {
+            const result = await signIn('credentials', {
+                email,
+                password,
+                redirect: false,
+            });
+
+            if (result?.error) {
+                toast.error('이메일 또는 비밀번호가 올바르지 않습니다.');
+            } else {
+                toast.success('로그인되었습니다.');
+                router.push('/test');
+            }
+        } catch (error) {
+            console.error(error);
+            toast.error('로그인 중 오류가 발생했습니다.');
+        } finally {
+            setIsLoading(false);
         }
     };
 
-    const handleGuestLogin = () => {
-        router.push('/test'); // 임시로 테스트 페이지로 이동
-    };
+    useHeader({
+        title: "이메일 로그인",
+        left: (
+            <button onClick={() => router.back()} className="p-2 -ml-2 text-slate-900">
+                <ChevronLeft size={24} />
+            </button>
+        ),
+        isVisible: true,
+    });
 
     return (
-        <main className="min-h-screen bg-white text-slate-900 flex flex-col items-center p-6 pt-20 relative">
-            <div className="w-full max-w-md space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
-
-                {/* Logo & Header section - matching /test/page.tsx mood */}
-                <div className="text-center space-y-3">
-                    <div className="flex justify-center mb-24">
-                    <Typography variant="h2" weight="black" color="primary" className="tracking-tighter italic">
-                    냉장고양이
-                    </Typography>
-                    </div>
-                </div>
-
-                {/* Login Container */}
-                <div className="space-y-8 bg-transparent">
-                    <div className="space-y-4">
-                        <div className="space-y-3">
-                            <SocialButton provider="kakao" onClick={() => handleSocialLogin('kakao')} />
-                            <SocialButton provider="naver" onClick={() => handleSocialLogin('naver')} />
-                            <SocialButton provider="google" onClick={() => handleSocialLogin('google')} />
-                            
-                            <div className="relative py-4">
-                                <div className="absolute inset-0 flex items-center">
-                                    <span className="w-full border-t border-slate-100"></span>
-                                </div>
-                                <div className="relative flex justify-center text-xs uppercase">
-                                    <span className="bg-white px-2 text-slate-400 font-medium tracking-wider">또는 이메일로 시작하기</span>
-                                </div>
-                            </div>
-
-                            <button
-                                onClick={() => router.push('/login/email')}
-                                className="flex items-center justify-center gap-3 w-full py-3.5 px-4 rounded-2xl font-semibold text-sm transition-all duration-300 border border-slate-200 hover:bg-slate-50 active:scale-[0.98] text-slate-700 shadow-sm"
-                            >
-                                <span className="grow text-center">이메일 로그인</span>
-                            </button>
-                        </div>
-                    </div>
-
-                    <div className="space-y-4 text-center">
-                        <button 
-                            onClick={() => router.push('/login/signup')}
-                            className="text-sm text-slate-500 hover:text-primary transition-colors duration-200"
-                        >
-                            계정이 없으신가요? <span className="font-bold underline decoration-primary/30 underline-offset-4">회원가입</span>
-                        </button>
-                        
-                        <div className="pt-2">
-                            <button
-                                onClick={handleGuestLogin}
-                                className="w-full py-2 text-slate-400 hover:text-primary text-[13px] font-medium transition-colors duration-200 border-none bg-transparent"
-                            >
-                                둘러보기 (게스트 접속)
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                {/* Footer info - simple and clean */}
-                <footer className="pt-20 text-center space-y-4">
-                    <p className="text-[10px] text-slate-400 uppercase tracking-widest font-medium">
-                        Powered by AI Technology
-                    </p>
-                    <div className="flex justify-center gap-6 text-[11px] text-slate-400 font-medium">
-                        <a href="#" className="hover:underline">이용약관</a>
-                        <a href="#" className="hover:underline">개인정보처리방침</a>
-                    </div>
-                </footer>
+        <AuthContainer>
+            <div className="text-center space-y-3">
+                <Typography color="secondary">
+                    이메일과 비밀번호를 입력해 주세요.
+                </Typography>
             </div>
-        </main>
+
+            <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="space-y-4">
+                    <AuthField
+                        label="이메일"
+                        type="email"
+                        placeholder="example@email.com"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                    />
+                    <AuthField
+                        label="비밀번호"
+                        type="password"
+                        placeholder="••••••••"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                    />
+                </div>
+
+                <ActionButton 
+                    type="submit" 
+                    fullWidth
+                    loading={isLoading}
+                    className="h-12 rounded-xl font-bold text-base shadow-lg shadow-purple-600/20 bg-purple-600 text-white hover:bg-purple-700"
+                >
+                    로그인
+                </ActionButton>
+            </form>
+
+            <div className="text-center">
+                <button 
+                    onClick={() => router.push('/signup')}
+                    className="text-sm text-slate-500 hover:text-purple-600 transition-colors duration-200"
+                >
+                    계정이 없으신가요? 
+                    <span className="font-bold underline decoration-purple-600/30 underline-offset-4 hover:decoration-purple-600">
+                        회원가입
+                    </span>
+                </button>
+            </div>
+        </AuthContainer>
     );
 }
