@@ -71,6 +71,7 @@ export function filterRecipesByRules(recipes: Recipe[], user: User, userItems: G
   let out = recipes.filter(r => {
     const inbun = parsePortion(r.ckgInbunNm);
     if (inbun == null) return true;
+    if (user.householdSize == null) return true;
     if ([1,2,3,4].includes(inbun)) return inbun === user.householdSize;
     if ([5,6].includes(inbun)) return user.householdSize === 4;
     return false;
@@ -145,7 +146,7 @@ export function scoreRecipe(
   // household score
   const inbun = parsePortion(recipe.ckgInbunNm);
   let householdScore = 0;
-  if (inbun != null) {
+  if (inbun != null && user.householdSize != null) {
     if (([1,2,3,4].includes(inbun) && inbun === user.householdSize) || ([5,6].includes(inbun) && user.householdSize === 4)) {
       householdScore = 20;
     } else if (Math.abs((inbun || 0) - user.householdSize) === 1) {

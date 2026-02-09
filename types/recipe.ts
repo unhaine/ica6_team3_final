@@ -16,7 +16,7 @@ export interface RecipeIngredient extends Partial<Ingredient> {
 
 export interface User {
   id: string;
-  householdSize: number;
+  householdSize: number | null;
   cookingPreference: string | null;
   allergies: string[];
 }
