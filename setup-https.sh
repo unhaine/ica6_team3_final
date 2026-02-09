@@ -1,16 +1,20 @@
 #!/bin/bash
 
-# RefrigerAI - EC2 HTTPS 자동 설정 스크립트 (Nginx + Certbot)
-# 이 스크립트는 Ubuntu 22.04 LTS 환경에서 동작하도록 작성되었습니다.
+# RefrigerAI - Amazon Linux 2023용 HTTPS 자동 설정 스크립트
+# 이 스크립트는 Amazon Linux 2023 환경에 최적화되었습니다.
 
 DOMAIN="ica6t3f.duckdns.org"
 EMAIL="torch.nograd@gmail.com"
 
 echo "===================================================="
-echo "1. 시스템 업데이트 및 Nginx 설치..."
+echo "1. Nginx 설치 및 기본 디렉토리 생성 (AL2023)..."
 echo "===================================================="
-sudo apt update
-sudo apt install -y nginx
+sudo dnf update -y
+sudo dnf install -y nginx
+
+# Ubuntu와 유사한 관리 구조를 위해 디렉토리 명시적 생성
+sudo mkdir -p /etc/nginx/sites-available
+sudo mkdir -p /etc/nginx/sites-enabled
 
 echo "===================================================="
 echo "2. Nginx 설정 파일 작성..."
@@ -35,41 +39,49 @@ server {
 EOF
 
 echo "===================================================="
-echo "3. Nginx 설정 활성화..."
+echo "3. Nginx 설정 활성화 및 메인 설정 연결..."
 echo "===================================================="
+# 심볼릭 링크 연결
 sudo ln -sf /etc/nginx/sites-available/refrigerai /etc/nginx/sites-enabled/
-sudo rm -f /etc/nginx/sites-enabled/default
 
-# Nginx 설정 테스트
+# ⚠️ Amazon Linux 2023의 nginx.conf는 보통 sites-enabled를 자동으로 로드하지 않음
+# 그래서 nginx.conf 파일의 http 블록 안에 include 문구를 삽입함
+if ! grep -q "include /etc/nginx/sites-enabled/*;" /etc/nginx/nginx.conf; then
+    # conf.d 불러오는 줄 다음에 sites-enabled도 불러오도록 추가
+    sudo sed -i '/include \/etc\/nginx\/conf.d\/\*\.conf;/a \    include /etc/nginx/sites-enabled/*;' /etc/nginx/nginx.conf
+fi
+
+# 서비스 시작 및 활성화
+sudo systemctl enable nginx
+sudo systemctl restart nginx
+
+# 설정 테스트
 sudo nginx -t
 if [ $? -eq 0 ]; then
-    sudo systemctl restart nginx
     echo "Nginx 설정이 완료되었습니다."
 else
-    echo "Nginx 설정에 오류가 있습니다. 직접 확인이 필요합니다."
+    echo "Nginx 설정에 오류가 있습니다. nginx.conf를 확인해 주세요."
     exit 1
 fi
 
 echo "===================================================="
-echo "4. SSL 인증서 발급 및 HTTPS 적용 (Certbot)..."
+echo "4. SSL 인증서 발급 (Certbot)..."
 echo "===================================================="
-sudo apt install -y certbot python3-certbot-nginx
+# AL2023은 certbot 패키지 관리에 pip나 전용 패키지를 권장함
+sudo dnf install -y certbot python3-certbot-nginx
 
 # 비대화형 모드로 인증서 발급 시도
-# --redirect 옵션은 http로 접속해도 https로 자동 전환해줍니다.
 sudo certbot --nginx -d $DOMAIN --non-interactive --agree-tos -m $EMAIL --redirect
 
 if [ $? -eq 0 ]; then
     echo "===================================================="
     echo "HTTPS 설정이 성공적으로 완료되었습니다!"
-    echo "이제 아래 주소로 접속하세요:"
     echo "URL: https://$DOMAIN"
     echo "===================================================="
-    echo "추가 작업 필수:"
-    echo "1. .env 파일의 AUTH_URL을 https://$DOMAIN 으로 수정하세요."
-    echo "2. Google 클라우드 콘솔에서 리디렉션 URI를 https로 업데이트하세요."
-    echo "===================================================="
 else
+    echo "----------------------------------------------------"
     echo "인증서 발급 중 오류가 발생했습니다."
-    echo "DuckDNS에 등록된 IP가 현재 EC2의 Public IP와 일치하는지 확인하세요."
+    echo "1. DuckDNS IP가 현재 EC2 IP($ (curl -s ifconfig.me))와 일치하는지 확인"
+    echo "2. AWS 보안그룹에서 80번, 443번 포트가 오픈되어 있는지 확인"
+    echo "----------------------------------------------------"
 fi
