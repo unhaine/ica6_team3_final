@@ -58,7 +58,7 @@ sudo systemctl restart nginx
 # 설정 테스트
 sudo nginx -t
 if [ $? -eq 0 ]; then
-    echo "Nginx 설정이 완료되었습니다."
+    echo "Nginx 설정이 완료어졌습니다."
 else
     echo "Nginx 설정에 오류가 있습니다. nginx.conf를 확인해 주세요."
     exit 1
