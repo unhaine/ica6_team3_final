@@ -115,9 +115,15 @@ export function RecipeCard({
                             </Typography>
                         </div>
                     ) : (
-                        <Typography variant="body2" className="text-white/90 font-medium whitespace-pre-line">
-                            재료가 다 준비되었어요!{"\n"}이대로 요리해보는 건 어때요?
-                        </Typography>
+                        recipe?.recommendReason ? (
+                            <Typography variant="body2" className="text-white/90 font-medium whitespace-pre-line">
+                                {recipe.recommendReason}
+                            </Typography>
+                        ) : (
+                            <Typography variant="body2" className="text-white/90 font-medium whitespace-pre-line">
+                                재료가 다 준비되었어요!{"\n"}이대로 요리해보는 건 어때요?
+                            </Typography>
+                        )
                     )}
                     <div className="flex gap-3 mt-1">
                         <div className="flex items-center gap-1 text-white/80">

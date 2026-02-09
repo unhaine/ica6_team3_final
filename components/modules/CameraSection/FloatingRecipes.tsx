@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence, PanInfo } from 'framer-motion';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { CameraHeader } from './CameraHeader';
@@ -8,15 +8,62 @@ import { RecipeCard } from '@/components/modules/HomeSection';
 import { MockRecipe } from '@/data/mock';
 
 interface FloatingRecipesProps {
-    recipes: MockRecipe[];
+    recipes?: MockRecipe[];
     isVisible: boolean;
     onClose: () => void;
     onSelect: (recipe: MockRecipe) => void;
 }
 
-export const FloatingRecipes = ({ recipes, isVisible, onClose, onSelect }: FloatingRecipesProps) => {
+export const FloatingRecipes = ({ recipes = [], isVisible, onClose, onSelect }: FloatingRecipesProps) => {
     const [currentIndex, setCurrentIndex] = useState(0);
-    const [direction, setDirection] = useState(0); // -1 for left, 1 for right
+    const [direction, setDirection] = useState(0);
+    const [recommendedRecipes, setRecommendedRecipes] = useState<MockRecipe[]>([]);
+    const [isLoading, setIsLoading] = useState(false);
+
+    // API에서 추천 레시피 가져오기
+    useEffect(() => {
+        if (isVisible && recipes.length === 0) {
+            const fetchRecommendations = async () => {
+                try {
+                    setIsLoading(true);
+                    const response = await fetch('/api/recommend');
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.recommendations && Array.isArray(data.recommendations)) {
+                            // RecipeScoreDetail을 MockRecipe 형식으로 변환
+                            const converted = data.recommendations.map((rec: any) => ({
+                                rcpSno: rec.recipe.rcpSno || rec.recipe.id,
+                                rcpTtl: rec.recipe.rcpTtl || rec.recipe.ckgNm || '레시피',
+                                rcpImgUrl: rec.recipe.rcpImgUrl || '/default-recipe.png',
+                                ckgIpdc: rec.recipe.ckgIpdc || rec.recipe.ckgMtrlCn || '',
+                                ckgTimeNm: rec.recipe.ckgTimeNm || '정보없음',
+                                ckgDodfNm: rec.recipe.ckgDodfNm || '정보없음',
+                                inqCnt: rec.recipe.viewCount || 0,
+                                rcmmCnt: rec.score?.totalScore || 0,
+                                srapCnt: 0,
+                                rgtrNm: '냉파고수',
+                                ckgNm: rec.recipe.ckgNm,
+                                ckgKndActoNm: rec.recipe.ckgKndActoNm,
+                                ckgStaActoNm: rec.recipe.ckgStaActoNm,
+                                ckgMtrlCn: rec.recipe.ckgMtrlCn,
+                            }));
+                            setRecommendedRecipes(converted);
+                        }
+                    }
+                } catch (error) {
+                    console.error('추천 레시피 로딩 실패:', error);
+                    setRecommendedRecipes(recipes);
+                } finally {
+                    setIsLoading(false);
+                }
+            };
+            fetchRecommendations();
+        } else if (recipes.length > 0) {
+            setRecommendedRecipes(recipes);
+        }
+    }, [isVisible, recipes]);
+
+    const displayRecipes = recommendedRecipes.length > 0 ? recommendedRecipes : recipes;
 
     const handleDragEnd = (event: any, info: PanInfo) => {
         const swipeThreshold = 50;
@@ -50,7 +97,7 @@ export const FloatingRecipes = ({ recipes, isVisible, onClose, onSelect }: Float
         })
     };
 
-    if (!isVisible || recipes.length === 0) return null;
+    if (!isVisible || displayRecipes.length === 0) return null;
 
     return (
         <AnimatePresence>
@@ -69,7 +116,7 @@ export const FloatingRecipes = ({ recipes, isVisible, onClose, onSelect }: Float
                     <div className="absolute top-0 left-0 right-0 z-20">
                         <CameraHeader 
                             title="추천 레시피" 
-                            subtitle={`${currentIndex + 1} / ${recipes.length}`} 
+                            subtitle={`${currentIndex + 1} / ${displayRecipes.length}`} 
                             onClose={onClose} 
                         />
                     </div>
@@ -101,8 +148,8 @@ export const FloatingRecipes = ({ recipes, isVisible, onClose, onSelect }: Float
                                         className="w-full h-full absolute inset-0"
                                     >
                                         <RecipeCard 
-                                            recipe={recipes[currentIndex]} 
-                                            onSelect={() => onSelect(recipes[currentIndex])}
+                                            recipe={displayRecipes[currentIndex]} 
+                                            onSelect={() => onSelect(displayRecipes[currentIndex])}
                                             className="rounded-[32px] shadow-2xl"
                                         />
                                     </motion.div>
@@ -121,7 +168,7 @@ export const FloatingRecipes = ({ recipes, isVisible, onClose, onSelect }: Float
                                     <ChevronLeft className="w-5 h-5" />
                                 </button>
                             )}
-                            {currentIndex < recipes.length - 1 && (
+                            {currentIndex < displayRecipes.length - 1 && (
                                 <button 
                                     onClick={() => {
                                         setDirection(1);
@@ -134,9 +181,9 @@ export const FloatingRecipes = ({ recipes, isVisible, onClose, onSelect }: Float
                             )}
                         </div>
 
-                        {/* Indicatos */}
+                        {/* Indicators */}
                         <div className="flex justify-center gap-1.5 mt-4">
-                            {recipes.map((_, i) => (
+                            {displayRecipes.map((_, i) => (
                                 <div 
                                     key={i}
                                     className={`h-1.5 rounded-full transition-all duration-300 ${

@@ -10,14 +10,16 @@ export function useHomeRecommendations() {
     const fetchRecommendations = useCallback(async () => {
         setIsLoading(true);
         try {
-            const response = await fetch('/api/recipes/recommend-rule-based');
+            // 새로운 추천 API 호출
+            const response = await fetch('/api/recommend');
             
             if (response.status === 401) {
+                // 인증 실패 시 일반 레시피 반환
                 const fallbackResponse = await fetch('/api/recipes?limit=5');
                 const fallbackResult = await fallbackResponse.json();
                 if (fallbackResult.success) {
                     setRecipes(fallbackResult.data);
-                    setGroceryCount(null); // 로그인 안됨
+                    setGroceryCount(null);
                 } else {
                     setRecipes([]);
                 }
@@ -26,13 +28,14 @@ export function useHomeRecommendations() {
 
             const result = await response.json();
             
-            if (result.user) {
-                setGroceryCount(result.user.groceryCount);
-            }
-
-            if (result.recipes && result.recipes.length > 0) {
-                const extractedRecipes = result.recipes.map((item: any) => item.recipe);
+            if (result.success && result.recommendations && Array.isArray(result.recommendations)) {
+                // 추천 결과에서 recipe 객체 추출
+                const extractedRecipes = result.recommendations.map((item: any) => {
+                    // 각 recipe 객체가 이미 전체 필드를 가지고 있음
+                    return item.recipe;
+                });
                 setRecipes(extractedRecipes);
+                setGroceryCount(result.user?.groceryCount || null);
             } else {
                 setRecipes([]);
             }

@@ -42,7 +42,7 @@ export default function RefrigeratorCleanupPage() {
     if (isLoading) {
         return (
             <div className="flex flex-col gap-6 p-4 pb-24 overflow-y-auto bg-gray-50/50 h-full">
-                {[1, 2, 3].map((i) => (
+                {[1, 2, 3, 4, 5].map((i) => (
                     <div key={i} className="h-[320px] shrink-0">
                         <Skeleton className="h-full w-full rounded-3xl" />
                     </div>
@@ -51,8 +51,8 @@ export default function RefrigeratorCleanupPage() {
         );
     }
 
-    // Take top 3 recipes for the 3 ingredients
-    const displayRecipes = recipes.slice(0, 3);
+    // Take top 5 recipes for the 5 ingredients
+    const displayRecipes = recipes.slice(0, 5);
 
     return (
         <div className="flex flex-col gap-6 p-4 pb-24 overflow-y-auto bg-gray-50/50 h-full">

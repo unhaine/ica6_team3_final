@@ -53,7 +53,7 @@ export function HomeRecommendations() {
                 ) : (
                     otherRecipes.map((rec, index) => (
                         <RecipeCard 
-                            key={String(rec.rcpSno)} 
+                            key={String(rec.rcpSno ?? rec.id ?? index)} 
                             recipe={rec} 
                             index={index + 2} 
                             variant="compact"
