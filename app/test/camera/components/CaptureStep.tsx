@@ -17,46 +17,53 @@ export const CaptureStep = ({ onImageChange, onClose }: CaptureStepProps) => {
             className="flex-1 flex flex-col justify-between p-6 relative"
         >
             <button 
-                className="absolute top-6 left-6 z-10 p-2 bg-white/20 backdrop-blur-md rounded-full text-white"
+                className="absolute top-6 left-6 z-10 p-2 bg-black/20 backdrop-blur-md rounded-full text-white"
                 onClick={onClose}
             >
                 <X className="w-6 h-6" />
             </button>
 
-            <div className="flex-1 flex flex-col items-center justify-center space-y-8">
-                <div className="w-64 h-64 border-2 border-dashed border-white/30 rounded-3xl flex items-center justify-center">
-                    <Camera className="w-16 h-16 text-white/50" />
-                </div>
-                <div className="text-center space-y-2">
-                    <Typography variant="h3" weight="bold" className="text-white">
-                        냉장고 안을 찍어주세요!
-                    </Typography>
-                    <Typography variant="body2" className="text-white/60">
-                        AI가 재료를 자동으로 찾아드릴게요.
-                    </Typography>
+            <div className="flex-1 flex flex-col items-center justify-center space-y-8 relative z-0">
+                <div className="w-full max-w-sm aspect-3/4 border-2 border-white/20 rounded-3xl relative overflow-hidden">
+                    <div className="absolute inset-0 border-[3px] border-white/40 rounded-3xl" />
+                    <div className="absolute top-0 left-0 right-0 h-32 bg-linear-to-b from-black/50 to-transparent" />
+                    <div className="absolute bottom-0 left-0 right-0 h-32 bg-linear-to-t from-black/50 to-transparent" />
+                    
+                    <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6 space-y-4">
+                        <Typography variant="h3" weight="bold" className="text-white drop-shadow-md">
+                            영수증 또는 냉장고 내부가<br/>잘 보이게 촬영해주세요
+                        </Typography>
+                        <Typography variant="body2" className="text-white/80 drop-shadow-md">
+                            문을 활짝 열고<br/>전체가 보이게 찍으면 더 정확해요
+                        </Typography>
+                    </div>
                 </div>
             </div>
 
-            <div className="space-y-4">
-                <label className="block">
+            <div className="w-full px-6 pb-8 pt-4 flex items-center justify-between relative z-10">
+                <button className="p-3 rounded-full bg-white/10 backdrop-blur-md text-white/50">
+                    <div className="w-6 h-6" /> {/* Placeholder for gallery/flash if needed later */}
+                </button>
+
+                <label className="group relative flex items-center justify-center cursor-pointer">
                     <input 
                         type="file" 
                         accept="image/*" 
                         className="hidden" 
                         onChange={onImageChange}
+                        capture="environment"
                     />
-                    <div className="w-full h-16 bg-white rounded-2xl flex items-center justify-center relative cursor-pointer active:scale-95 transition-transform">
-                        <Upload className="absolute left-6 w-5 h-5 text-black" />
-                        <span className="font-bold text-black text-lg">사진 업로드</span>
+                    {/* Outer Ring */}
+                    <div className="w-20 h-20 rounded-full border-4 border-white flex items-center justify-center transition-transform group-active:scale-95">
+                        {/* Inner Button */}
+                        <div className="w-16 h-16 rounded-full bg-white flex items-center justify-center">
+                            <Camera className="w-8 h-8 text-black" />
+                        </div>
                     </div>
                 </label>
-                
-                <button 
-                    className="w-full h-16 rounded-2xl border border-white/30 text-white hover:bg-white/10 flex items-center justify-center relative cursor-pointer active:scale-95 transition-transform"
-                    onClick={() => alert("카메라 기능은 모바일 브라우저에서 지원될 예정입니다. 사진 업로드를 이용해주세요.")}
-                >
-                    <Camera className="absolute left-6 w-5 h-5" />
-                    <span className="font-bold text-lg">카메라 촬영</span>
+
+                <button className="p-3 rounded-full bg-white/10 backdrop-blur-md text-white">
+                    <div className="w-6 h-6 bg-white/20 rounded bg-cover bg-center" /> {/* Placeholder for gallery preview */}
                 </button>
             </div>
         </motion.div>

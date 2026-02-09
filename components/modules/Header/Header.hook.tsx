@@ -4,7 +4,7 @@ import React, { createContext, useContext, useState, ReactNode, useCallback, use
 import { HeaderState } from './Header.type';
 
 const defaultState: HeaderState = {
-    isVisible: true,
+    isVisible: false,
     title: undefined,
     left: undefined,
     center: undefined,
@@ -77,7 +77,10 @@ export const useHeader = (options: Partial<HeaderState>) => {
     
     const { isVisible, title, left, center, right, transparent } = options;
 
-    useEffect(() => {
+    // Use useLayoutEffect to update state before paint, preventing layout flicker
+    const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? React.useLayoutEffect : React.useEffect;
+
+    useIsomorphicLayoutEffect(() => {
         setHeader({ isVisible, title, left, center, right, transparent });
     }, [isVisible, title, left, center, right, transparent, setHeader]);
 };

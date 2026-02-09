@@ -22,12 +22,13 @@ export const MediaCard = ({
     layout = "vertical",
     imageClassName,
     contentClassName,
+    footerClassName,
     metadata,
     className,
     ...props
 }: MediaCardProps) => {
     return (
-        <ActionCard className={cn(STYLES.container(layout), className)} {...props}>
+        <ActionCard className={cn(STYLES.container(layout, aspectRatio), className)} {...props}>
             {/* 1. Media Section */}
             {imageUrl && (
                 <div className={cn(STYLES.imageWrapper(aspectRatio, layout), imageClassName)}>
@@ -38,6 +39,9 @@ export const MediaCard = ({
                         className={STYLES.image}
                     />
                     
+                    {/* Background Gradient for Full Layout */}
+                    {layout === "full" && <div className={STYLES.gradient} />}
+
                     {/* Overlay Badges */}
                     {overlay && (
                         <div className={STYLES.overlay}>
@@ -48,7 +52,7 @@ export const MediaCard = ({
             )}
 
             {/* 2. Content Section */}
-            <div className={cn(STYLES.content, contentClassName)}>
+            <div className={cn(STYLES.content(layout), contentClassName)}>
                 {/* Header: Title */}
                 <div className={STYLES.header}>
                     <h3 className={STYLES.title}>{title}</h3>
@@ -83,7 +87,7 @@ export const MediaCard = ({
 
                 {/* Footer */}
                 {(footer || footerLeft || footerRight) && (
-                    <div className={STYLES.footer}>
+                    <div className={cn(STYLES.footer, footerClassName)}>
                         {footer ? footer : (
                             <>
                                 <div className={STYLES.footerLeft}>{footerLeft}</div>

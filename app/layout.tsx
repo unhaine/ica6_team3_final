@@ -13,15 +13,15 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-    title: "스마트 냉장고 식료품 인식",
-    description: "스마트폰으로 냉장고를 촬영하면 AI가 식료품을 자동으로 인식합니다",
+    title: "먹이",
 };
 
 import { AuthProvider } from "@/providers/AuthProvider";
-import { ThemeProvider } from "@/providers/ThemeProvider";
 import { QueryProvider } from "@/providers/QueryProvider";
 import { Toaster } from "sonner";
-import { BottomNav } from "@/components/layout/BottomNav";
+import { Footer, FooterProvider } from "@/components/modules/Footer";
+import { Header, HeaderProvider } from "@/components/modules/Header";
+import { FooterController } from "@/components/modules/Footer/FooterController";
 
 export default function RootLayout({
     children,
@@ -31,20 +31,23 @@ export default function RootLayout({
     return (
         <html lang="ko" suppressHydrationWarning>
             <body
-                className={`${geistSans.variable} ${geistMono.variable} antialiased pb-20`}
+                className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
             >
                 <AuthProvider>
                     <QueryProvider>
-                        <ThemeProvider
-                            attribute="class"
-                            defaultTheme="system"
-                            enableSystem
-                            disableTransitionOnChange
-                        >
-                            <Toaster position="top-center" richColors />
-                            {children}
-                            <BottomNav />
-                        </ThemeProvider>
+                        <Toaster position="top-center" richColors />
+                        <HeaderProvider>
+                            <FooterProvider>
+                                <div className="h-screen flex flex-col overflow-hidden bg-white">
+                                    <FooterController />
+                                    <Header />
+                                    <main className="flex-1 min-h-0 overflow-hidden relative flex flex-col">
+                                        {children}
+                                    </main>
+                                    <Footer />
+                                </div>
+                            </FooterProvider>
+                        </HeaderProvider>
                     </QueryProvider>
                 </AuthProvider>
             </body>

@@ -85,7 +85,10 @@ export const useFooter = (options: Partial<FooterState>) => {
     // Memoize items stringification to avoid unnecessary re-renders
     const itemsKey = useMemo(() => items ? JSON.stringify(items) : undefined, [items]);
 
-    useEffect(() => {
+    // Use useLayoutEffect to update state before paint, preventing layout flicker
+    const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? React.useLayoutEffect : React.useEffect;
+
+    useIsomorphicLayoutEffect(() => {
         setFooter({ isVisible, items });
     }, [isVisible, items, itemsKey, setFooter]);
 };
