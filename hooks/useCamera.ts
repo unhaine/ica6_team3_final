@@ -12,6 +12,9 @@ export const useCamera = () => {
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [detectedItems, setDetectedItems] = useState<DetectedItem[]>([]);
     const [editingItem, setEditingItem] = useState<DetectedItem | null>(null);
+    const [showDuplicateAlert, setShowDuplicateAlert] = useState(false);
+    const [duplicateMessage, setDuplicateMessage] = useState("");
+    const [showRecipes, setShowRecipes] = useState(false);
 
     // 분석 요청
     const handleAnalyze = async (file: File) => {
@@ -22,7 +25,7 @@ export const useCamera = () => {
                 reader.onloadend = () => resolve(reader.result as string);
                 reader.readAsDataURL(file);
             });
-            
+
             const base64Image = await base64Promise;
 
             const response = await fetch(`/api/vision/analyze/gemini-flash`, {
@@ -79,14 +82,13 @@ export const useCamera = () => {
 
     // 아이템 이름 및 수량 수정
     const handleEditLabel = (id: string, newLabel: string, quantity: number) => {
-        setDetectedItems((prev) => 
+        setDetectedItems((prev) =>
             prev.map(item => item.id === id ? { ...item, label: newLabel, quantity } : item)
         );
     };
 
-    // 저장 완료 처리
-    const handleConfirmSave = async () => {
-        console.log('Saving ingredients...', detectedItems);
+    // 실제 저장 로직 (중복 확인 후 또는 강제 저장 시 호출)
+    const executeSave = async () => {
         try {
             // 중복된 이름의 재료를 합쳐서 수량 계산
             const aggregatedItems = detectedItems.reduce((acc, item) => {
@@ -121,11 +123,51 @@ export const useCamera = () => {
                 throw new Error(data.error || '재료 저장에 실패했습니다.');
             }
 
-            alert(`✅ ${aggregatedItems.length}종류의 재료(총 ${detectedItems.length}개 객체)가 냉장고에 저장되었습니다.`);
+            // alert(`✅ ${aggregatedItems.length}종류의 재료(총 ${detectedItems.length}개 객체)가 냉장고에 저장되었습니다.`);
             router.push("/fridge");
         } catch (error) {
             console.error('재료 저장 에러:', error);
             alert(`❌ 재료 저장 중 오류가 발생했습니다: ${error instanceof Error ? error.message : '알 수 없는 오류'}`);
+        }
+    };
+
+    // 저장 버튼 클릭 시 처리 (중복 체크)
+    const handleConfirmSave = async () => {
+        console.log('Saving ingredients...', detectedItems);
+        try {
+            // 1. 현재 냉장고 재료 조회 (중복 체크용)
+            // TODO: 캐싱하거나 react-query 등을 사용하면 더 좋음
+            const currentIngredientsRes = await fetch('/api/ingredients');
+            const currentIngredientsData = await currentIngredientsRes.json();
+
+            const existingNames = new Set<string>();
+            if (currentIngredientsData.success && Array.isArray(currentIngredientsData.data)) {
+                currentIngredientsData.data.forEach((item: { name: string }) => {
+                    existingNames.add(item.name.replace(/\s+/g, '').toLowerCase());
+                });
+            }
+
+            // 2. 중복되는 항목 찾기
+            const duplicates = detectedItems.filter(item =>
+                existingNames.has(item.label.replace(/\s+/g, '').toLowerCase())
+            );
+
+            if (duplicates.length > 0) {
+                const uniqueDuplicateNames = Array.from(new Set(duplicates.map(d => d.label)));
+                const message = `'${uniqueDuplicateNames.join(', ')}' 이(가) 이미 냉장고에 있습니다.\n그래도 저장하시겠습니까?`;
+
+                setDuplicateMessage(message);
+                setShowDuplicateAlert(true);
+                return;
+            }
+
+            // 중복 없으면 레시피 추천 보여주기
+            setShowRecipes(true);
+
+        } catch (error) {
+            console.error('중복 체크 중 에러:', error);
+            // 에러 나도 일단 레시피 보여주기 (저장 흐름 계속)
+            setShowRecipes(true);
         }
     };
 
@@ -145,5 +187,12 @@ export const useCamera = () => {
         handleEditLabel,
         handleSaveEdit,
         handleConfirmSave,
+        showDuplicateAlert,
+        setShowDuplicateAlert,
+        duplicateMessage,
+        handleForceSave: () => setShowRecipes(true),
+        showRecipes,
+        setShowRecipes,
+        handleFinalSave: executeSave,
     };
 };

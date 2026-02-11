@@ -18,3 +18,4 @@ export * from './RatingStars';
 export * from './ActionCard';
 export * from './EmptyState';
 export * from './LoadingOverlay';
+export * from './AlertModal';

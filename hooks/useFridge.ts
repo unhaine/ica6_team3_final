@@ -27,7 +27,7 @@ export const useFridge = (mockData?: FridgeItem[]) => {
       setIsLoading(true);
       const response = await fetch('/api/ingredients');
       const data = await response.json();
-      
+
       if (data.success) {
         setItems(data.data);
       } else {
@@ -51,8 +51,8 @@ export const useFridge = (mockData?: FridgeItem[]) => {
 
   // 필터링된 아이템
   const filteredItems = useMemo(() => {
-    return activeFilter === "all" 
-      ? items 
+    return activeFilter === "all"
+      ? items
       : items.filter(item => item.category === activeFilter);
   }, [items, activeFilter]);
 
@@ -103,8 +103,8 @@ export const useFridge = (mockData?: FridgeItem[]) => {
       const data = await response.json();
 
       if (data.success) {
-        setItems(prev => prev.map(item => 
-          item.id === id 
+        setItems(prev => prev.map(item =>
+          item.id === id
             ? { ...item, name, quantity: quantity || null }
             : item
         ));
@@ -176,5 +176,37 @@ export const useFridge = (mockData?: FridgeItem[]) => {
     handleAdd,
     handleUse,
     setEditingItem,
+    groupedItems: useMemo(() => {
+      const groups: { [key: string]: FridgeItem[] } = {};
+
+      filteredItems.forEach(item => {
+        // Ensure createdAt is a Date object
+        const date = new Date(item.createdAt);
+        // Format: 최근 업로드 일 : YYYY.MM.DD
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const dateString = `최근 업로드 일 : ${year}.${month}.${day}`;
+
+        if (!groups[dateString]) {
+          groups[dateString] = [];
+        }
+        groups[dateString].push(item);
+      });
+
+      // Sort groups by date (descending)
+      return Object.entries(groups)
+        .sort((a, b) => {
+          // Remove prefix and convert . to - for parsing
+          const dateAStr = a[0].replace('최근 업로드 일 : ', '').replace(/\./g, '-');
+          const dateBStr = b[0].replace('최근 업로드 일 : ', '').replace(/\./g, '-');
+          return new Date(dateBStr).getTime() - new Date(dateAStr).getTime();
+        })
+        .map(([date, items]) => ({
+          date,
+          // Sort items within group by time (newest first)
+          items: items.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+        }));
+    }, [filteredItems]),
   };
 };

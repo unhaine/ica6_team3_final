@@ -115,6 +115,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           }
         } catch (error) {
           console.error(`[SignIn] Error for ${account.provider}:`, error);
+          if (error instanceof Error) {
+            console.error(`[SignIn] Error message: ${error.message}`);
+            // @ts-ignore
+            if (error.code) console.error(`[SignIn] Error code: ${error.code}`);
+          }
+
           // 에러 발생 시 로그인 실패
           return false;
         }

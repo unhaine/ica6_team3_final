@@ -6,8 +6,7 @@ import { DetectedItem } from "./types";
 import { DataList } from "@/components/modules/DataList";
 import { ConfirmItemRow } from "./ConfirmItemRow";
 import { ConfirmModals } from "./ConfirmModals";
-import { FloatingRecipes } from "./FloatingRecipes";
-import { useHomeRecommendations } from "@/hooks/useHomeRecommendations";
+
 
 interface ConfirmStepProps {
     detectedItems: DetectedItem[];
@@ -18,20 +17,17 @@ interface ConfirmStepProps {
     onRecommend?: () => void;
 }
 
-export const ConfirmStep = ({ 
-    detectedItems, 
-    setDetectedItems, 
-    onEditLabel, 
-    onDeleteItem, 
+export const ConfirmStep = ({
+    detectedItems,
+    setDetectedItems,
+    onEditLabel,
+    onDeleteItem,
     onSave,
     onRecommend
 }: ConfirmStepProps) => {
     const [activeModal, setActiveModal] = useState<'none' | 'edit' | 'add'>('none');
     const [selectedItem, setSelectedItem] = useState<DetectedItem | null>(null);
-    const [showRecipes, setShowRecipes] = useState(false);
-    
-    // Get recommendations (using the hook)
-    const { recipes } = useHomeRecommendations();
+
 
     const handleCloseModal = () => {
         setActiveModal('none');
@@ -39,7 +35,7 @@ export const ConfirmStep = ({
     };
 
     return (
-        <motion.div 
+        <motion.div
             key="confirm"
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
@@ -61,7 +57,7 @@ export const ConfirmStep = ({
                     keyExtractor={(item) => item.id}
                     className="space-y-2"
                     renderItem={(item) => (
-                        <ConfirmItemRow 
+                        <ConfirmItemRow
                             item={item}
                             onEdit={() => {
                                 setSelectedItem(item);
@@ -71,7 +67,7 @@ export const ConfirmStep = ({
                         />
                     )}
                     ListFooterComponent={
-                        <button 
+                        <button
                             className="w-full py-4 border-2 border-dashed border-gray-300 rounded-xl flex items-center justify-center gap-2 text-gray-500 hover:border-primary hover:text-primary transition-all active:scale-[0.98] mt-2 mb-4 bg-white/50"
                             onClick={() => setActiveModal('add')}
                         >
@@ -83,9 +79,9 @@ export const ConfirmStep = ({
             </div>
 
             <div className="p-6 bg-surface border-t border-border flex gap-3">
-                <button 
+                <button
                     className="flex-1 h-14 rounded-xl font-bold bg-purple-600 text-white relative flex items-center justify-center transition-all active:scale-[0.98] shadow-lg shadow-primary/20 disabled:opacity-50"
-                    onClick={() => setShowRecipes(true)}
+                    onClick={onSave}
                 >
                     <Check className="absolute left-4 w-5 h-5" />
                     <span>냉장고에 넣기</span>
@@ -93,7 +89,7 @@ export const ConfirmStep = ({
             </div>
 
             <AnimatePresence>
-                <ConfirmModals 
+                <ConfirmModals
                     activeModal={activeModal}
                     selectedItem={selectedItem}
                     onClose={handleCloseModal}
@@ -107,31 +103,20 @@ export const ConfirmStep = ({
                     }}
                     onSaveAdd={(label, quantity) => {
                         setDetectedItems(prev => [
-                            ...prev, 
-                            { 
-                                id: `manual-${Date.now()}`, 
-                                label, 
-                                confidence: 1.0, 
+                            ...prev,
+                            {
+                                id: `manual-${Date.now()}`,
+                                label,
+                                confidence: 1.0,
                                 quantity,
                                 isContainer: false,
-                                boundingBox: { x: 0.1, y: 0.1, width: 0.2, height: 0.2 } 
+                                boundingBox: { x: 0.1, y: 0.1, width: 0.2, height: 0.2 }
                             }
                         ]);
                         handleCloseModal();
                     }}
                 />
             </AnimatePresence>
-
-            {/* Floating Recipes Carousel */}
-            <FloatingRecipes 
-                recipes={recipes}
-                isVisible={showRecipes}
-                onClose={onSave} // Close should probably proceed to save/fridge
-                onSelect={(recipe) => {
-                    console.log("Selected recipe:", recipe);
-                    onSave(); // Proceed to save/fridge
-                }}
-            />
         </motion.div>
     );
 };
