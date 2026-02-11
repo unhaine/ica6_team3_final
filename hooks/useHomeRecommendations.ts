@@ -12,7 +12,7 @@ export function useHomeRecommendations() {
         try {
             // 새로운 추천 API 호출
             const response = await fetch('/api/recommend');
-            
+
             if (response.status === 401) {
                 // 인증 실패 시 일반 레시피 반환
                 const fallbackResponse = await fetch('/api/recipes?limit=5');
@@ -27,7 +27,7 @@ export function useHomeRecommendations() {
             }
 
             const result = await response.json();
-            
+
             if (result.success && result.recommendations && Array.isArray(result.recommendations)) {
                 // 추천 결과에서 recipe 객체 추출
                 const extractedRecipes = result.recommendations.map((item: any) => {
@@ -57,6 +57,6 @@ export function useHomeRecommendations() {
         groceryCount,
         refresh: fetchRecommendations,
         mainRecipe: recipes[0] || null,
-        otherRecipes: recipes.length > 1 ? recipes.slice(1, 5) : []
+        otherRecipes: recipes.length > 1 ? recipes.slice(1, 6) : []
     };
 }

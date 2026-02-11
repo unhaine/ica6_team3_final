@@ -119,16 +119,26 @@ export async function GET(req: NextRequest) {
             }
         }));
 
-        return NextResponse.json({
-            success: true,
-            data: serializedPosts,
-            nextCursor: posts.length === limit ? posts[posts.length - 1].id : null,
+        const jsonResponse = JSON.stringify(
+            {
+                success: true,
+                data: serializedPosts,
+                nextCursor: posts.length === limit ? posts[posts.length - 1].id : null,
+            },
+            (key, value) => (typeof value === 'bigint' ? value.toString() : value)
+        );
+
+        return new NextResponse(jsonResponse, {
+            headers: { 'Content-Type': 'application/json' },
         });
     } catch (error) {
         console.error('Community Feed error:', error);
-        return NextResponse.json(
-            { success: false, error: '피드를 불러오는 중 오류가 발생했습니다.' },
-            { status: 500 }
+        return new NextResponse(
+            JSON.stringify(
+                { success: false, error: '피드를 불러오는 중 오류가 발생했습니다.' },
+                (key, value) => (typeof value === 'bigint' ? value.toString() : value)
+            ),
+            { status: 500, headers: { 'Content-Type': 'application/json' } }
         );
     }
 }
@@ -170,18 +180,27 @@ export async function POST(req: NextRequest) {
         });
         console.log('API: Post created successfully:', post.id);
 
-        return NextResponse.json({
-            success: true,
-            data: {
-                ...post,
-                recipeId: post.recipeId ? post.recipeId.toString() : null,
+        const jsonResponse = JSON.stringify(
+            {
+                success: true,
+                data: {
+                    ...post,
+                    recipeId: post.recipeId ? post.recipeId.toString() : null,
+                },
             },
+            (key, value) => (typeof value === 'bigint' ? value.toString() : value)
+        );
+        return new NextResponse(jsonResponse, {
+            headers: { 'Content-Type': 'application/json' },
         });
     } catch (error) {
         console.error('Post Creation error:', error);
-        return NextResponse.json(
-            { success: false, error: '게시글 작성 중 오류가 발생했습니다.' },
-            { status: 500 }
+        return new NextResponse(
+            JSON.stringify(
+                { success: false, error: '게시글 작성 중 오류가 발생했습니다.' },
+                (key, value) => (typeof value === 'bigint' ? value.toString() : value)
+            ),
+            { status: 500, headers: { 'Content-Type': 'application/json' } }
         );
     }
 }

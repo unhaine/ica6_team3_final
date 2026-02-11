@@ -32,19 +32,19 @@ export function HomeRecommendations() {
         <div className="h-full flex flex-col px-4 pt-2 pb-6 gap-4">
             {/* Main Recipe - Dynamic Height */}
             <div className="flex-1 min-h-0 relative">
-                <RecipeCard 
-                    recipe={mainRecipe} 
+                <RecipeCard
+                    recipe={mainRecipe}
                     isEmpty={isEmpty}
                 />
             </div>
-            
+
             {/* Other Recipes - Fixed at Bottom */}
-            <div className="shrink-0 grid grid-cols-4 gap-2">
+            <div className="shrink-0 grid grid-cols-5 gap-2">
                 {isEmpty ? (
-                    [1, 2, 3, 4].map((i) => (
-                        <RecipeCard 
-                            key={`empty-${i}`} 
-                            recipe={null} 
+                    [1, 2, 3, 4, 5].map((i) => (
+                        <RecipeCard
+                            key={`empty-${i}`}
+                            recipe={null}
                             index={i + 1}
                             isEmpty={true}
                             variant="compact"
@@ -52,10 +52,10 @@ export function HomeRecommendations() {
                     ))
                 ) : (
                     otherRecipes.map((rec, index) => (
-                        <RecipeCard 
-                            key={String(rec.rcpSno ?? rec.id ?? index)} 
-                            recipe={rec} 
-                            index={index + 2} 
+                        <RecipeCard
+                            key={String(rec.rcpSno ?? rec.id ?? index)}
+                            recipe={rec}
+                            index={index + 2}
                             variant="compact"
                         />
                     ))
@@ -76,8 +76,8 @@ function HomeRecommendationsSkeleton() {
             </div>
 
             {/* Grid Skeleton - Fixed Bottom */}
-            <div className="shrink-0 grid grid-cols-4 gap-2">
-                {[1, 2, 3, 4].map((i) => (
+            <div className="shrink-0 grid grid-cols-5 gap-2">
+                {[1, 2, 3, 4, 5].map((i) => (
                     <RecipeCard.Skeleton key={i} variant="compact" />
                 ))}
             </div>

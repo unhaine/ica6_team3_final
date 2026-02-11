@@ -50,17 +50,17 @@ export async function GET() {
       cookingPreference = null;
     }
     // 1차 추천 (기본 필터)
-    const recs = recommendRecipes(recipes, {
+    let finalRecs = recommendRecipes(recipes, {
       id: user.id,
       householdSize: user.householdSize ?? 1,
       cookingPreference,
       allergies: user.allergies ?? [],
     }, userItems, { limit: 20 });
 
-    // 결과가 없으면 2차(완화) 재시도: 인분/선호 무시, 알러지는 유지
-    let finalRecs = recs;
-    let reasonMode: 'normal' | 'relaxed' | 'popular' = 'normal';
-    if (!finalRecs || finalRecs.length === 0) {
+    if (!finalRecs) finalRecs = [];
+
+    // 2차(완화) 재시도: 결과가 5개 미만이면 추가
+    if (finalRecs.length < 5) {
       const relaxed = recommendRecipes(recipes, {
         id: user.id,
         householdSize: null,
@@ -69,66 +69,84 @@ export async function GET() {
       }, userItems, { limit: 50 });
 
       if (relaxed && relaxed.length > 0) {
-        finalRecs = relaxed;
-        reasonMode = 'relaxed';
-      } else {
-        // 3차: 인기순으로 DB에서 직접 조회(알러지 제외), 상위 후보들에서 첫번째 선택
-        const candidates = await prisma.recipe.findMany({
-          where: { ckgMtrlCn: { not: null } },
-          take: 200,
-          orderBy: [
-            { inqCnt: 'desc' },
-            { rcmmCnt: 'desc' },
-            { srapCnt: 'desc' },
-          ],
-          include: { ingredients: true },
-        });
-
-        // 경량 normalize 함수 (간단히 사용)
-        const normalizeText = (t?: string | null) => String(t || '').replace(/\s+/g, '').toLowerCase();
-
-        let popularPick: { recipe: any; score: any } | null = null;
-        for (const r of candidates) {
-          const candidate = {
-            id: String(r.rcpSno),
-            rcpSno: String(r.rcpSno),
-            rcpTtl: r.rcpTtl,
-            ckgNm: r.ckgNm,
-            rcpImgUrl: r.rcpImgUrl,
-            ckgInbunNm: r.ckgInbunNm,
-            ckgStaActoNm: r.ckgStaActoNm,
-            ckgTimeNm: r.ckgTimeNm,
-            ckgDodfNm: r.ckgDodfNm,
-            ckgKndActoNm: r.ckgKndActoNm,
-            ckgIpdc: r.ckgIpdc,
-            ckgMtrlCn: r.ckgMtrlCn,
-            viewCount: r.inqCnt ?? 0,
-            likeCount: r.rcmmCnt ?? 0,
-            ingredients: (r.ingredients || []).map((i: any) => ({ recipeId: String(r.rcpSno), ingName: i.ingName })),
-          };
-
-          // 알러지 필터 적용 (텍스트/ingredients 비교)
-          let hasAllergy = false;
-          const mtrl = normalizeText(candidate.ckgMtrlCn);
-          for (const allergy of user.allergies || []) {
-            if (!allergy) continue;
-            const a = normalizeText(allergy);
-            if (!a) continue;
-            if (mtrl.includes(a)) { hasAllergy = true; break; }
-            if (candidate.ingredients && candidate.ingredients.some((ii: any) => normalizeText(ii.ingName) === a)) { hasAllergy = true; break; }
-          }
-
-          if (!hasAllergy) {
-            popularPick = { recipe: candidate, score: { recipeId: String(r.rcpSno), totalScore: 0, ingredientScore: 0, householdScore: 0, preferenceScore: 0, popularityScore: 0 } };
-            break;
+        // 중복 제거 후 추가
+        const existingIds = new Set(finalRecs.map(r => r.recipe.id));
+        for (const r of relaxed) {
+          if (finalRecs.length >= 5) break;
+          if (!existingIds.has(r.recipe.id)) {
+            // 완화된 추천임을 표시하기 위해 score 객체에 메타데이터 추가 가능하지만, 
+            // 여기서는 로직 단순화를 위해 그대로 추가. 
+            // 단, 추천 사유 생성을 위해 recipe 객체에 임시 플래그를 달거나, 
+            // 아래 매핑 로직에서 판별해야 함. 
+            // 현재 구조상 recipe 객체에 직접 넣기는 어려우므로, 
+            // 별도 리스트로 관리하거나, score에 태깅하는 것이 좋으나
+            // 기존 타입 유지를 위해 일단 추가하고, 나중에 점수/매칭률로 사유 생성.
+            finalRecs.push(r);
+            existingIds.add(r.recipe.id);
           }
         }
+      }
+    }
 
-        if (popularPick) {
-          finalRecs = [popularPick];
-          reasonMode = 'popular';
-        } else {
-          finalRecs = [];
+    // 3차(인기): 여전히 5개 미만이면 인기 레시피로 채움
+    if (finalRecs.length < 5) {
+      const candidates = await prisma.recipe.findMany({
+        where: { ckgMtrlCn: { not: null } },
+        take: 200,
+        orderBy: [
+          { inqCnt: 'desc' },
+          { rcmmCnt: 'desc' },
+          { srapCnt: 'desc' },
+        ],
+        include: { ingredients: true },
+      });
+
+      // 경량 normalize 함수
+      const normalizeText = (t?: string | null) => String(t || '').replace(/\s+/g, '').toLowerCase();
+
+      const existingIds = new Set(finalRecs.map(r => r.recipe.id));
+
+      for (const r of candidates) {
+        if (finalRecs.length >= 5) break;
+        const scanId = String(r.rcpSno);
+        if (existingIds.has(scanId)) continue;
+
+        const candidate = {
+          id: scanId,
+          rcpSno: scanId,
+          rcpTtl: r.rcpTtl,
+          ckgNm: r.ckgNm,
+          rcpImgUrl: r.rcpImgUrl,
+          ckgInbunNm: r.ckgInbunNm,
+          ckgStaActoNm: r.ckgStaActoNm,
+          ckgTimeNm: r.ckgTimeNm,
+          ckgDodfNm: r.ckgDodfNm,
+          ckgKndActoNm: r.ckgKndActoNm,
+          ckgIpdc: r.ckgIpdc,
+          ckgMtrlCn: r.ckgMtrlCn,
+          viewCount: r.inqCnt ?? 0,
+          likeCount: r.rcmmCnt ?? 0,
+          ingredients: (r.ingredients || []).map((i: any) => ({ recipeId: scanId, ingName: i.ingName })),
+        };
+
+        // 알러지 필터 적용
+        let hasAllergy = false;
+        const mtrl = normalizeText(candidate.ckgMtrlCn);
+        for (const allergy of user.allergies || []) {
+          if (!allergy) continue;
+          const a = normalizeText(allergy);
+          if (!a) continue;
+          if (mtrl.includes(a)) { hasAllergy = true; break; }
+          if (candidate.ingredients && candidate.ingredients.some((ii: any) => normalizeText(ii.ingName) === a)) { hasAllergy = true; break; }
+        }
+
+        if (!hasAllergy) {
+          // 인기 레시피 추가 (점수는 0 또는 낮게 설정하여 구분 가능하게 함)
+          finalRecs.push({
+            recipe: candidate,
+            score: { recipeId: scanId, totalScore: 0, ingredientScore: 0, householdScore: 0, preferenceScore: 0, popularityScore: 0 }
+          });
+          existingIds.add(scanId);
         }
       }
     }
@@ -142,15 +160,24 @@ export async function GET() {
         .map(s => s.trim())
         .filter(Boolean)).length || 0;
 
+
       let reason = '';
-      if (reasonMode === 'normal') {
-        const prefText = cookingPreference ?? '추천';
-        reason = `👨‍👩‍👧‍👦 당신의 ${user.householdSize}인 가구를 위한 '${prefText}' 레시피!\n✅ ${matchedCount}/${totalCount} 재료가 준비되어 있어요.`;
-      } else if (reasonMode === 'relaxed') {
-        // 완화 재시도에 대한 문구 (다소 완화된 이유 표기)
-        reason = `🔎 일부 조건을 넓혀 추천한 레시피입니다.\n✅ ${matchedCount}/${totalCount} 재료가 준비되어 있어요.`;
+
+      // 추천 사유 동적 생성
+      if (rec.score && rec.score.totalScore > 0) {
+        // 정상/완화 추천 (점수가 있음)
+        // 완화 여부는 점수나 householdScore 등으로 추론 가능하지만, 
+        // 여기서는 간단히 '추천' 멘트 사용
+        const isStrict = rec.score.householdScore > 0 && rec.score.preferenceScore > 0;
+        if (isStrict) {
+          const prefText = cookingPreference ?? '추천';
+          reason = `👨‍👩‍👧‍👦 당신의 ${user.householdSize}인 가구를 위한 '${prefText}' 레시피!\n✅ ${matchedCount}/${totalCount} 재료가 준비되어 있어요.`;
+        } else {
+          // 완화된 조건
+          reason = `🔎 일부 조건을 넓혀 추천한 레시피입니다.\n✅ ${matchedCount}/${totalCount} 재료가 준비되어 있어요.`;
+        }
       } else {
-        // 인기 대체 문구 (조건 맞는 레시피가 없어 인기 레시피를 강제로 추천)
+        // 인기 추천 (점수 0)
         reason = `🔥 조건에 맞는 레시피가 적어, 인기 레시피를 추천드립니다.`;
       }
 
@@ -164,9 +191,24 @@ export async function GET() {
       };
     });
 
-    return NextResponse.json({ success: true, recommendations: serializable });
+    const jsonResponse = JSON.stringify(
+      { success: true, recommendations: serializable },
+      (key, value) => (typeof value === 'bigint' ? value.toString() : value)
+    );
+    return new NextResponse(jsonResponse, {
+      headers: { 'Content-Type': 'application/json' },
+    });
   } catch (error: any) {
     console.error('[API /api/recommend] Error:', error);
-    return NextResponse.json({ error: error?.message || String(error) }, { status: 500 });
+    return new NextResponse(
+      JSON.stringify(
+        { error: error?.message || String(error) },
+        (key, value) => (typeof value === 'bigint' ? value.toString() : value)
+      ),
+      {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
   }
 }
