@@ -1,13 +1,12 @@
-"use client";
-
+import Image from 'next/image';
 import { Typography } from '@/components/elements/Typography';
-import { Icon } from '@/components/elements/Icon';
+// import { Icon } from '@/components/elements/Icon'; // Icon not used anymore
 
 const HOUSEHOLD_OPTIONS = [
-  { value: 1, label: '1인', icon: 'User' },
-  { value: 2, label: '2인', icon: 'Users' },
-  { value: 3, label: '3인', icon: 'Users' },
-  { value: 4, label: '4인 이상', icon: 'UserPlus' },
+  { value: 1, label: '1인', imageSrc: '/images/onboarding/household-1.png' },
+  { value: 2, label: '2인', imageSrc: '/images/onboarding/household-2.png' },
+  { value: 3, label: '3인', imageSrc: '/images/onboarding/household-3.png' },
+  { value: 4, label: '4인 이상', imageSrc: '/images/onboarding/household-4.png' },
 ];
 
 interface HouseholdStepProps {
@@ -34,7 +33,7 @@ export const HouseholdStep = ({ value, onChange }: HouseholdStepProps) => {
             key={option.value}
             onClick={() => onChange(option.value)}
             className={`
-              relative p-4 rounded-2xl border-2 transition-all flex flex-col items-center justify-center gap-3
+              relative p-4 rounded-2xl border-2 transition-all flex flex-col items-center justify-center gap-3 h-40
               ${value === option.value
                 ? 'border-purple-600 bg-purple-50'
                 : 'border-slate-50 bg-white hover:border-purple-100 shadow-sm shadow-slate-200/50'
@@ -42,11 +41,12 @@ export const HouseholdStep = ({ value, onChange }: HouseholdStepProps) => {
             `}
           >
             <div className="flex flex-col items-center gap-2">
-              <div className="w-12 h-12 flex items-center justify-center">
-                <Icon
-                  name={option.icon as any}
-                  size={40}
-                  className={value === option.value ? 'text-purple-600' : 'text-slate-300'}
+              <div className="relative w-24 h-24">
+                <Image
+                  src={option.imageSrc}
+                  alt={option.label}
+                  fill
+                  className="object-contain" // 이미지 비율 유지
                 />
               </div>
               <Typography
