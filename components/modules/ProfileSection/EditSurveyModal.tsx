@@ -3,15 +3,23 @@
 import { useState, useEffect } from "react";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import Image from "next/image";
 import { Typography } from "@/components/elements";
 import { Icon } from "@/components/elements/Icon";
 import { COOKING_SITUATION_OPTIONS } from "@/data/constants/cookingSituations";
 
 const HOUSEHOLD_OPTIONS = [
-  { value: 1, label: '1인', icon: 'User' },
-  { value: 2, label: '2인', icon: 'Users' },
-  { value: 3, label: '3인', icon: 'Users' },
-  { value: 4, label: '4인+', icon: 'UserPlus' },
+  { value: 1, label: '1인', imageSrc: '/images/household01.png' },
+  { value: 2, label: '2인', imageSrc: '/images/household02.png' },
+  { value: 3, label: '3인', imageSrc: '/images/household03.png' },
+  { value: 4, label: '4인 이상', imageSrc: '/images/household04.png' },
+];
+
+const COOKING_STYLE_OPTIONS = [
+  { value: 'simple', label: '간편한 식사', imageSrc: '/images/cookingstyle01.png' },
+  { value: 'proper', label: '제대로 된 식사', imageSrc: '/images/cookingstyle02.png' },
+  { value: 'balanced', label: '균형있는 식사', imageSrc: '/images/cookingstyle03.png' },
+  { value: 'cleanup', label: '재료 소진', imageSrc: '/images/cookingstyle04.png' },
 ];
 
 const ALLERGY_OPTIONS = [
@@ -33,12 +41,12 @@ interface EditSurveyModalProps {
   onSave: (value: number | string[] | string) => void;
 }
 
-export const EditSurveyModal = ({ 
-  isOpen, 
-  type, 
-  currentValue, 
-  onClose, 
-  onSave 
+export const EditSurveyModal = ({
+  isOpen,
+  type,
+  currentValue,
+  onClose,
+  onSave
 }: EditSurveyModalProps) => {
   const [householdSize, setHouseholdSize] = useState<number | null>(
     type === 'household' ? (currentValue as number | null) : null
@@ -89,22 +97,22 @@ export const EditSurveyModal = ({
   };
 
   return (
-    <div 
+    <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
       onClick={onClose}
     >
-      <div 
+      <div
         className="bg-surface rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-in zoom-in-95 duration-200 max-h-[90vh] flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         {/* 헤더 */}
         <div className="p-6 border-b border-border flex items-center justify-between">
           <Typography variant="h3" weight="bold">
-            {type === 'household' 
-              ? '가구 인원 수정' 
+            {type === 'household'
+              ? '가구 인원 수정'
               : type === 'allergies'
-              ? '알러지/비선호 수정'
-              : '요리 선호 수정'}
+                ? '알러지/비선호 수정'
+                : '요리 선호 수정'}
           </Typography>
           <button
             onClick={onClose}
@@ -135,13 +143,16 @@ export const EditSurveyModal = ({
                     `}
                   >
                     <div className="flex flex-col items-center gap-3">
-                      <Icon 
-                        name={option.icon as any} 
-                        size={48} 
-                        className={householdSize === option.value ? 'text-primary' : 'text-text-secondary'}
-                      />
-                      <Typography 
-                        variant="body1" 
+                      <div className="relative w-16 h-16">
+                        <Image
+                          src={option.imageSrc}
+                          alt={option.label}
+                          fill
+                          className="object-contain"
+                        />
+                      </div>
+                      <Typography
+                        variant="body1"
                         weight="semibold"
                         className={householdSize === option.value ? 'text-primary' : ''}
                       >
@@ -170,8 +181,8 @@ export const EditSurveyModal = ({
                       }
                     `}
                   >
-                    <Typography 
-                      variant="body2" 
+                    <Typography
+                      variant="body2"
                       weight={allergies.includes(option.value) ? 'semibold' : 'medium'}
                     >
                       {option.label}
@@ -185,25 +196,36 @@ export const EditSurveyModal = ({
               <Typography variant="body1" color="secondary" className="mb-4">
                 선호하는 요리 상황을 선택해주세요.
               </Typography>
-              <div className="grid grid-cols-2 gap-3">
-                {COOKING_SITUATION_OPTIONS.map((option) => (
+              <div className="grid grid-cols-2 gap-4">
+                {COOKING_STYLE_OPTIONS.map((option) => (
                   <button
-                    key={option}
-                    onClick={() => setCookingPreference(option)}
+                    key={option.value}
+                    onClick={() => setCookingPreference(option.value)}
                     className={`
-                      py-4 px-6 rounded-xl border-2 transition-all text-left
-                      ${cookingPreference === option
-                        ? 'border-primary bg-primary/5 text-primary'
+                      relative p-6 rounded-2xl border-2 transition-all flex flex-col items-center justify-center gap-4
+                      ${cookingPreference === option.value
+                        ? 'border-primary bg-primary/5'
                         : 'border-border hover:border-primary/30'
                       }
                     `}
                   >
-                    <Typography 
-                      variant="body2" 
-                      weight={cookingPreference === option ? 'semibold' : 'medium'}
-                    >
-                      {option}
-                    </Typography>
+                    <div className="flex flex-col items-center gap-3">
+                      <div className="relative w-16 h-16">
+                        <Image
+                          src={option.imageSrc}
+                          alt={option.label}
+                          fill
+                          className="object-contain"
+                        />
+                      </div>
+                      <Typography
+                        variant="body1"
+                        weight="semibold"
+                        className={cookingPreference === option.value ? 'text-primary' : ''}
+                      >
+                        {option.label}
+                      </Typography>
+                    </div>
                   </button>
                 ))}
               </div>

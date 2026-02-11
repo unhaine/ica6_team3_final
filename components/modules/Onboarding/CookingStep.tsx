@@ -1,13 +1,14 @@
 "use client";
 
+import Image from 'next/image';
 import { Typography } from '@/components/elements/Typography';
-import { Icon } from '@/components/elements/Icon';
+// import { Icon } from '@/components/elements/Icon';
 
 const COOKING_STYLE_OPTIONS = [
-  { value: 'simple', label: '간편한 식사', icon: 'Zap' },
-  { value: 'proper', label: '제대로 된 식사', icon: 'CookingPot' },
-  { value: 'balanced', label: '균형있는 식사', icon: 'Salad' },
-  { value: 'cleanup', label: '재료 소진', icon: 'RotateCcw' },
+  { value: 'simple', label: '간편한 식사', imageSrc: '/images/cookingstyle01.png' },
+  { value: 'proper', label: '제대로 된 식사', imageSrc: '/images/cookingstyle02.png' },
+  { value: 'balanced', label: '균형있는 식사', imageSrc: '/images/cookingstyle03.png' },
+  { value: 'cleanup', label: '재료 소진', imageSrc: '/images/cookingstyle04.png' },
 ];
 
 interface CookingStepProps {
@@ -41,11 +42,12 @@ export const CookingStep = ({ value, onChange }: CookingStepProps) => {
             `}
           >
             <div className="flex flex-col items-center gap-3">
-              <div className="w-14 h-14 flex items-center justify-center">
-                <Icon
-                  name={option.icon as any}
-                  size={44}
-                  className={value === option.value ? 'text-purple-600' : 'text-slate-300'}
+              <div className="relative w-24 h-24">
+                <Image
+                  src={option.imageSrc}
+                  alt={option.label}
+                  fill
+                  className="object-contain" // 이미지 비율 유지
                 />
               </div>
               <Typography

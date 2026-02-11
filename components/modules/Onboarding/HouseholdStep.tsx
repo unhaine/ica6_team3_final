@@ -3,10 +3,10 @@ import { Typography } from '@/components/elements/Typography';
 // import { Icon } from '@/components/elements/Icon'; // Icon not used anymore
 
 const HOUSEHOLD_OPTIONS = [
-  { value: 1, label: '1인', imageSrc: '/images/onboarding/household-1.png' },
-  { value: 2, label: '2인', imageSrc: '/images/onboarding/household-2.png' },
-  { value: 3, label: '3인', imageSrc: '/images/onboarding/household-3.png' },
-  { value: 4, label: '4인 이상', imageSrc: '/images/onboarding/household-4.png' },
+  { value: 1, label: '1인', imageSrc: '/images/household01.png' },
+  { value: 2, label: '2인', imageSrc: '/images/household02.png' },
+  { value: 3, label: '3인', imageSrc: '/images/household03.png' },
+  { value: 4, label: '4인 이상', imageSrc: '/images/household04.png' },
 ];
 
 interface HouseholdStepProps {

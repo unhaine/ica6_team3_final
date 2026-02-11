@@ -74,6 +74,7 @@ RUN mkdir -p ./public/uploads ./.next/cache \
 
 # 엔트리포인트
 COPY --chown=nextjs:nodejs docker-entrypoint.sh ./
+RUN sed -i 's/\r$//' docker-entrypoint.sh
 RUN chmod +x docker-entrypoint.sh
 
 USER nextjs

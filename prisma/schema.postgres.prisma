@@ -1,0 +1,321 @@
+// RefrigerAI - 냉장고 식료품 관리 시스템
+// Prisma Schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ================================
+// 사용자 관리
+// ================================
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  username      String?   @unique
+  email         String?   // 소셜 계정별 독립 유저 생성을 위해 @unique 제거
+  emailVerified DateTime?
+  image         String?
+  password      String?   // 소셜 로그인 사용 시 선택 사항
+  
+  // 설문조사 정보
+  householdSize      Int?      // 가구 인원 (1, 2, 3, 4+)
+  allergies          String[]  @default([]) // 알러지 정보 (계란, 우유, 땅콩 등)
+  cookingPreference  String?   // 요리 선호 (Recipe의 ckg_sta_acto_nm 값)
+  surveyCompleted    Boolean   @default(false) // 설문조사 완료 여부
+  surveyCompletedAt  DateTime? // 설문조사 완료 시각
+  
+  // 관계
+  accounts      Account[]
+  sessions      Session[]
+  groceryItems        GroceryItem[]
+  receiptScans        ReceiptScan[]
+  fridgeAnalyses      FridgePhotoAnalysis[]
+  favoriteRecipes     FavoriteRecipe[]
+  posts               CommunityPost[]
+  likes               PostLike[]
+  comments            PostComment[]
+  
+  // Follow relations
+  followedBy          Follow[]  @relation("following") // 나를 팔로우하는 사람들 (Followers)
+  following           Follow[]  @relation("follower")  // 내가 팔로우하는 사람들 (Following)
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([username])
+  @@index([email])
+}
+
+model Follow {
+  id          String   @id @default(cuid())
+  followerId  String
+  followingId String
+  createdAt   DateTime @default(now())
+
+  follower    User     @relation("follower", fields: [followerId], references: [id], onDelete: Cascade)
+  following   User     @relation("following", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+  @@index([followerId])
+  @@index([followingId])
+  @@map("follows")
+}
+
+model Account {
+  id                 String  @id @default(cuid())
+  userId             String
+  type               String
+  provider           String
+  providerAccountId  String
+  refresh_token      String?  @db.Text
+  access_token       String?  @db.Text
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String?  @db.Text
+  session_state      String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+
+// ================================
+// 식료품 관리
+// ================================
+
+// 사용자별 보유 식료품
+model GroceryItem {
+  id          String   @id @default(cuid())
+  userId      String   // 소유자
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  name        String   // 식료품 이름
+  quantity    String?  // 수량 (예: "1개", "700g")
+  category    String?  // 카테고리 (채소, 과일, 육류 등)
+  price       Int?     // 가격
+  source      String?  // 출처 (receipt-ocr, fridge-photo, manual)
+  expiryDate  DateTime? // 유통기한
+  purchaseDate DateTime? // 구매일
+  
+  // 메타데이터
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // 영수증 스캔과의 관계
+  receiptId   String?
+  receipt     ReceiptScan? @relation(fields: [receiptId], references: [id], onDelete: SetNull)
+  
+  @@index([userId])
+  @@index([name])
+  @@index([category])
+  @@index([expiryDate])
+  @@index([createdAt])
+}
+
+// 영수증 스캔 기록
+model ReceiptScan {
+  id          String   @id @default(cuid())
+  userId      String   // 소유자
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  imageUrl    String?  // 업로드된 이미지 URL (선택)
+  storeName   String?  // 매장명 (쿠팡프레시, 롯데마트 등)
+  totalAmount Int?     // 총 금액
+  scanDate    DateTime @default(now())
+  
+  // 추출된 식료품들
+  groceryItems GroceryItem[]
+  
+  createdAt   DateTime @default(now())
+  
+  @@index([userId])
+  @@index([scanDate])
+}
+
+// 냉장고 사진 분석 기록
+model FridgePhotoAnalysis {
+  id          String   @id @default(cuid())
+  userId      String   // 소유자
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  imageUrl    String?  // 업로드된 냉장고 사진 URL (선택)
+  apiSource   String   // 사용한 API (cloud-vision, gemini-flash)
+  itemCount   Int      // 감지된 품목 수
+  analysisData Json    // 분석 결과 전체 (JSON)
+  
+  createdAt   DateTime @default(now())
+  
+  @@index([userId])
+  @@index([createdAt])
+  @@index([apiSource])
+}
+
+// ================================
+// 레시피 관리
+// ================================
+
+// 레시피 (공공데이터 마이그레이션)
+model Recipe {
+  rcpSno          BigInt   @id @map("rcp_sno")  // 레시피일련번호 (PK)
+  rcpTtl          String?  @db.VarChar(200) @map("rcp_ttl")  // 레시피제목
+  ckgNm           String?  @db.VarChar(40) @map("ckg_nm")   // 요리명
+  rgtrId          String?  @db.VarChar(32) @map("rgtr_id")   // 등록자ID
+  rgtrNm          String?  @db.VarChar(64) @map("rgtr_nm")   // 등록자명
+  inqCnt          Int?     @default(0) @map("inq_cnt")       // 조회수
+  rcmmCnt         Int?     @default(0) @map("rcmm_cnt")       // 추천수
+  srapCnt         Int?     @default(0) @map("srap_cnt")       // 스크랩수
+  ckgMthActoNm    String?  @db.VarChar(200) @map("ckg_mth_acto_nm")  // 요리방법별명
+  ckgStaActoNm    String?  @db.VarChar(200) @map("ckg_sta_acto_nm")  // 요리상황별명
+  ckgMtrlActoNm   String?  @db.VarChar(200) @map("ckg_mtrl_acto_nm")  // 요리재료별명
+  ckgKndActoNm    String?  @db.VarChar(200) @map("ckg_knd_acto_nm")  // 요리종류별명
+  ckgIpdc         String?  @db.VarChar(4000) @map("ckg_ipdc") // 요리소개
+  ckgMtrlCn       String?  @db.VarChar(4000) @map("ckg_mtrl_cn") // 요리재료내용
+  ckgInbunNm      String?  @db.VarChar(200) @map("ckg_inbun_nm")  // 요리인분명
+  ckgDodfNm       String?  @db.VarChar(200) @map("ckg_dodf_nm")  // 요리난이도명
+  ckgTimeNm       String?  @db.VarChar(200) @map("ckg_time_nm")  // 요리시간명
+  firstRegDt      String?  @db.Char(14) @map("first_reg_dt")      // 최초등록일시 (YYYYMMDDHHMMSS)
+  rcpImgUrl       String?  @db.VarChar(500) @map("rcp_img_url")   // 레시피 이미지 URL
+  
+  // 관계
+  ingredients     RecipeIngredient[]
+  steps           RecipeStep[]
+  favorites       FavoriteRecipe[]
+  posts           CommunityPost[]
+  
+  @@index([ckgNm])
+  @@index([ckgMtrlActoNm])
+  @@index([ckgKndActoNm])
+  @@map("Recipe")
+}
+
+// 레시피 식재료
+model RecipeIngredient {
+  rcpSno    BigInt  @map("rcp_sno")
+  ingId     Int     @map("ing_id")
+  ingName   String  @map("ing_name")
+  ingUnit   String? @map("ing_unit")
+
+  recipe    Recipe  @relation(fields: [rcpSno], references: [rcpSno], onDelete: Cascade)
+
+  @@id([rcpSno, ingId])
+  @@map("RecipeIngredient")
+}
+
+// 레시피 조리 단계 (HowTo)
+model RecipeStep {
+  rcpSno    BigInt  @map("rcp_sno")
+  stepId    Int     @map("step_id")
+  stepDesc  String  @db.Text @map("step_desc")
+
+  recipe    Recipe  @relation(fields: [rcpSno], references: [rcpSno], onDelete: Cascade)
+
+  @@id([rcpSno, stepId])
+  @@map("RecipeStep")
+}
+
+// 사용자 즐겨찾기 레시피
+model FavoriteRecipe {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  recipeId    BigInt
+  recipe      Recipe   @relation(fields: [recipeId], references: [rcpSno], onDelete: Cascade)
+  
+  createdAt   DateTime @default(now())
+  
+  @@unique([userId, recipeId])
+  @@index([userId])
+  @@index([recipeId])
+}
+
+// ================================
+// 커뮤니티 (인증샷 및 소통)
+// ================================
+
+// 커뮤니티 게시글 (인증샷)
+model CommunityPost {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  recipeId BigInt? @map("recipe_id") // 추천 레시피 기반인 경우 레시피 ID
+  recipe   Recipe? @relation(fields: [recipeId], references: [rcpSno], onDelete: SetNull)
+
+  title    String  @db.VarChar(255) // 게시글 제목
+  imageUrl String? // 요리 완성 사진 URL (썸네일용, 선택)
+  content  String  @db.Text // 게시글 본문 (HTML 포함, 길이 제한 없음)
+
+  // 메타데이터
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // 관계
+  likes    PostLike[]
+  comments PostComment[]
+
+  @@index([userId])
+  @@index([recipeId])
+  @@index([createdAt])
+  @@map("community_posts")
+}
+
+// 게시글 좋아요
+model PostLike {
+  id     String @id @default(cuid())
+  userId String
+  postId String
+
+  user User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, postId])
+  @@index([userId])
+  @@index([postId])
+  @@map("post_likes")
+}
+
+// 게시글 댓글
+model PostComment {
+  id     String @id @default(cuid())
+  userId String
+  postId String
+
+  content String @db.VarChar(500)
+
+  user User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([postId])
+  @@index([createdAt])
+  @@map("post_comments")
+}

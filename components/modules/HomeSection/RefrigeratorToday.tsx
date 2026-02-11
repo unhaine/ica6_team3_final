@@ -2,8 +2,9 @@
 
 import React from "react";
 
+import Image from "next/image";
 import { Typography, ActionButton } from "@/components/elements";
-import { Clock } from "lucide-react";
+// import { Clock } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 interface Ingredient {
@@ -26,7 +27,14 @@ export function RefrigeratorToday() {
         <div className="space-y-3">
             {/* Section Title */}
             <div className="flex items-center gap-1.5 px-1">
-                <Clock className="w-4 h-4 text-purple-600" />
+                <div className="relative w-4 h-4">
+                    <Image
+                        src="/images/tool/Alarm.png"
+                        alt="Alarm"
+                        fill
+                        className="object-contain"
+                    />
+                </div>
                 <Typography variant="body2" weight="bold" className="text-gray-800">
                     먼저 먹어야하는 재료
                 </Typography>
@@ -40,13 +48,13 @@ export function RefrigeratorToday() {
                             <span className="text-xl">{ingredient.emoji}</span>
                         </div>
                         <div className="text-center flex flex-col -space-y-0.5">
-                            <Typography 
-                                variant="caption" 
+                            <Typography
+                                variant="caption"
                                 weight="bold"
                                 className={`text-[10px]
-                                    ${ingredient.dDay === 1 ? 'text-red-500' : 
-                                      ingredient.dDay === 2 ? 'text-orange-500' : 
-                                      'text-blue-500'}
+                                    ${ingredient.dDay === 1 ? 'text-red-500' :
+                                        ingredient.dDay === 2 ? 'text-orange-500' :
+                                            'text-blue-500'}
                                 `}
                             >
                                 D-{ingredient.dDay}
@@ -60,9 +68,9 @@ export function RefrigeratorToday() {
             </div>
 
             {/* Action Button */}
-            <ActionButton 
-                variant="default" 
-                fullWidth 
+            <ActionButton
+                variant="default"
+                fullWidth
                 size="sm"
                 className="h-10 rounded-xl text-sm font-bold bg-purple-600 text-white shadow-lg shadow-purple-600/20 hover:bg-purple-700 transition-all"
                 onClick={() => router.push("/home/refrigerator-cleanup")}
