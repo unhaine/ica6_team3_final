@@ -86,21 +86,30 @@ model VerificationToken {
 }
 
 model GroceryItem {
-  id           String       @id @default(cuid())
-  userId       String
-  name         String
-  quantity     String?
-  category     String?
-  price        Int?
-  source       String?
-  expiryDate   DateTime?
-  purchaseDate DateTime?
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
-  receiptId    String?
-  receipt      ReceiptScan? @relation(fields: [receiptId], references: [id])
-  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id          String   @id @default(cuid())
+  userId      String   // 소유자
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  name        String   // 식료품 이름
+  quantity    String?  // 수량 (예: "1개", "700g")
+  category    String?  // 카테고리 (채소, 과일, 육류 등)
+  price       Int?     // 가격
+  source      String?  // 출처 (receipt-ocr, fridge-photo, manual)
+  expiryDate  DateTime? // 유통기한
+  purchaseDate DateTime? // 구매일
+  
+  // 메타데이터
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // 영수증 스캔과의 관계
+  receiptId   String?
+  receipt     ReceiptScan? @relation(fields: [receiptId], references: [id], onDelete: SetNull)
 
+  // 식재료 마스터 참조
+  ingredientId Int?       @map("ingredient_ref_id")
+  ingredient   IngredientRef? @relation(fields: [ingredientId], references: [id])
+  
   @@index([userId])
   @@index([name])
   @@index([category])
@@ -171,12 +180,34 @@ model Recipe {
   @@map("Recipe")
 }
 
+// --------------------------------
+// 식재료 마스터 (정규화)
+// --------------------------------
+model IngredientRef {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  category  String?
+  image     String?  @map("ingre_file") 
+  
+  // Relations
+  recipeIngredients RecipeIngredient[]
+  groceryItems      GroceryItem[]
+  
+  @@map("ingredient_refs")
+}
+
+// 레시피 식재료
 model RecipeIngredient {
-  rcpSno  BigInt  @map("rcp_sno")
-  ingId   Int     @map("ing_id")
-  ingName String  @map("ing_name")
-  ingUnit String? @map("ing_unit")
-  recipe  Recipe  @relation(fields: [rcpSno], references: [rcpSno], onDelete: Cascade)
+  rcpSno    BigInt  @map("rcp_sno")
+  ingId     Int     @map("ing_id")
+  ingName   String  @map("ing_name")
+  ingUnit   String? @map("ing_unit")
+
+  // 식재료 마스터 참조 (Optional for migration)
+  ingredientId Int?       @map("ingredient_ref_id")
+  ingredient   IngredientRef? @relation(fields: [ingredientId], references: [id])
+
+  recipe    Recipe  @relation(fields: [rcpSno], references: [rcpSno], onDelete: Cascade)
 
   @@id([rcpSno, ingId])
   @@map("RecipeIngredient")

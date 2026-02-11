@@ -103,3 +103,28 @@ ALTER TABLE "post_comments" ADD CONSTRAINT "post_comments_userId_fkey" FOREIGN K
 
 -- AddForeignKey
 ALTER TABLE "post_comments" ADD CONSTRAINT "post_comments_postId_fkey" FOREIGN KEY ("postId") REFERENCES "community_posts"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- CreateTable
+CREATE TABLE "ingredient_refs" (
+    "id" SERIAL NOT NULL,
+    "name" TEXT NOT NULL,
+    "category" TEXT,
+    "ingre_file" TEXT,
+
+    CONSTRAINT "ingredient_refs_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateIndex
+CREATE UNIQUE INDEX "ingredient_refs_name_key" ON "ingredient_refs"("name");
+
+-- AlterTable
+ALTER TABLE "RecipeIngredient" ADD COLUMN "ingredient_ref_id" INTEGER;
+
+-- AlterTable
+ALTER TABLE "GroceryItem" ADD COLUMN "ingredient_ref_id" INTEGER;
+
+-- AddForeignKey
+ALTER TABLE "RecipeIngredient" ADD CONSTRAINT "RecipeIngredient_ingredient_ref_id_fkey" FOREIGN KEY ("ingredient_ref_id") REFERENCES "ingredient_refs"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "GroceryItem" ADD CONSTRAINT "GroceryItem_ingredient_ref_id_fkey" FOREIGN KEY ("ingredient_ref_id") REFERENCES "ingredient_refs"("id") ON DELETE SET NULL ON UPDATE CASCADE;
