@@ -57,6 +57,10 @@
   --color-border-subtle: var(--border-subtle);
 }
 
+html {
+  background-color: var(--surface-alt);
+}
+
 body {
   font-family:
     "Inter",
