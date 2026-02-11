@@ -31,7 +31,7 @@ export default function RootLayout({
     return (
         <html lang="ko" suppressHydrationWarning>
             <body
-                className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
+                className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col max-w-[430px] mx-auto shadow-2xl border-x`}
             >
                 <AuthProvider>
                     <QueryProvider>
