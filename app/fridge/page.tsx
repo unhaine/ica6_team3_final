@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { ChevronLeft, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useHeader } from "@/components/modules/Header";
@@ -14,11 +15,14 @@ import {
   FridgeItem,
   EmptyState,
   FloatingCameraButton,
-  EditModal
+  EditModal,
+  RecipeRecommendationRow
 } from "../../components/modules/FridgeSection";
+import { useHomeRecommendations } from "../../hooks/useHomeRecommendations";
 
 export default function FridgePage() {
   const router = useRouter();
+  const [isSearchMode, setIsSearchMode] = useState(false);
 
   // 테스트 모드 설정 (true일 경우 목업 데이터 사용)
   const isTestMode = false;
@@ -27,6 +31,8 @@ export default function FridgePage() {
     filteredItems,
     isLoading,
     activeFilter,
+    searchQuery,
+    setSearchQuery,
     editingItem,
     setActiveFilter,
     handleDelete,
@@ -38,16 +44,48 @@ export default function FridgePage() {
     groupedItems,
   } = useFridge(isTestMode ? MOCK_INGREDIENTS : undefined);
 
+  // 추천 레시피 가져오기
+  const { recipes: recommendedRecipes, isLoading: isRecipeLoading } = useHomeRecommendations();
+
   // 헤더 설정
   useHeader({
     isVisible: true,
-    title: "나의 냉장고",
-    left: (
+    title: isSearchMode ? (
+      <div className="w-full pr-4">
+        <input
+          autoFocus
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="재료 이름을 검색하세요"
+          className="w-full bg-transparent border-none text-lg placeholder:text-gray-300 focus:ring-0 px-0 py-1"
+        />
+      </div>
+    ) : "나의 냉장고",
+    left: !isSearchMode ? (
       <button onClick={() => router.back()} className="p-2 -ml-2 text-slate-900">
         <ChevronLeft size={24} />
       </button>
+    ) : null,
+    right: isSearchMode ? (
+      <button
+        onClick={() => {
+          setIsSearchMode(false);
+          setSearchQuery("");
+        }}
+        className="text-sm font-medium text-gray-500 hover:text-gray-900 px-2"
+      >
+        취소
+      </button>
+    ) : (
+      <IconButton
+        icon="Search"
+        variant="ghost"
+        size="lg"
+        ariaLabel="검색"
+        onClick={() => setIsSearchMode(true)}
+      />
     ),
-    right: <IconButton icon="Search" variant="ghost" size="lg" ariaLabel="검색" />,
   });
 
   useFooter({
@@ -56,6 +94,8 @@ export default function FridgePage() {
 
   return (
     <div className="absolute inset-0 flex flex-col overflow-hidden bg-[#F9FAFB]">
+      {/* Top Section Removed (Moved to Bottom) */}
+
       <FridgeFilter
         activeFilter={activeFilter}
         onFilterChange={setActiveFilter}
@@ -97,17 +137,25 @@ export default function FridgePage() {
         </button>
       </div>
 
+      {/* Recipe Recommendations (Fixed at Bottom) */}
+      <div className="flex-none bg-white z-20 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+        <RecipeRecommendationRow
+          recipes={recommendedRecipes}
+          isLoading={isRecipeLoading}
+        />
+      </div>
+
       <FloatingCameraButton />
 
       <EditModal
         isOpen={editingItem !== null}
         item={editingItem}
         onClose={() => setEditingItem(null)}
-        onSave={(id, name, quantity) => {
+        onSave={(id, name, quantity, expiryDate) => {
           if (id) {
-            handleSaveEdit(id, name, quantity);
+            handleSaveEdit(id, name, quantity, expiryDate);
           } else {
-            handleAdd(name, quantity);
+            handleAdd(name, quantity, expiryDate);
           }
         }}
       />

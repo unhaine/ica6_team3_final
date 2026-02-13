@@ -90,6 +90,49 @@ export const useCamera = () => {
     // 실제 저장 로직 (중복 확인 후 또는 강제 저장 시 호출)
     const executeSave = async () => {
         try {
+            // 카테고리 & 이름 기반 유통기한 계산 헬퍼 함수
+            const calculateExpiryDate = (name: string, category: string | null) => {
+                const today = new Date();
+                let addDays = 14; // 기본 2주
+
+                // 1. 이름 기반 추론 (더 구체적)
+                const lowerName = name.toLowerCase();
+                if (lowerName.match(/우유|치즈|요거트|버터|달걀|계란|유제품/)) addDays = 10;
+                else if (lowerName.match(/돼지|소고기|닭|고기|양고기|햄|소세지|베이컨/)) addDays = 3;
+                else if (lowerName.match(/생선|해산물|조개|새우|오징어/)) addDays = 2;
+                else if (lowerName.match(/두부|콩나물|시금치|상추|깻잎/)) addDays = 5;
+                else if (lowerName.match(/김치|장아찌|젓갈|반찬/)) addDays = 60;
+                else if (lowerName.match(/양파|감자|고구마|당근|마늘/)) addDays = 30;
+                else if (lowerName.match(/냉동|만두|피자|아이스크림/)) addDays = 30;
+
+                // 2. 카테고리 기반 추론 (이름 매칭 없을 경우)
+                else if (category) {
+                    switch (category.toLowerCase()) {
+                        case 'vegetable':
+                        case 'fruit':
+                            addDays = 7;
+                            break;
+                        case 'meat':
+                        case 'fish':
+                        case 'seafood':
+                            addDays = 3;
+                            break;
+                        case 'dairy':
+                        case 'milk':
+                        case 'egg':
+                            addDays = 10;
+                            break;
+                        case 'frozen':
+                            addDays = 30;
+                            break;
+                        default:
+                            addDays = 14;
+                    }
+                }
+
+                return new Date(today.setDate(today.getDate() + addDays));
+            };
+
             // 중복된 이름의 재료를 합쳐서 수량 계산
             const aggregatedItems = detectedItems.reduce((acc, item) => {
                 const existingItem = acc.find(i => i.name === item.label);
@@ -101,10 +144,11 @@ export const useCamera = () => {
                         quantity: item.quantity || 1,
                         category: null, // 카테고리는 나중에 추가 가능
                         source: 'fridge-photo', // 냉장고 사진에서 추출
+                        expiryDate: calculateExpiryDate(item.label, null), // 이름 기반으로 우선 추론
                     });
                 }
                 return acc;
-            }, [] as { name: string; quantity: number; category: string | null; source: string }[]);
+            }, [] as { name: string; quantity: number; category: string | null; source: string; expiryDate: Date }[]);
 
             // 재료 저장 API 호출
             const response = await fetch('/api/ingredients', {
@@ -161,13 +205,13 @@ export const useCamera = () => {
                 return;
             }
 
-            // 중복 없으면 레시피 추천 보여주기
-            setShowRecipes(true);
+            // 중복 없으면 바로 저장
+            executeSave();
 
         } catch (error) {
             console.error('중복 체크 중 에러:', error);
-            // 에러 나도 일단 레시피 보여주기 (저장 흐름 계속)
-            setShowRecipes(true);
+            // 에러 나도 일단 저장 시도
+            executeSave();
         }
     };
 
@@ -190,9 +234,6 @@ export const useCamera = () => {
         showDuplicateAlert,
         setShowDuplicateAlert,
         duplicateMessage,
-        handleForceSave: () => setShowRecipes(true),
-        showRecipes,
-        setShowRecipes,
-        handleFinalSave: executeSave,
+        handleForceSave: executeSave,
     };
 };

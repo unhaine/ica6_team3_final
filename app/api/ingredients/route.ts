@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
 
     // 재료 저장
     const createdItems = await Promise.all(
-      items.map((item: { name: string; quantity?: string | number; category?: string; source?: string }) =>
+      items.map((item: { name: string; quantity?: string | number; category?: string; source?: string; expiryDate?: string }) =>
         prisma.groceryItem.create({
           data: {
             userId: user.id,
@@ -65,6 +65,7 @@ export async function POST(req: NextRequest) {
             category: item.category || null,
             source: item.source || 'fridge-photo', // 'fridge-photo' or 'receipt-ocr' or 'manual'
             receiptId: photoAnalysisId || null,
+            expiryDate: item.expiryDate ? new Date(item.expiryDate) : null,
           },
         })
       )
@@ -131,6 +132,7 @@ export async function PATCH(req: NextRequest) {
       data: {
         ...(name && { name }),
         ...(quantity !== undefined && { quantity: quantity ? String(quantity) : null }),
+        ...(body.expiryDate !== undefined && { expiryDate: body.expiryDate ? new Date(body.expiryDate) : null }),
       },
     });
 

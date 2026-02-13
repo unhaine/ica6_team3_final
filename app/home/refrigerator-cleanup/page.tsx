@@ -11,16 +11,19 @@ import { Skeleton } from "@/components/ui";
 import { ChevronLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 
+import { useUrgentIngredients } from "@/hooks/useUrgentIngredients";
+
 export default function RefrigeratorCleanupPage() {
-    const { recipes, isLoading } = useHomeRecommendations();
+    const { recipes, isLoading: isRecipeLoading, refresh } = useHomeRecommendations();
+    const { items: urgentItems, isLoading: isIngredientsLoading } = useUrgentIngredients();
     const router = useRouter();
 
     useHeader({
         isVisible: true,
         title: "오늘의 냉장고 파먹기",
         left: (
-            <IconButton 
-                icon="ChevronLeft" 
+            <IconButton
+                icon="ChevronLeft"
                 onClick={() => router.back()}
                 variant="ghost"
                 ariaLabel="뒤로 가기"
@@ -32,12 +35,35 @@ export default function RefrigeratorCleanupPage() {
         isVisible: true,
     });
 
-    // Mock ingredients matching RefrigeratorToday.tsx
-    const ingredients = [
-        { name: "햄", dDay: 1, emoji: "🥓" },
-        { name: "우유", dDay: 2, emoji: "🥛" },
-        { name: "달걀", dDay: 5, emoji: "🥚" },
-    ];
+    const isLoading = isRecipeLoading || isIngredientsLoading;
+
+    // Map urgent items to the format expected by RecipeCard
+    const ingredients = urgentItems.map(item => {
+        const expiry = new Date(item.expiryDate!);
+        const now = new Date();
+        expiry.setHours(0, 0, 0, 0);
+        now.setHours(0, 0, 0, 0);
+        const diffTime = expiry.getTime() - now.getTime();
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+        return {
+            name: item.name,
+            dDay: diffDays,
+            emoji: item.category === 'meat' ? '🥩' :
+                item.category === 'vegetable' ? '🥬' :
+                    item.category === 'fruit' ? '🍎' :
+                        item.category === 'seafood' ? '🐟' :
+                            item.category === 'dairy' ? '🥛' : '🍱'
+        };
+    });
+
+    // 유통기한 임박 재료가 로드되면 해당 재료를 기반으로 레시피 다시 추천
+    useEffect(() => {
+        if (!isIngredientsLoading && urgentItems.length > 0) {
+            const ingredientNames = urgentItems.map(item => item.name);
+            refresh(ingredientNames);
+        }
+    }, [isIngredientsLoading, urgentItems, refresh]);
 
     if (isLoading) {
         return (
@@ -51,7 +77,9 @@ export default function RefrigeratorCleanupPage() {
         );
     }
 
-    // Take top 5 recipes for the 5 ingredients
+
+
+    // Take top 5 recipes.
     const displayRecipes = recipes.slice(0, 5);
 
     return (
@@ -66,17 +94,31 @@ export default function RefrigeratorCleanupPage() {
             </div>
 
             <div className="flex flex-col gap-6">
-                {displayRecipes.map((recipe, index) => (
-                    <div key={recipe.rcpSno || index} className="h-[380px] shrink-0">
-                        <RecipeCard 
-                            recipe={recipe}
-                            rank={index + 1}
-                            ingredient={ingredients[index]}
-                            onSelect={(r) => console.log("Selected:", r)}
-                        />
-                    </div>
-                ))}
-                
+                {displayRecipes.map((recipe, index) => {
+                    // Find the urgent ingredient that matches this recipe
+                    const matchedIngredient = ingredients.find(ing => {
+                        const normalize = (text: string) => text.replace(/\s+/g, "").toLowerCase();
+                        const recipeText = normalize(_getRecipeIngredients(recipe));
+                        const ingName = normalize(ing.name);
+                        return recipeText.includes(ingName);
+                    });
+
+                    // If no match found, do NOT show any urgent ingredient badge.
+                    // Previously: const displayIngredient = matchedIngredient || ingredients[0];
+                    const displayIngredient = matchedIngredient;
+
+                    return (
+                        <div key={recipe.rcpSno || index} className="h-[380px] shrink-0">
+                            <RecipeCard
+                                recipe={recipe}
+                                rank={index + 1}
+                                ingredient={displayIngredient}
+                                onSelect={(r) => router.push(`/recipe/${r.rcpSno}`)}
+                            />
+                        </div>
+                    );
+                })}
+
                 {displayRecipes.length === 0 && (
                     <div className="flex flex-col items-center justify-center py-20 text-center gap-4">
                         <Typography variant="body1" color="secondary">
@@ -87,4 +129,13 @@ export default function RefrigeratorCleanupPage() {
             </div>
         </div>
     );
+}
+
+// Helper to get ingredient text from recipe object
+function _getRecipeIngredients(recipe: any): string {
+    if (recipe.ckgMtrlCn) return recipe.ckgMtrlCn;
+    if (recipe.ingredients && Array.isArray(recipe.ingredients)) {
+        return recipe.ingredients.map((i: any) => i.ingName).join(" ");
+    }
+    return "";
 }

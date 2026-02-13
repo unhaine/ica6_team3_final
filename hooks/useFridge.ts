@@ -8,11 +8,13 @@ export interface FridgeItem {
   quantity: string | null;
   category: string | null;
   createdAt: Date;
+  expiryDate?: Date | null;
 }
 
 
 export const useFridge = (mockData?: FridgeItem[]) => {
   const [activeFilter, setActiveFilter] = useState("all");
+  const [searchQuery, setSearchQuery] = useState("");
   const [items, setItems] = useState<FridgeItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [editingItem, setEditingItem] = useState<{
@@ -51,10 +53,21 @@ export const useFridge = (mockData?: FridgeItem[]) => {
 
   // 필터링된 아이템
   const filteredItems = useMemo(() => {
-    return activeFilter === "all"
-      ? items
-      : items.filter(item => item.category === activeFilter);
-  }, [items, activeFilter]);
+    let result = items;
+
+    // 1. Filter by Category
+    if (activeFilter !== "all") {
+      result = result.filter(item => item.category === activeFilter);
+    }
+
+    // 2. Filter by Search Query
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      result = result.filter(item => item.name.toLowerCase().includes(query));
+    }
+
+    return result;
+  }, [items, activeFilter, searchQuery]);
 
   // 삭제 핸들러
   const handleDelete = useCallback(async (id: string) => {
@@ -87,7 +100,7 @@ export const useFridge = (mockData?: FridgeItem[]) => {
   }, []);
 
   // 수정 저장 핸들러
-  const handleSaveEdit = useCallback(async (id: string, name: string, quantity: string) => {
+  const handleSaveEdit = useCallback(async (id: string, name: string, quantity: string, expiryDate?: string) => {
     try {
       const response = await fetch(`/api/ingredients?id=${id}`, {
         method: 'PATCH',
@@ -97,6 +110,7 @@ export const useFridge = (mockData?: FridgeItem[]) => {
         body: JSON.stringify({
           name,
           quantity: quantity || null,
+          expiryDate: expiryDate ? new Date(expiryDate) : null,
         }),
       });
 
@@ -105,7 +119,7 @@ export const useFridge = (mockData?: FridgeItem[]) => {
       if (data.success) {
         setItems(prev => prev.map(item =>
           item.id === id
-            ? { ...item, name, quantity: quantity || null }
+            ? { ...item, name, quantity: quantity || null, expiryDate: expiryDate ? new Date(expiryDate) : null }
             : item
         ));
         setEditingItem(null);
@@ -119,14 +133,41 @@ export const useFridge = (mockData?: FridgeItem[]) => {
     }
   }, []);
 
+  // 유통기한 계산 헬퍼
+  const calculateExpiryDate = (name: string) => {
+    const today = new Date();
+    let addDays = 14; // 기본 2주
+
+    const lowerName = name.toLowerCase();
+
+    if (lowerName.match(/우유|치즈|요거트|버터|달걀|계란|유제품/)) {
+      addDays = 10;
+    } else if (lowerName.match(/돼지|소고기|닭|고기|양고기|햄|소세지|베이컨/)) {
+      addDays = 3;
+    } else if (lowerName.match(/생선|해산물|조개|새우|오징어/)) {
+      addDays = 2;
+    } else if (lowerName.match(/두부|콩나물|시금치|상추|깻잎/)) {
+      addDays = 5;
+    } else if (lowerName.match(/김치|장아찌|젓갈/)) {
+      addDays = 90; // 오래 보관 가능
+    } else if (lowerName.match(/양파|감자|고구마|당근|마늘/)) {
+      addDays = 30; // 뿌리 채소
+    } else if (lowerName.match(/냉동|만두|피자|아이스크림/)) {
+      addDays = 30;
+    }
+
+    return new Date(today.setDate(today.getDate() + addDays));
+  };
+
   // 추가 핸들러
-  const handleAdd = useCallback(async (name: string, quantity: string) => {
+  const handleAdd = useCallback(async (name: string, quantity: string, expiryDate?: string) => {
     const newItem: FridgeItem = {
       id: Date.now().toString(),
       name,
       quantity: quantity || null,
       category: '기타',
       createdAt: new Date(),
+      expiryDate: expiryDate ? new Date(expiryDate) : calculateExpiryDate(name),
     };
 
     try {
@@ -168,6 +209,8 @@ export const useFridge = (mockData?: FridgeItem[]) => {
     filteredItems,
     isLoading,
     activeFilter,
+    searchQuery,
+    setSearchQuery,
     editingItem,
     setActiveFilter,
     handleDelete,
@@ -177,36 +220,58 @@ export const useFridge = (mockData?: FridgeItem[]) => {
     handleUse,
     setEditingItem,
     groupedItems: useMemo(() => {
-      const groups: { [key: string]: FridgeItem[] } = {};
-
-      filteredItems.forEach(item => {
-        // Ensure createdAt is a Date object
-        const date = new Date(item.createdAt);
-        // Format: 최근 업로드 일 : YYYY.MM.DD
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
-        const dateString = `최근 업로드 일 : ${year}.${month}.${day}`;
-
-        if (!groups[dateString]) {
-          groups[dateString] = [];
-        }
-        groups[dateString].push(item);
+      // 1. Sort items by expiry date (ascending) - urgent first
+      const sortedItems = [...filteredItems].sort((a, b) => {
+        const dateA = a.expiryDate ? new Date(a.expiryDate).getTime() : 9999999999999; // Far future if no expiry
+        const dateB = b.expiryDate ? new Date(b.expiryDate).getTime() : 9999999999999;
+        return dateA - dateB;
       });
 
-      // Sort groups by date (descending)
-      return Object.entries(groups)
-        .sort((a, b) => {
-          // Remove prefix and convert . to - for parsing
-          const dateAStr = a[0].replace('최근 업로드 일 : ', '').replace(/\./g, '-');
-          const dateBStr = b[0].replace('최근 업로드 일 : ', '').replace(/\./g, '-');
-          return new Date(dateBStr).getTime() - new Date(dateAStr).getTime();
-        })
-        .map(([date, items]) => ({
-          date,
-          // Sort items within group by time (newest first)
-          items: items.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-        }));
-    }, [filteredItems]),
+      // 2. If filtering by category, return single group
+      if (activeFilter !== "all") {
+        return [{
+          date: `${activeFilter} (유통기한 빠른 순)`, // Header for the group
+          items: sortedItems
+        }];
+      }
+
+      // 3. If "all", group by urgency
+      const groups: { [key: string]: FridgeItem[] } = {
+        "🚨 유통기한 임박 (3일 이내)": [],
+        "⚠️ 섭취 주의 (7일 이내)": [],
+        "✅ 보관 중": [],
+      };
+
+      const now = new Date();
+      now.setHours(0, 0, 0, 0);
+
+      sortedItems.forEach(item => {
+        if (!item.expiryDate) {
+          groups["✅ 보관 중"].push(item);
+          return;
+        }
+
+        const expiry = new Date(item.expiryDate);
+        expiry.setHours(0, 0, 0, 0);
+        const diffTime = expiry.getTime() - now.getTime();
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+        if (diffDays <= 3) {
+          groups["🚨 유통기한 임박 (3일 이내)"].push(item);
+        } else if (diffDays <= 7) {
+          groups["⚠️ 섭취 주의 (7일 이내)"].push(item);
+        } else {
+          groups["✅ 보관 중"].push(item);
+        }
+      });
+
+      // Return valid groups in specific order
+      return [
+        { date: "🚨 유통기한 임박 (3일 이내)", items: groups["🚨 유통기한 임박 (3일 이내)"] },
+        { date: "⚠️ 섭취 주의 (7일 이내)", items: groups["⚠️ 섭취 주의 (7일 이내)"] },
+        { date: "✅ 보관 중", items: groups["✅ 보관 중"] },
+      ].filter(group => group.items.length > 0);
+
+    }, [filteredItems, activeFilter]),
   };
 };

@@ -21,15 +21,15 @@ export interface RecipeCardProps {
     className?: string;
 }
 
-export function RecipeCard({ 
-    recipe, 
+export function RecipeCard({
+    recipe,
     variant = "main",
-    isEmpty, 
-    rank, 
+    isEmpty,
+    rank,
     index,
-    ingredient, 
-    onSelect, 
-    className 
+    ingredient,
+    onSelect,
+    className
 }: RecipeCardProps) {
     if (isEmpty || !recipe) {
         if (variant === "compact") {
@@ -96,9 +96,9 @@ export function RecipeCard({
                             </Typography>
                         </div>
                     )}
-                    <Typography 
-                        variant="h2" 
-                        as="span" 
+                    <Typography
+                        variant="h2"
+                        as="span"
                         className="text-white font-bold leading-tight drop-shadow-md text-2xl"
                     >
                         {recipe.ckgNm || recipe.rcpTtl || '맛있는 레시피'}
@@ -106,9 +106,9 @@ export function RecipeCard({
                 </div>
             }
             description={
-                <div className="flex flex-col gap-2 items-center">
+                <div className="flex flex-col gap-2 items-center w-full">
                     {ingredient ? (
-                        <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/20">
+                        <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/20 mb-1">
                             <span className="text-base">{ingredient.emoji}</span>
                             <Typography variant="caption" className="text-white font-medium">
                                 {ingredient.name} (D-{ingredient.dDay})
@@ -116,40 +116,68 @@ export function RecipeCard({
                         </div>
                     ) : (
                         recipe?.recommendReason ? (
-                            <Typography variant="body2" className="text-white/90 font-medium whitespace-pre-line">
+                            <Typography variant="body2" className="text-white/90 font-medium whitespace-pre-line mb-1">
                                 {recipe.recommendReason}
                             </Typography>
-                        ) : (
-                            <Typography variant="body2" className="text-white/90 font-medium whitespace-pre-line">
-                                재료가 다 준비되었어요!{"\n"}이대로 요리해보는 건 어때요?
-                            </Typography>
-                        )
+                        ) : null
                     )}
+
+                    {/* Ingredient List Display */}
+                    <div className="flex flex-wrap gap-1 justify-center max-h-16 overflow-hidden w-full px-2">
+                        {(() => {
+                            let ings: { ingName: string; isOwned?: boolean }[] = [];
+                            if (recipe.ingredients && Array.isArray(recipe.ingredients) && recipe.ingredients.length > 0) {
+                                ings = recipe.ingredients;
+                            } else if (recipe.ckgMtrlCn) {
+                                // Fallback without ownership info if ingredients array missing
+                                ings = recipe.ckgMtrlCn
+                                    .split(/,|\[|\]|\n/)
+                                    .map((s: string) => ({ ingName: s.trim() }))
+                                    .filter((i: any) => i.ingName && !i.ingName.match(/^재료/));
+                            }
+
+                            // Take top 6
+                            return ings.slice(0, 6).map((ing, idx) => (
+                                <span
+                                    key={idx}
+                                    className={cn(
+                                        "text-[10px] px-1.5 py-0.5 rounded-md backdrop-blur-sm transition-colors",
+                                        ing.isOwned
+                                            ? "bg-green-500/80 text-white font-bold border border-green-400/50"
+                                            : "bg-black/30 text-white/70"
+                                    )}
+                                >
+                                    {ing.ingName.split(/\s|\d/).shift()}
+                                </span>
+                            ));
+                        })()}
+                    </div>
+
                     <div className="flex gap-3 mt-1">
                         <div className="flex items-center gap-1 text-white/80">
                             <Clock className="w-3 h-3" />
-                            <Typography variant="caption" className="text-[10px]">15분</Typography>
+                            <Typography variant="caption" className="text-[10px]">{recipe.ckgTimeNm?.replace('분', '') || '15'}분</Typography>
                         </div>
                         <div className="flex items-center gap-1 text-white/80">
                             <Zap className="w-3 h-3" />
-                            <Typography variant="caption" className="text-[10px]">쉬움</Typography>
+                            <Typography variant="caption" className="text-[10px]">{recipe.ckgDodfNm || '쉬움'}</Typography>
                         </div>
                         <div className="flex items-center gap-1 text-white/80">
                             <Users className="w-3 h-3" />
-                            <Typography variant="caption" className="text-[10px]">1인분</Typography>
+                            <Typography variant="caption" className="text-[10px]">{recipe.ckgInbunNm?.replace('인분', '') || '1'}인분</Typography>
                         </div>
                     </div>
                 </div>
             }
             overlay={
                 <div className="flex gap-2">
-                    <IconBox 
+                    <IconBox
                         variant="ghost"
                         size="sm"
                         icon={<Sparkles className="w-4 h-4 text-white" />}
                         className="bg-white/20 backdrop-blur-md border border-white/30 shadow-sm"
                     />
-                    <IconBox 
+                    <IconBox
                         variant="ghost"
                         size="sm"
                         icon={<Bookmark className="w-4 h-4 text-white" />}
@@ -158,9 +186,9 @@ export function RecipeCard({
                 </div>
             }
             footer={
-                <ActionButton 
-                    variant="default" 
-                    fullWidth 
+                <ActionButton
+                    variant="default"
+                    fullWidth
                     size="lg"
                     className="h-12 rounded-xl bg-white text-purple-600 hover:bg-purple-50 border-none font-bold text-base shadow-lg active:scale-95 transition-all w-full"
                     onClick={() => onSelect?.(recipe)}
@@ -192,7 +220,7 @@ RecipeCard.Skeleton = function RecipeCardSkeleton({ variant = "main" }: { varian
         <Skeleton className="h-full w-full rounded-3xl overflow-hidden p-5 flex flex-col items-center justify-end space-y-5 shadow-lg">
             <div className="absolute top-4 left-4 w-9 h-9 rounded-full bg-black/5" />
             <div className="absolute top-4 right-4 w-9 h-9 rounded-full bg-black/5" />
-            
+
             <div className="space-y-2 w-full flex flex-col items-center">
                 <Skeleton className="h-8 w-3/4 bg-black/5" />
                 <Skeleton className="h-4 w-1/2 bg-black/5" />

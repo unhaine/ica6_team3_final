@@ -7,11 +7,16 @@ export function useHomeRecommendations() {
     const [isLoading, setIsLoading] = useState(true);
     const [groceryCount, setGroceryCount] = useState<number | null>(null);
 
-    const fetchRecommendations = useCallback(async () => {
+    const fetchRecommendations = useCallback(async (ingredients?: string[]) => {
         setIsLoading(true);
         try {
             // 새로운 추천 API 호출
-            const response = await fetch('/api/recommend');
+            let url = '/api/recommend';
+            if (ingredients && ingredients.length > 0) {
+                const query = ingredients.join(',');
+                url += `?ingredients=${encodeURIComponent(query)}`;
+            }
+            const response = await fetch(url);
 
             if (response.status === 401) {
                 // 인증 실패 시 일반 레시피 반환

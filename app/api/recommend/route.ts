@@ -1,25 +1,51 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth-helpers';
 import { recommendRecipes, matchRecipeIngredients } from '@/lib/recommender';
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
     // 인증된 사용자 확인
     const authResult = await requireAuth();
     if ('error' in authResult) return authResult.error;
     const user = authResult.user;
 
+    // 파라미터 확인: 특정 재료 위주 추천 요청
+    const { searchParams } = new URL(req.url);
+    const focusedIngredients = searchParams.get('ingredients')?.split(',') || [];
+
+    // 경량 normalize 함수
+    const normalizeText = (t?: string | null) => String(t || '').replace(/\s+/g, '').toLowerCase();
+
     // 사용자 보유 식재료 조회
     const userGroceries = await prisma.groceryItem.findMany({
       where: { userId: user.id },
       select: { name: true },
     });
-    const userItems = userGroceries.map(g => ({ name: g.name }));
+
+    // 사용자 재료 + 집중 재료 병합 (중복 제거)
+    const uniqueNames = new Set([
+      ...userGroceries.map(g => g.name),
+      ...focusedIngredients
+    ]);
+
+    const userItems = Array.from(uniqueNames).map(name => ({ name }));
+
+
 
     // 레시피 조회 (재료 있는 것만, 성능 목적 상 상한)
+    const where: any = { ckgMtrlCn: { not: null } };
+
+    // 특정 재료가 지정된 경우, 해당 재료를 포함하는 레시피를 우선적으로 검색 (DB 레벨 필터)
+    // OR 조건으로 '적어도 하나'를 포함하는 레시피 검색
+    if (focusedIngredients.length > 0) {
+      where.OR = focusedIngredients.map(ing => ({
+        ckgMtrlCn: { contains: ing }
+      }));
+    }
+
     const rows = await prisma.recipe.findMany({
-      where: { ckgMtrlCn: { not: null } },
+      where,
       take: 500,
       include: { ingredients: true },
     });
@@ -101,8 +127,7 @@ export async function GET() {
         include: { ingredients: true },
       });
 
-      // 경량 normalize 함수
-      const normalizeText = (t?: string | null) => String(t || '').replace(/\s+/g, '').toLowerCase();
+
 
       const existingIds = new Set(finalRecs.map(r => r.recipe.id));
 
@@ -142,14 +167,26 @@ export async function GET() {
 
         if (!hasAllergy) {
           // 인기 레시피 추가 (점수는 0 또는 낮게 설정하여 구분 가능하게 함)
+          const matched = matchRecipeIngredients(candidate as any, userItems);
+          const matchedNames = new Set(matched.matchedNames.map(n => normalizeText(n)));
+
           finalRecs.push({
-            recipe: candidate,
+            recipe: {
+              ...candidate,
+              ingredients: (candidate.ingredients || []).map((i: any) => ({
+                recipeId: scanId,
+                ingName: i.ingName,
+                isOwned: matchedNames.has(normalizeText(i.ingName))
+              }))
+            } as any,
             score: { recipeId: scanId, totalScore: 0, ingredientScore: 0, householdScore: 0, preferenceScore: 0, popularityScore: 0 }
           });
           existingIds.add(scanId);
         }
       }
     }
+
+
 
     // 각 추천에 대해 사용자 근거(설명) 생성하고 BigInt를 문자열로 변환
     const serializable = finalRecs.map(rec => {
@@ -166,18 +203,14 @@ export async function GET() {
       // 추천 사유 동적 생성
       if (rec.score && rec.score.totalScore > 0) {
         // 정상/완화 추천 (점수가 있음)
-        // 완화 여부는 점수나 householdScore 등으로 추론 가능하지만, 
-        // 여기서는 간단히 '추천' 멘트 사용
         const isStrict = rec.score.householdScore > 0 && rec.score.preferenceScore > 0;
         if (isStrict) {
           const prefText = cookingPreference ?? '추천';
           reason = `👨‍👩‍👧‍👦 당신의 ${user.householdSize}인 가구를 위한 '${prefText}' 레시피!\n✅ ${matchedCount}/${totalCount} 재료가 준비되어 있어요.`;
         } else {
-          // 완화된 조건
           reason = `🔎 일부 조건을 넓혀 추천한 레시피입니다.\n✅ ${matchedCount}/${totalCount} 재료가 준비되어 있어요.`;
         }
       } else {
-        // 인기 추천 (점수 0)
         reason = `🔥 조건에 맞는 레시피가 적어, 인기 레시피를 추천드립니다.`;
       }
 
@@ -186,6 +219,21 @@ export async function GET() {
           ...rec.recipe,
           rcpSno: String(rec.recipe.rcpSno), // BigInt를 String으로 변환
           recommendReason: reason,
+          ingredients: (() => {
+            let initialIngs: any[] = rec.recipe.ingredients || [];
+            if (initialIngs.length === 0 && rec.recipe.ckgMtrlCn) {
+              // Parse ckgMtrlCn if structured ingredients are missing
+              initialIngs = rec.recipe.ckgMtrlCn.split(/,|\[|\]|\n/).map((s: string) => ({ ingName: s.trim() })).filter((i: any) => i.ingName && !i.ingName.match(/^재료/));
+            }
+
+            return initialIngs.map((i: any) => {
+              const norm = normalizeText(i.ingName);
+              return {
+                ...i,
+                isOwned: matched.matchedNames.some(m => normalizeText(m) === norm || norm.includes(normalizeText(m)) || normalizeText(m).includes(norm))
+              };
+            });
+          })()
         },
         score: rec.score,
       };

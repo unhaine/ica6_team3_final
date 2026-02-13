@@ -26,17 +26,50 @@ export const FridgeItem = ({ item, onEdit, onDelete, onUse }: FridgeItemProps) =
         title={
           <div className="flex items-center gap-2">
             <span className="font-bold text-gray-900">{item.name}</span>
-            <span className="text-[10px] font-medium px-1.5 py-0.5 bg-gray-100 text-gray-500 rounded-md">
-              {(() => {
-                const created = new Date(item.createdAt);
-                const now = new Date();
-                created.setHours(0, 0, 0, 0);
-                now.setHours(0, 0, 0, 0);
-                const diffTime = now.getTime() - created.getTime();
-                const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+            {/* New Badge: 24시간 이내 생성 */}
+            {(() => {
+              const created = new Date(item.createdAt);
+              const now = new Date();
+              const diffTime = now.getTime() - created.getTime();
+              const diffHours = diffTime / (1000 * 60 * 60);
+              if (diffHours < 24) {
+                return (
+                  <span className="text-[10px] font-bold px-1.5 py-0.5 bg-green-100 text-green-600 rounded-md animate-pulse">
+                    New
+                  </span>
+                );
+              }
+              return null;
+            })()}
 
-                if (diffDays === 0) return '오늘';
-                return `D+${diffDays}`;
+            <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-md ${(() => {
+              if (!item.expiryDate) return 'bg-gray-100 text-gray-500';
+
+              const expiry = new Date(item.expiryDate);
+              const now = new Date();
+              expiry.setHours(0, 0, 0, 0);
+              now.setHours(0, 0, 0, 0);
+              const diffTime = expiry.getTime() - now.getTime();
+              const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+              if (diffDays < 0) return 'bg-red-100 text-red-600 font-bold'; // 지남
+              if (diffDays <= 3) return 'bg-red-50 text-red-500 font-bold'; // 임박
+              if (diffDays <= 7) return 'bg-orange-50 text-orange-500'; // 주의
+              return 'bg-gray-100 text-gray-500'; // 안전
+            })()}`}>
+              {(() => {
+                if (!item.expiryDate) return '기한미정';
+
+                const expiry = new Date(item.expiryDate);
+                const now = new Date();
+                expiry.setHours(0, 0, 0, 0);
+                now.setHours(0, 0, 0, 0);
+                const diffTime = expiry.getTime() - now.getTime();
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                if (diffDays === 0) return '오늘까지';
+                if (diffDays < 0) return `D+${Math.abs(diffDays)}`;
+                return `D-${diffDays}`;
               })()}
             </span>
           </div>

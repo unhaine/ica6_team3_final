@@ -41,25 +41,25 @@ export default function RecipeDetailPage() {
         transparent: true,
         title: "",
         left: (
-            <IconButton 
-                icon="ChevronLeft" 
+            <IconButton
+                icon="ChevronLeft"
                 onClick={() => router.back()}
-                className="bg-white/80 backdrop-blur-md rounded-full shadow-sm hover:bg-white transition-colors"
+                className="bg-white/80 backdrop-blur-md rounded-full shadow-md hover:bg-white transition-colors text-gray-900"
                 variant="ghost"
                 ariaLabel="뒤로 가기"
             />
         ),
         right: (
             <div className="flex gap-2">
-                <IconButton 
-                    icon="Bookmark" 
-                    className="bg-white/80 backdrop-blur-md rounded-full shadow-sm hover:bg-white transition-colors"
+                <IconButton
+                    icon="Bookmark"
+                    className="bg-white/80 backdrop-blur-md rounded-full shadow-md hover:bg-white transition-colors text-gray-900"
                     variant="ghost"
                     ariaLabel="북마크 추가"
                 />
-                <IconButton 
-                    icon="Share2" 
-                    className="bg-white/80 backdrop-blur-md rounded-full shadow-sm hover:bg-white transition-colors"
+                <IconButton
+                    icon="Share2"
+                    className="bg-white/80 backdrop-blur-md rounded-full shadow-md hover:bg-white transition-colors text-gray-900"
                     variant="ghost"
                     ariaLabel="공유하기"
                 />
@@ -122,7 +122,7 @@ export default function RecipeDetailPage() {
     return (
         <div className="flex-1 overflow-y-auto bg-white scrollbar-hide">
             {/* 1. Header Hero Section */}
-            <motion.div 
+            <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 className="px-5 pt-4 pb-6 space-y-4"
@@ -151,14 +151,14 @@ export default function RecipeDetailPage() {
             </motion.div>
 
             {/* 2. Main Visual */}
-            <motion.div 
+            <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1, duration: 0.5 }}
                 className="px-5"
             >
                 <div className="relative aspect-square rounded-2xl overflow-hidden shadow-xl ring-1 ring-black/5">
-                    <Image 
+                    <Image
                         src={recipe.rcpImgUrl || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=1000&auto=format&fit=crop"}
                         alt={recipe.ckgNm || "Recipe Image"}
                         fill
@@ -183,10 +183,10 @@ export default function RecipeDetailPage() {
                 {/* Cooking Steps */}
                 <section className="space-y-6">
                     <Typography variant="h3" className="font-bold text-gray-900">[조리 방법]</Typography>
-                    
+
                     <div className="space-y-8">
                         {recipe.steps.map((step, index) => (
-                            <motion.div 
+                            <motion.div
                                 key={step.stepId}
                                 initial={{ opacity: 0, x: -10 }}
                                 whileInView={{ opacity: 1, x: 0 }}
@@ -204,7 +204,7 @@ export default function RecipeDetailPage() {
                                     </Typography>
                                     {/* Step Visual Placeholder as shown in original image */}
                                     <div className="relative aspect-video rounded-xl overflow-hidden bg-gray-50 border border-gray-100 shadow-sm group">
-                                        <Image 
+                                        <Image
                                             src={recipe.rcpImgUrl} // DB에 단계별 이미지가 없어 메인 이미지를 블러 처리해 활용 (디자인적 요소)
                                             alt={`Step ${index + 1}`}
                                             fill
@@ -219,16 +219,6 @@ export default function RecipeDetailPage() {
                 </section>
             </div>
 
-            {/* 4. Bottom Fixed Button */}
-            <div className="fixed bottom-0 inset-x-0 p-5 bg-linear-to-t from-white via-white/80 to-transparent pt-10 px-6">
-                <ActionButton 
-                    fullWidth 
-                    size="lg" 
-                    className="h-14 rounded-2xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-lg shadow-2xl shadow-purple-200 active:scale-[0.97] transition-all"
-                >
-                    결정한 메뉴로 요리 시작
-                </ActionButton>
-            </div>
         </div>
     );
 }

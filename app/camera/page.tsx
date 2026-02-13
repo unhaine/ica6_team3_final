@@ -6,9 +6,8 @@ import { useFooter } from "@/components/modules/Footer";
 import { IconButton } from "@/components/elements";
 import { AlertModal } from "@/components/elements/AlertModal";
 import { AnimatePresence } from "framer-motion";
-import { CaptureStep, DetectStep, ConfirmStep, FloatingRecipes } from "@/components/modules/CameraSection";
+import { CaptureStep, DetectStep, ConfirmStep } from "@/components/modules/CameraSection";
 import { useCamera } from "@/hooks/useCamera";
-import { useHomeRecommendations } from "@/hooks/useHomeRecommendations";
 
 export default function CameraPage() {
     const router = useRouter();
@@ -31,12 +30,7 @@ export default function CameraPage() {
         setShowDuplicateAlert,
         duplicateMessage,
         handleForceSave,
-        showRecipes,
-        setShowRecipes,
-        handleFinalSave,
     } = useCamera();
-
-    const { recipes } = useHomeRecommendations();
 
     // 1. 헤더 및 푸터 제어
     useHeader({
@@ -96,21 +90,6 @@ export default function CameraPage() {
                 cancelLabel="취소"
                 onConfirm={handleForceSave}
                 onClose={() => setShowDuplicateAlert(false)}
-            />
-
-            {/* Floating Recipes Carousel */}
-            <FloatingRecipes
-                recipes={recipes}
-                isVisible={showRecipes}
-                onClose={() => {
-                    setShowRecipes(false);
-                    handleFinalSave();
-                }}
-                onSelect={(recipe) => {
-                    console.log("Selected recipe:", recipe);
-                    setShowRecipes(false);
-                    handleFinalSave();
-                }}
             />
         </div>
     );

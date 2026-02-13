@@ -7,7 +7,7 @@ export interface HeaderProps extends ComponentProps<"header"> {
 
 export interface HeaderState {
     isVisible: boolean;
-    title?: string;
+    title?: ReactNode | string;
     left?: ReactNode;
     center?: ReactNode;
     right?: ReactNode;

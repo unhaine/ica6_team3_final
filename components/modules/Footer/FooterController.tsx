@@ -16,11 +16,11 @@ const HIDE_FOOTER_PATHS = ['/login', '/signup', '/onboarding', '/test', '/camera
 
 export const FooterController = () => {
     const pathname = usePathname();
-    
+
     // Check if current path should hide the root footer
     // We hide it on specific auth pages, and on anything under /test (since /test has its own footer)
     // We also hide it on the root '/' landing page if desired
-    const isHidden = HIDE_FOOTER_PATHS.some(path => 
+    const isHidden = HIDE_FOOTER_PATHS.some(path =>
         pathname === path || (path !== '/' && pathname?.startsWith(path))
     ) || pathname === '/';
 
