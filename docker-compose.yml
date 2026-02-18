@@ -68,15 +68,6 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
-  # DDNS Service (Keeps your domain synced with EC2 IP)
-  duckdns:
-    image: lscr.io/linuxserver/duckdns:latest
-    container_name: duckdns
-    environment:
-      - SUBDOMAINS=${DUCKDNS_SUBDOMAIN} # e.g., refrigerai-test
-      - TOKEN=${DUCKDNS_TOKEN} # Copy from duckdns.org
-      - LOG_FILE=false
-    restart: always
 
 volumes:
   postgres_data:
