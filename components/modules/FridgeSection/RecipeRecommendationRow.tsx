@@ -1,9 +1,9 @@
 "use client";
 
-import { useMemo, useRef, useState, MouseEvent } from "react";
+import { useMemo, useRef, useState, type MouseEvent } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { Skeleton } from "@/components/ui/Skeleton";
+import { Skeleton } from "../../ui/Skeleton";
 
 interface RecipeRecommendationRowProps {
     recipes: any[];
@@ -21,7 +21,8 @@ export const RecipeRecommendationRow = ({ recipes, isLoading }: RecipeRecommenda
     const [isClick, setIsClick] = useState(true);
 
     const displayedRecipes = useMemo(() => {
-        return recipes.slice(0, 10); // 최대 10개만 표시
+        if (!recipes || !Array.isArray(recipes)) return [];
+        return recipes.filter(r => r && r.id).slice(0, 10); // 유효한 레시피만 필터링 후 최대 10개 표시
     }, [recipes]);
 
     // Mouse Event Handlers
