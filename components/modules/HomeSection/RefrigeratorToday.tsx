@@ -13,6 +13,7 @@ import { useUrgentIngredients } from "@/hooks/useUrgentIngredients";
 
 export function RefrigeratorToday() {
     const router = useRouter();
+<<<<<<< HEAD
     const [ingredients, setIngredients] = React.useState<any[]>([]);
 
     React.useEffect(() => {
@@ -54,6 +55,12 @@ export function RefrigeratorToday() {
 
     // 재료가 없으면 빈 상태 표시
     if (ingredients.length === 0) {
+=======
+    const { items, isLoading } = useUrgentIngredients();
+
+    // 빈 상태 보여주기 (로딩중이거나 아이템이 없을 때)
+    if (!isLoading && items.length === 0) {
+>>>>>>> ee167defcafd346d324d02e5abb44f8f3334e61b
         return (
             <div className="space-y-3">
                 <div className="flex items-center gap-1.5 px-1">
@@ -62,6 +69,10 @@ export function RefrigeratorToday() {
                         먼저 먹어야하는 재료
                     </Typography>
                 </div>
+<<<<<<< HEAD
+=======
+
+>>>>>>> ee167defcafd346d324d02e5abb44f8f3334e61b
                 <div className="flex flex-col items-center justify-center py-6 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
                     <span className="text-2xl mb-2">🥬</span>
                     <Typography variant="caption" className="text-gray-400 font-medium text-center">
@@ -76,9 +87,15 @@ export function RefrigeratorToday() {
                     fullWidth
                     size="sm"
                     className="h-10 rounded-xl text-sm font-bold bg-purple-600 text-white shadow-lg shadow-purple-600/20 hover:bg-purple-700 transition-all"
+<<<<<<< HEAD
                     onClick={() => router.push("/home/refrigerator-cleanup")}
                 >
                     오늘의 냉장고 파먹기
+=======
+                    onClick={() => router.push("/camera")}
+                >
+                    재료 채우러 가기
+>>>>>>> ee167defcafd346d324d02e5abb44f8f3334e61b
                 </ActionButton>
             </div>
         );
@@ -108,6 +125,7 @@ export function RefrigeratorToday() {
                         <div className="w-11 h-11 rounded-2xl flex items-center justify-center bg-purple-50 border border-purple-100/50">
                             <span className="text-xl">{ingredient.emoji}</span>
                         </div>
+<<<<<<< HEAD
                         <div className="text-center flex flex-col -space-y-0.5">
                             <Typography
                                 variant="caption"
@@ -126,6 +144,10 @@ export function RefrigeratorToday() {
                         </div>
                     </div>
                 ))}
+=======
+                    );
+                })}
+>>>>>>> ee167defcafd346d324d02e5abb44f8f3334e61b
             </div>
 
             {/* Action Button */}
