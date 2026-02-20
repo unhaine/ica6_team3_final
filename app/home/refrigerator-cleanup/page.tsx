@@ -36,37 +36,8 @@ export default function RefrigeratorCleanupPage() {
         isVisible: true,
     });
 
-<<<<<<< HEAD
-    const isLoading = isRecipeLoading || isIngredientsLoading;
+    const isLoading = isRecipeLoading; // Fixed undefined isLoading
 
-    // Map urgent items to the format expected by RecipeCard
-    const ingredients = urgentItems.map(item => {
-        const expiry = new Date(item.expiryDate!);
-        const now = new Date();
-        expiry.setHours(0, 0, 0, 0);
-        now.setHours(0, 0, 0, 0);
-        const diffTime = expiry.getTime() - now.getTime();
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-        return {
-            name: item.name,
-            dDay: diffDays,
-            emoji: item.category === 'meat' ? '🥩' :
-                item.category === 'vegetable' ? '🥬' :
-                    item.category === 'fruit' ? '🍎' :
-                        item.category === 'seafood' ? '🐟' :
-                            item.category === 'dairy' ? '🥛' : '🍱'
-        };
-    });
-
-    // 유통기한 임박 재료가 로드되면 해당 재료를 기반으로 레시피 다시 추천
-    useEffect(() => {
-        if (!isIngredientsLoading && urgentItems.length > 0) {
-            const ingredientNames = urgentItems.map(item => item.name);
-            refresh(ingredientNames);
-        }
-    }, [isIngredientsLoading, urgentItems, refresh]);
-=======
     // State for shopping modal
     const [shoppingItem, setShoppingItem] = React.useState<string | null>(null);
 
@@ -106,7 +77,6 @@ export default function RefrigeratorCleanupPage() {
         };
         fetchUrgentIngredients();
     }, []);
->>>>>>> develop
 
     if (isLoading) {
         return (
@@ -137,32 +107,6 @@ export default function RefrigeratorCleanupPage() {
             </div>
 
             <div className="flex flex-col gap-6">
-<<<<<<< HEAD
-                {displayRecipes.map((recipe, index) => {
-                    // Find the urgent ingredient that matches this recipe
-                    const matchedIngredient = ingredients.find(ing => {
-                        const normalize = (text: string) => text.replace(/\s+/g, "").toLowerCase();
-                        const recipeText = normalize(_getRecipeIngredients(recipe));
-                        const ingName = normalize(ing.name);
-                        return recipeText.includes(ingName);
-                    });
-
-                    // If no match found, do NOT show any urgent ingredient badge.
-                    // Previously: const displayIngredient = matchedIngredient || ingredients[0];
-                    const displayIngredient = matchedIngredient;
-
-                    return (
-                        <div key={recipe.rcpSno || index} className="h-[380px] shrink-0">
-                            <RecipeCard
-                                recipe={recipe}
-                                rank={index + 1}
-                                ingredient={displayIngredient}
-                                onSelect={(r) => router.push(`/recipe/${r.rcpSno}`)}
-                            />
-                        </div>
-                    );
-                })}
-=======
                 {displayRecipes.map((recipe, index) => (
                     <div key={recipe.rcpSno || index} className="h-[380px] shrink-0">
                         <RecipeCard
@@ -177,7 +121,6 @@ export default function RefrigeratorCleanupPage() {
                         />
                     </div>
                 ))}
->>>>>>> develop
 
                 {displayRecipes.length === 0 && (
                     <div className="flex flex-col items-center justify-center py-20 text-center gap-4">

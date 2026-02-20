@@ -13,13 +13,7 @@ import { useUrgentIngredients } from "@/hooks/useUrgentIngredients";
 
 export function RefrigeratorToday() {
     const router = useRouter();
-<<<<<<< HEAD
-    const { items, isLoading } = useUrgentIngredients();
-
-    // 빈 상태 보여주기 (로딩중이거나 아이템이 없을 때)
-    if (!isLoading && items.length === 0) {
-=======
-    const [ingredients, setIngredients] = React.useState<Ingredient[]>([]);
+    const [ingredients, setIngredients] = React.useState<any[]>([]);
 
     React.useEffect(() => {
         const fetchUrgentIngredients = async () => {
@@ -60,7 +54,6 @@ export function RefrigeratorToday() {
 
     // 재료가 없으면 빈 상태 표시
     if (ingredients.length === 0) {
->>>>>>> develop
         return (
             <div className="space-y-3">
                 <div className="flex items-center gap-1.5 px-1">
@@ -69,12 +62,6 @@ export function RefrigeratorToday() {
                         먼저 먹어야하는 재료
                     </Typography>
                 </div>
-<<<<<<< HEAD
-                <div className="py-4 text-center text-gray-400 text-xs">
-                    냉장고가 비어있어요 텅! 🗑️
-                </div>
-=======
-
                 <div className="flex flex-col items-center justify-center py-6 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
                     <span className="text-2xl mb-2">🥬</span>
                     <Typography variant="caption" className="text-gray-400 font-medium text-center">
@@ -84,21 +71,14 @@ export function RefrigeratorToday() {
                 </div>
 
                 {/* Action Button */}
->>>>>>> develop
                 <ActionButton
                     variant="default"
                     fullWidth
                     size="sm"
                     className="h-10 rounded-xl text-sm font-bold bg-purple-600 text-white shadow-lg shadow-purple-600/20 hover:bg-purple-700 transition-all"
-<<<<<<< HEAD
-                    onClick={() => router.push("/camera")}
-                >
-                    재료 채우러 가기
-=======
                     onClick={() => router.push("/home/refrigerator-cleanup")}
                 >
                     오늘의 냉장고 파먹기
->>>>>>> develop
                 </ActionButton>
             </div>
         );
@@ -123,47 +103,11 @@ export function RefrigeratorToday() {
 
             {/* Ingredients Grid */}
             <div className="flex justify-around items-start py-1">
-                {items.map((item, idx) => {
-                    const expiry = new Date(item.expiryDate!);
-                    const now = new Date();
-                    expiry.setHours(0, 0, 0, 0);
-                    now.setHours(0, 0, 0, 0);
-                    const diffTime = expiry.getTime() - now.getTime();
-                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-                    return (
-                        <div key={item.id} className="flex flex-col items-center gap-1" onClick={() => router.push('/fridge')}>
-                            <div className="w-11 h-11 rounded-2xl flex items-center justify-center bg-purple-50 border border-purple-100/50">
-                                <span className="text-xl">
-                                    {/* TODO: Category based emoji */}
-                                    {item.category === 'meat' ? '🥩' :
-                                        item.category === 'vegetable' ? '🥬' :
-                                            item.category === 'fruit' ? '🍎' :
-                                                item.category === 'seafood' ? '🐟' :
-                                                    item.category === 'dairy' ? '🥛' : '🍱'}
-                                </span>
-                            </div>
-                            <div className="text-center flex flex-col -space-y-0.5">
-                                <Typography
-                                    variant="caption"
-                                    weight="bold"
-                                    className={`text-[10px]
-                                        ${diffDays <= 3 ? 'text-red-500' :
-                                            diffDays <= 7 ? 'text-orange-500' :
-                                                'text-blue-500'}
-                                    `}
-                                >
-                                    {diffDays < 0 ? `D+${Math.abs(diffDays)}` : `D-${diffDays}`}
-                                </Typography>
-                                <Typography variant="caption" color="secondary" className="text-[10px] truncate w-12 text-center">
-                                    {item.name}
-                                </Typography>
-                            </div>
+                {ingredients.map((ingredient: any, idx: number) => (
+                    <div key={idx} className="flex flex-col items-center gap-1">
+                        <div className="w-11 h-11 rounded-2xl flex items-center justify-center bg-purple-50 border border-purple-100/50">
+                            <span className="text-xl">{ingredient.emoji}</span>
                         </div>
-<<<<<<< HEAD
-                    );
-                })}
-=======
                         <div className="text-center flex flex-col -space-y-0.5">
                             <Typography
                                 variant="caption"
@@ -182,7 +126,6 @@ export function RefrigeratorToday() {
                         </div>
                     </div>
                 ))}
->>>>>>> develop
             </div>
 
             {/* Action Button */}
