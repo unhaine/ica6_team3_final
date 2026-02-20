@@ -108,8 +108,7 @@ export default function RefrigeratorCleanupPage() {
                     });
 
                     // If no match found, do NOT show any urgent ingredient badge.
-                    // Previously: const displayIngredient = ingredients[index] || null;
-                    const displayIngredient = matchedIngredient;
+                    const displayIngredient = matchedIngredient || undefined;
 
                     return (
                         <div key={recipe.rcpSno || index} className="h-[380px] shrink-0">
@@ -135,7 +134,6 @@ export default function RefrigeratorCleanupPage() {
                     </div>
                 )}
             </div>
-
             {/* Shopping Modal */}
             {shoppingItem && (
                 <CommerceModal

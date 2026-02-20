@@ -79,7 +79,7 @@ export function RefrigeratorToday() {
                         <div key={item.id} className="flex flex-col items-center gap-1" onClick={() => router.push('/fridge')}>
                             <div className="w-11 h-11 rounded-2xl flex items-center justify-center bg-purple-50 border border-purple-100/50">
                                 <span className="text-xl">
-                                    {/* TODO: Category based emoji */}
+                                    {/* Category based emoji */}
                                     {item.category === 'meat' ? '🥩' :
                                         item.category === 'vegetable' ? '🥬' :
                                             item.category === 'fruit' ? '🍎' :
@@ -107,7 +107,6 @@ export function RefrigeratorToday() {
                     );
                 })}
             </div>
-
             {/* Action Button */}
             <ActionButton
                 variant="default"

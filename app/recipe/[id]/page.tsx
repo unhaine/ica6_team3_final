@@ -15,6 +15,7 @@ interface IngredientItem {
     ingredientName: string;
     amount: string;
     isOwned: boolean;
+    isUrgent?: boolean;
 }
 
 interface IngredientSection {

@@ -52,7 +52,6 @@ export default function RecipeDetailPage({ params }: RecipeDetailProps) {
         left: <IconBox icon={<ChevronLeft />} onClick={() => router.back()} variant="ghost" />,
         title: "레시피 상세",
         right: <IconBox icon={<Share2 />} variant="ghost" />,
-        className: "bg-surface/80 backdrop-blur-md border-b-0",
     });
 
     useEffect(() => {

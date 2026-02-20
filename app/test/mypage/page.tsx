@@ -39,7 +39,6 @@ export default function MyPage() {
         isVisible: true,
         title: "마이페이지",
         right: <IconBox icon={<Settings />} variant="ghost" />,
-        className: "bg-white border-b border-gray-100",
     });
 
     useFooter({
