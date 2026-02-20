@@ -5,7 +5,7 @@ import prisma from '@/lib/prisma';
 /**
  * 재료 목록 조회
  */
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
     const authResult = await requireAuth();
     if ('error' in authResult) {
@@ -13,10 +13,20 @@ export async function GET() {
     }
     const user = authResult.user;
 
+    const { searchParams } = new URL(req.url);
+    const sort = searchParams.get('sort'); // 'expiry' | 'created'
+    const limit = searchParams.get('limit') ? parseInt(searchParams.get('limit')!) : undefined;
+
+    let orderBy: any = { createdAt: 'desc' };
+    if (sort === 'expiry') {
+      orderBy = { expiryDate: 'asc' }; // 유통기한 임박순
+    }
+
     // 사용자의 재료 목록 조회
     const items = await prisma.groceryItem.findMany({
       where: { userId: user.id },
-      orderBy: { createdAt: 'desc' },
+      orderBy: orderBy,
+      take: limit,
     });
 
     return NextResponse.json({

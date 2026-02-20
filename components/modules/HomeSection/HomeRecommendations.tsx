@@ -2,12 +2,13 @@
 
 import { useEffect } from "react";
 
-import { Typography, ActionButton, IconBox, MediaCard } from "@/components/elements";
+import { ActionButton, IconBox, MediaCard } from "@/components/elements";
 import { RecipeCard } from "./RecipeCard";
 import { Skeleton } from "@/components/ui";
 import { Sparkles, Bookmark } from "lucide-react";
 import { useHomeRecommendations } from "@/hooks/useHomeRecommendations";
 import { cn } from "@/lib/utils";
+import { useRouter } from "next/navigation";
 
 export function HomeRecommendations() {
     const { recipes, isLoading, groceryCount, mainRecipe, otherRecipes } = useHomeRecommendations();
@@ -23,6 +24,15 @@ export function HomeRecommendations() {
         return () => main?.classList.remove('scrollbar-hide');
     }, [isLoading]);
 
+    const router = useRouter();
+
+    const handleRecipeClick = (recipe: any) => {
+        const id = recipe.rcpSno || recipe.id;
+        if (id) {
+            router.push(`/recipe/${id}`);
+        }
+    };
+
     if (isLoading) return <HomeRecommendationsSkeleton />;
 
     // 냉장고가 비어있거나(로그인 유저 기준), 레시피가 아예 없는 경우
@@ -35,6 +45,7 @@ export function HomeRecommendations() {
                 <RecipeCard
                     recipe={mainRecipe}
                     isEmpty={isEmpty}
+                    onSelect={handleRecipeClick}
                 />
             </div>
 
@@ -57,6 +68,7 @@ export function HomeRecommendations() {
                             recipe={rec}
                             index={index + 2}
                             variant="compact"
+                            onSelect={handleRecipeClick}
                         />
                     ))
                 )}

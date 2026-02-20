@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Typography, ActionButton, IconBox, MediaCard } from "@/components/elements";
-import { Sparkles, Bookmark, Zap, Clock, Users } from "lucide-react";
+import { Sparkles, Bookmark, Zap, Clock, Users, ShoppingBag } from "lucide-react";
 import { Skeleton } from "@/components/ui";
 import { cn } from "@/lib/utils";
 
@@ -18,18 +18,20 @@ export interface RecipeCardProps {
         emoji: string;
     };
     onSelect?: (recipe: any) => void;
+    onShop?: (ingredientName: string) => void;
     className?: string;
 }
 
-export function RecipeCard({ 
-    recipe, 
+export function RecipeCard({
+    recipe,
     variant = "main",
-    isEmpty, 
-    rank, 
+    isEmpty,
+    rank,
     index,
-    ingredient, 
-    onSelect, 
-    className 
+    ingredient,
+    onSelect,
+    onShop,
+    className
 }: RecipeCardProps) {
     if (isEmpty || !recipe) {
         if (variant === "compact") {
@@ -96,9 +98,9 @@ export function RecipeCard({
                             </Typography>
                         </div>
                     )}
-                    <Typography 
-                        variant="h2" 
-                        as="span" 
+                    <Typography
+                        variant="h2"
+                        as="span"
                         className="text-white font-bold leading-tight drop-shadow-md text-2xl"
                     >
                         {recipe.ckgNm || recipe.rcpTtl || '맛있는 레시피'}
@@ -113,6 +115,17 @@ export function RecipeCard({
                             <Typography variant="caption" className="text-white font-medium">
                                 {ingredient.name} (D-{ingredient.dDay})
                             </Typography>
+                            {onShop && (
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        onShop(ingredient.name);
+                                    }}
+                                    className="ml-1 p-1 hover:bg-white/20 rounded-full transition-colors"
+                                >
+                                    <ShoppingBag className="w-3 h-3 text-white" />
+                                </button>
+                            )}
                         </div>
                     ) : (
                         recipe?.recommendReason ? (
@@ -143,13 +156,13 @@ export function RecipeCard({
             }
             overlay={
                 <div className="flex gap-2">
-                    <IconBox 
+                    <IconBox
                         variant="ghost"
                         size="sm"
                         icon={<Sparkles className="w-4 h-4 text-white" />}
                         className="bg-white/20 backdrop-blur-md border border-white/30 shadow-sm"
                     />
-                    <IconBox 
+                    <IconBox
                         variant="ghost"
                         size="sm"
                         icon={<Bookmark className="w-4 h-4 text-white" />}
@@ -158,9 +171,9 @@ export function RecipeCard({
                 </div>
             }
             footer={
-                <ActionButton 
-                    variant="default" 
-                    fullWidth 
+                <ActionButton
+                    variant="default"
+                    fullWidth
                     size="lg"
                     className="h-12 rounded-xl bg-white text-purple-600 hover:bg-purple-50 border-none font-bold text-base shadow-lg active:scale-95 transition-all w-full"
                     onClick={() => onSelect?.(recipe)}
@@ -192,7 +205,7 @@ RecipeCard.Skeleton = function RecipeCardSkeleton({ variant = "main" }: { varian
         <Skeleton className="h-full w-full rounded-3xl overflow-hidden p-5 flex flex-col items-center justify-end space-y-5 shadow-lg">
             <div className="absolute top-4 left-4 w-9 h-9 rounded-full bg-black/5" />
             <div className="absolute top-4 right-4 w-9 h-9 rounded-full bg-black/5" />
-            
+
             <div className="space-y-2 w-full flex flex-col items-center">
                 <Skeleton className="h-8 w-3/4 bg-black/5" />
                 <Skeleton className="h-4 w-1/2 bg-black/5" />
