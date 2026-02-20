@@ -2,7 +2,9 @@ import { ComponentProps, ElementType, ReactNode } from "react";
 
 export interface FooterItem {
     label: string;
-    icon: ElementType;
+    icon?: ElementType;
+    iconDefault?: string;
+    iconSelected?: string;
     href: string;
     badge?: string | number;
     isFab?: boolean; // If true, handled specially
