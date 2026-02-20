@@ -30,10 +30,7 @@ export function RecipeCard({
     index,
     ingredient,
     onSelect,
-<<<<<<< HEAD
-=======
     onShop,
->>>>>>> develop
     className
 }: RecipeCardProps) {
     if (isEmpty || !recipe) {

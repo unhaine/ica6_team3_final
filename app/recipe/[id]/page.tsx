@@ -15,6 +15,7 @@ interface IngredientItem {
     ingredientName: string;
     amount: string;
     isOwned: boolean;
+    isUrgent?: boolean;
 }
 
 interface IngredientSection {
@@ -72,21 +73,13 @@ export default function RecipeDetailPage() {
             <div className="flex gap-2">
                 <IconButton
                     icon="Bookmark"
-<<<<<<< HEAD
                     className="bg-white/80 backdrop-blur-md rounded-full shadow-md hover:bg-white transition-colors text-gray-900"
-=======
-                    className="bg-white/80 backdrop-blur-md rounded-full shadow-sm hover:bg-white transition-colors"
->>>>>>> develop
                     variant="ghost"
                     ariaLabel="북마크 추가"
                 />
                 <IconButton
                     icon="Share2"
-<<<<<<< HEAD
                     className="bg-white/80 backdrop-blur-md rounded-full shadow-md hover:bg-white transition-colors text-gray-900"
-=======
-                    className="bg-white/80 backdrop-blur-md rounded-full shadow-sm hover:bg-white transition-colors"
->>>>>>> develop
                     variant="ghost"
                     ariaLabel="공유하기"
                 />
@@ -319,11 +312,7 @@ export default function RecipeDetailPage() {
                                     {/* Step Visual Placeholder */}
                                     <div className="relative aspect-video rounded-xl overflow-hidden bg-gray-50 border border-gray-100 shadow-sm group">
                                         <Image
-<<<<<<< HEAD
                                             src={recipe.rcpImgUrl} // DB에 단계별 이미지가 없어 메인 이미지를 블러 처리해 활용 (디자인적 요소)
-=======
-                                            src={recipe.rcpImgUrl}
->>>>>>> develop
                                             alt={`Step ${index + 1}`}
                                             fill
                                             className="object-cover opacity-60 group-hover:scale-105 transition-transform duration-500"
@@ -337,8 +326,6 @@ export default function RecipeDetailPage() {
                 </section>
             </div>
 
-<<<<<<< HEAD
-=======
             {/* 4. Bottom Fixed Button */}
             <div className="fixed bottom-0 inset-x-0 p-5 bg-linear-to-t from-white via-white/80 to-transparent pt-10 px-6 z-10">
                 <ActionButton
@@ -361,7 +348,6 @@ export default function RecipeDetailPage() {
                 onClose={() => setIsMultiModalOpen(false)}
                 ingredients={missingIngredients}
             />
->>>>>>> develop
         </div>
     );
 }
