@@ -1,13 +1,26 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { ChevronLeft, Clock, Zap, Users, Bookmark, Share2, Star } from "lucide-react";
+import { ChevronLeft, Clock, Zap, Users, Bookmark, Share2, Star, ShoppingCart, Check, Search } from "lucide-react";
 import { Typography, IconBox, ActionButton, Spinner, IconButton } from "@/components/elements";
 import { useHeader } from "@/components/modules/Header";
 import { cn } from "@/lib/utils";
+import { CommerceModal, CommerceMultiModal } from "@/components/modules/CommerceModal";
+
+interface IngredientItem {
+    name: string;
+    ingredientName: string;
+    amount: string;
+    isOwned: boolean;
+}
+
+interface IngredientSection {
+    sectionTitle: string;
+    items: IngredientItem[];
+}
 
 interface RecipeDetail {
     rcpSno: string;
@@ -27,6 +40,7 @@ interface RecipeDetail {
         stepId: number;
         stepDesc: string;
     }[];
+    structuredIngredients?: IngredientSection[];
 }
 
 export default function RecipeDetailPage() {
@@ -34,6 +48,11 @@ export default function RecipeDetailPage() {
     const router = useRouter();
     const [recipe, setRecipe] = useState<RecipeDetail | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+
+    // Shopping Modal State
+    const [isCommerceModalOpen, setIsCommerceModalOpen] = useState(false);
+    const [selectedIngredient, setSelectedIngredient] = useState<string>("");
+    const [isMultiModalOpen, setIsMultiModalOpen] = useState(false);
 
     // Custom Header
     useHeader({
@@ -53,13 +72,21 @@ export default function RecipeDetailPage() {
             <div className="flex gap-2">
                 <IconButton
                     icon="Bookmark"
+<<<<<<< HEAD
                     className="bg-white/80 backdrop-blur-md rounded-full shadow-md hover:bg-white transition-colors text-gray-900"
+=======
+                    className="bg-white/80 backdrop-blur-md rounded-full shadow-sm hover:bg-white transition-colors"
+>>>>>>> develop
                     variant="ghost"
                     ariaLabel="북마크 추가"
                 />
                 <IconButton
                     icon="Share2"
+<<<<<<< HEAD
                     className="bg-white/80 backdrop-blur-md rounded-full shadow-md hover:bg-white transition-colors text-gray-900"
+=======
+                    className="bg-white/80 backdrop-blur-md rounded-full shadow-sm hover:bg-white transition-colors"
+>>>>>>> develop
                     variant="ghost"
                     ariaLabel="공유하기"
                 />
@@ -85,6 +112,24 @@ export default function RecipeDetailPage() {
 
         fetchRecipe();
     }, [params?.id]);
+
+    // Handle single ingredient shopping
+    const handleShopIngredient = (name: string) => {
+        setSelectedIngredient(name);
+        setIsCommerceModalOpen(true);
+    };
+
+    // Calculate missing ingredients for "Shop All"
+    const missingIngredients = useMemo(() => {
+        if (!recipe?.structuredIngredients) return [];
+        return recipe.structuredIngredients.flatMap(section =>
+            section.items.filter(item => !item.isOwned).map(item => item.ingredientName)
+        );
+    }, [recipe]);
+
+    const handleShopAllMissing = () => {
+        setIsMultiModalOpen(true);
+    };
 
     if (isLoading) {
         return (
@@ -120,7 +165,7 @@ export default function RecipeDetailPage() {
     ].filter(Boolean);
 
     return (
-        <div className="flex-1 overflow-y-auto bg-white scrollbar-hide">
+        <div className="flex-1 overflow-y-auto bg-white scrollbar-hide pb-24">
             {/* 1. Header Hero Section */}
             <motion.div
                 initial={{ opacity: 0 }}
@@ -169,14 +214,83 @@ export default function RecipeDetailPage() {
             </motion.div>
 
             {/* 3. Quick Info & Action */}
-            <div className="px-5 mt-8 space-y-10 pb-32">
+            <div className="px-5 mt-8 space-y-10 pb-10">
                 {/* Ingredients */}
-                <section className="space-y-3">
-                    <Typography variant="h3" className="font-bold text-gray-900">[재료]</Typography>
-                    <div className="p-0">
-                        <Typography variant="body1" className="text-gray-700 leading-relaxed whitespace-pre-wrap">
-                            {recipe.ckgMtrlCn}
-                        </Typography>
+                <section className="space-y-4">
+                    <div className="flex items-center justify-between">
+                        <Typography variant="h3" className="font-bold text-gray-900">[재료]</Typography>
+                        {missingIngredients.length > 0 && (
+                            <button
+                                onClick={handleShopAllMissing}
+                                className="flex items-center gap-1 text-sm font-bold text-primary bg-primary/10 px-3 py-1.5 rounded-full hover:bg-primary/20 transition-colors"
+                            >
+                                <ShoppingCart className="w-4 h-4" />
+                                부족한 재료 한 번에 구매
+                            </button>
+                        )}
+                    </div>
+
+                    <div className="space-y-6">
+                        {recipe.structuredIngredients ? (
+                            recipe.structuredIngredients.map((section, idx) => (
+                                <div key={idx} className="space-y-3">
+                                    <Typography variant="subtitle2" className="text-gray-500 font-bold bg-gray-50 px-3 py-1 rounded-lg inline-block">
+                                        {section.sectionTitle}
+                                    </Typography>
+                                    <div className="grid gap-3">
+                                        {section.items.map((item, itemIdx) => (
+                                            <div key={itemIdx} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
+                                                <div className="flex items-center gap-3">
+                                                    {item.isOwned ? (
+                                                        <div className="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center shrink-0">
+                                                            <Check className="w-3 h-3 text-green-600" />
+                                                        </div>
+                                                    ) : (
+                                                        <div className="w-5 h-5 rounded-full bg-gray-100 flex items-center justify-center shrink-0">
+                                                            <div className="w-1.5 h-1.5 rounded-full bg-gray-300" />
+                                                        </div>
+                                                    )}
+                                                    <div className="flex flex-col">
+                                                        <div className="flex items-center gap-2">
+                                                            <span className={cn(
+                                                                "font-medium text-[15px]",
+                                                                item.isOwned ? "text-gray-900" : "text-gray-500"
+                                                            )}>
+                                                                {item.ingredientName}
+                                                            </span>
+                                                            {item.isUrgent && (
+                                                                <span className="text-[10px] font-bold text-white bg-red-500 px-1.5 py-0.5 rounded-full animate-pulse">
+                                                                    임박
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                        {item.amount && (
+                                                            <span className="text-xs text-gray-400">{item.amount}</span>
+                                                        )}
+                                                    </div>
+                                                </div>
+
+                                                {/* Actions */}
+                                                {!item.isOwned && (
+                                                    <button
+                                                        onClick={() => handleShopIngredient(item.ingredientName)}
+                                                        className="p-2 text-gray-400 hover:text-primary hover:bg-primary/5 rounded-full transition-colors"
+                                                        aria-label={`${item.ingredientName} 구매하기`}
+                                                    >
+                                                        <Search className="w-4 h-4" />
+                                                    </button>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            ))
+                        ) : (
+                            // Fallback for raw text if structuredIngredients is missing (should not happen with new API)
+                            <Typography variant="body1" className="text-gray-700 leading-relaxed whitespace-pre-wrap">
+                                {recipe.ckgMtrlCn}
+                            </Typography>
+                        )}
                     </div>
                 </section>
 
@@ -202,10 +316,14 @@ export default function RecipeDetailPage() {
                                     <Typography variant="body1" className="text-gray-800 leading-relaxed pt-0.5">
                                         {step.stepDesc}
                                     </Typography>
-                                    {/* Step Visual Placeholder as shown in original image */}
+                                    {/* Step Visual Placeholder */}
                                     <div className="relative aspect-video rounded-xl overflow-hidden bg-gray-50 border border-gray-100 shadow-sm group">
                                         <Image
+<<<<<<< HEAD
                                             src={recipe.rcpImgUrl} // DB에 단계별 이미지가 없어 메인 이미지를 블러 처리해 활용 (디자인적 요소)
+=======
+                                            src={recipe.rcpImgUrl}
+>>>>>>> develop
                                             alt={`Step ${index + 1}`}
                                             fill
                                             className="object-cover opacity-60 group-hover:scale-105 transition-transform duration-500"
@@ -219,6 +337,31 @@ export default function RecipeDetailPage() {
                 </section>
             </div>
 
+<<<<<<< HEAD
+=======
+            {/* 4. Bottom Fixed Button */}
+            <div className="fixed bottom-0 inset-x-0 p-5 bg-linear-to-t from-white via-white/80 to-transparent pt-10 px-6 z-10">
+                <ActionButton
+                    fullWidth
+                    size="lg"
+                    className="h-14 rounded-2xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-lg shadow-2xl shadow-purple-200 active:scale-[0.97] transition-all"
+                >
+                    결정한 메뉴로 요리 시작
+                </ActionButton>
+            </div>
+
+            {/* Shopping Modals */}
+            <CommerceModal
+                isOpen={isCommerceModalOpen}
+                onClose={() => setIsCommerceModalOpen(false)}
+                ingredientName={selectedIngredient}
+            />
+            <CommerceMultiModal
+                isOpen={isMultiModalOpen}
+                onClose={() => setIsMultiModalOpen(false)}
+                ingredients={missingIngredients}
+            />
+>>>>>>> develop
         </div>
     );
 }

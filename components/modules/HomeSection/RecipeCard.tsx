@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Typography, ActionButton, IconBox, MediaCard } from "@/components/elements";
-import { Sparkles, Bookmark, Zap, Clock, Users } from "lucide-react";
+import { Sparkles, Bookmark, Zap, Clock, Users, ShoppingBag } from "lucide-react";
 import { Skeleton } from "@/components/ui";
 import { cn } from "@/lib/utils";
 
@@ -18,6 +18,7 @@ export interface RecipeCardProps {
         emoji: string;
     };
     onSelect?: (recipe: any) => void;
+    onShop?: (ingredientName: string) => void;
     className?: string;
 }
 
@@ -29,6 +30,10 @@ export function RecipeCard({
     index,
     ingredient,
     onSelect,
+<<<<<<< HEAD
+=======
+    onShop,
+>>>>>>> develop
     className
 }: RecipeCardProps) {
     if (isEmpty || !recipe) {
@@ -113,6 +118,17 @@ export function RecipeCard({
                             <Typography variant="caption" className="text-white font-medium">
                                 {ingredient.name} (D-{ingredient.dDay})
                             </Typography>
+                            {onShop && (
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        onShop(ingredient.name);
+                                    }}
+                                    className="ml-1 p-1 hover:bg-white/20 rounded-full transition-colors"
+                                >
+                                    <ShoppingBag className="w-3 h-3 text-white" />
+                                </button>
+                            )}
                         </div>
                     ) : (
                         recipe?.recommendReason ? (

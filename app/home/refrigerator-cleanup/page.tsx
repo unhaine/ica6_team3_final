@@ -4,6 +4,7 @@ import React, { useEffect } from "react";
 import { useHeader } from "@/components/modules/Header";
 import { useFooter } from "@/components/modules/Footer";
 import { RecipeCard } from "@/components/modules/HomeSection";
+import { CommerceModal } from "@/components/modules/CommerceModal";
 import { Typography, IconButton } from "@/components/elements";
 import { useHomeRecommendations } from "@/hooks/useHomeRecommendations";
 import { Skeleton } from "@/components/ui";
@@ -35,6 +36,7 @@ export default function RefrigeratorCleanupPage() {
         isVisible: true,
     });
 
+<<<<<<< HEAD
     const isLoading = isRecipeLoading || isIngredientsLoading;
 
     // Map urgent items to the format expected by RecipeCard
@@ -64,6 +66,47 @@ export default function RefrigeratorCleanupPage() {
             refresh(ingredientNames);
         }
     }, [isIngredientsLoading, urgentItems, refresh]);
+=======
+    // State for shopping modal
+    const [shoppingItem, setShoppingItem] = React.useState<string | null>(null);
+
+    // Mock ingredients matching RefrigeratorToday.tsx
+    // Real ingredients matching RefrigeratorToday.tsx logic
+    const [ingredients, setIngredients] = React.useState<any[]>([]);
+
+    useEffect(() => {
+        const fetchUrgentIngredients = async () => {
+            try {
+                const res = await fetch('/api/ingredients?sort=expiry&limit=5');
+                const data = await res.json();
+
+                if (data.success && Array.isArray(data.data)) {
+                    const mapped = data.data.map((item: any) => {
+                        const today = new Date();
+                        const expiry = new Date(item.expiryDate);
+                        const diffTime = expiry.getTime() - today.getTime();
+                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                        let emoji = "🥬";
+                        if (item.category === "육류") emoji = "🥩";
+                        if (item.category === "유제품") emoji = "🥛";
+                        if (item.category === "과일") emoji = "🍎";
+
+                        return {
+                            name: item.name,
+                            dDay: diffDays,
+                            emoji: emoji
+                        };
+                    });
+                    setIngredients(mapped);
+                }
+            } catch (error) {
+                console.error("Failed to fetch urgent ingredients:", error);
+            }
+        };
+        fetchUrgentIngredients();
+    }, []);
+>>>>>>> develop
 
     if (isLoading) {
         return (
@@ -94,6 +137,7 @@ export default function RefrigeratorCleanupPage() {
             </div>
 
             <div className="flex flex-col gap-6">
+<<<<<<< HEAD
                 {displayRecipes.map((recipe, index) => {
                     // Find the urgent ingredient that matches this recipe
                     const matchedIngredient = ingredients.find(ing => {
@@ -118,6 +162,22 @@ export default function RefrigeratorCleanupPage() {
                         </div>
                     );
                 })}
+=======
+                {displayRecipes.map((recipe, index) => (
+                    <div key={recipe.rcpSno || index} className="h-[380px] shrink-0">
+                        <RecipeCard
+                            recipe={recipe}
+                            rank={index + 1}
+                            ingredient={ingredients[index] || null}
+                            onSelect={(r) => {
+                                const id = r.rcpSno || r.id;
+                                if (id) router.push(`/recipe/${id}`);
+                            }}
+                            onShop={(name) => setShoppingItem(name)}
+                        />
+                    </div>
+                ))}
+>>>>>>> develop
 
                 {displayRecipes.length === 0 && (
                     <div className="flex flex-col items-center justify-center py-20 text-center gap-4">
@@ -127,6 +187,15 @@ export default function RefrigeratorCleanupPage() {
                     </div>
                 )}
             </div>
+
+            {/* Shopping Modal */}
+            {shoppingItem && (
+                <CommerceModal
+                    isOpen={!!shoppingItem}
+                    onClose={() => setShoppingItem(null)}
+                    ingredientName={shoppingItem}
+                />
+            )}
         </div>
     );
 }
