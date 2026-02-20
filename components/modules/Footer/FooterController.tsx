@@ -6,10 +6,10 @@ import * as LucideIcons from 'lucide-react';
 import { useMemo } from 'react';
 
 const ROOT_NAV_ITEMS = [
-    { label: '홈', icon: 'Home', href: '/home' },
-    { label: '나의 냉장고', icon: 'Refrigerator', href: '/fridge' },
-    { label: '커뮤니티', icon: 'PawPrint', href: '/community' },
-    { label: '프로필', icon: 'CircleUser', href: '/profile' },
+    { label: '홈', iconDefault: '/gnbicon/home.png', iconSelected: '/gnbicon/selecthome.png', href: '/home' },
+    { label: '나의 냉장고', iconDefault: '/gnbicon/ref.png', iconSelected: '/gnbicon/selectref.png', href: '/fridge' },
+    { label: '커뮤니티', iconDefault: '/gnbicon/commu.png', iconSelected: '/gnbicon/selectcommu.png', href: '/community' },
+    { label: '프로필', iconDefault: '/gnbicon/my.png', iconSelected: '/gnbicon/selectmy.png', href: '/profile' },
 ];
 
 const HIDE_FOOTER_PATHS = ['/login', '/signup', '/onboarding', '/test', '/camera', '/test/camera'];
@@ -24,10 +24,7 @@ export const FooterController = () => {
         pathname === path || (path !== '/' && pathname?.startsWith(path))
     ) || pathname === '/';
 
-    const items = useMemo(() => ROOT_NAV_ITEMS.map(item => ({
-        ...item,
-        icon: (LucideIcons as any)[item.icon] || LucideIcons.HelpCircle
-    })), []);
+    const items = useMemo(() => ROOT_NAV_ITEMS, []);
 
     useFooter({
         isVisible: !isHidden,
