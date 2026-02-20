@@ -47,7 +47,7 @@ export async function GET(req: NextRequest) {
     const rows = await prisma.recipe.findMany({
       where,
       take: 500,
-      include: { ingredients: true },
+      include: { ingredients: true, steps: { orderBy: { stepId: 'asc' } } },
     });
 
     const recipes = rows.map(r => ({
@@ -65,7 +65,9 @@ export async function GET(req: NextRequest) {
       ckgMtrlCn: r.ckgMtrlCn,
       viewCount: r.inqCnt ?? 0,
       likeCount: r.rcmmCnt ?? 0,
-      ingredients: (r.ingredients || []).map(i => ({ recipeId: String(r.rcpSno), ingName: i.ingName })),
+      ckgMthActoNm: r.ckgMthActoNm,
+      steps: (r.steps || []).map((s: any) => s.stepDesc),
+      ingredients: (r.ingredients || []).map((i: any) => ({ recipeId: String(r.rcpSno), ingName: i.ingName, ingUnit: i.ingUnit })),
     }));
 
     // 추천 엔진 호출
@@ -124,7 +126,7 @@ export async function GET(req: NextRequest) {
           { rcmmCnt: 'desc' },
           { srapCnt: 'desc' },
         ],
-        include: { ingredients: true },
+        include: { ingredients: true, steps: { orderBy: { stepId: 'asc' } } },
       });
 
 
@@ -151,7 +153,9 @@ export async function GET(req: NextRequest) {
           ckgMtrlCn: r.ckgMtrlCn,
           viewCount: r.inqCnt ?? 0,
           likeCount: r.rcmmCnt ?? 0,
-          ingredients: (r.ingredients || []).map((i: any) => ({ recipeId: scanId, ingName: i.ingName })),
+          ckgMthActoNm: r.ckgMthActoNm,
+          steps: (r.steps || []).map((s: any) => s.stepDesc),
+          ingredients: (r.ingredients || []).map((i: any) => ({ recipeId: scanId, ingName: i.ingName, ingUnit: i.ingUnit })),
         };
 
         // 알러지 필터 적용
@@ -173,11 +177,29 @@ export async function GET(req: NextRequest) {
           finalRecs.push({
             recipe: {
               ...candidate,
-              ingredients: (candidate.ingredients || []).map((i: any) => ({
-                recipeId: scanId,
-                ingName: i.ingName,
-                isOwned: matchedNames.has(normalizeText(i.ingName))
-              }))
+              ingredients: (candidate.ingredients || []).map((i: any) => {
+                const normMatch = normalizeText(i.ingName);
+                const isBadSubstring = (base: string, find: string) => {
+                  if (find === '파' && (base.includes('양파') || base.includes('파스타') || base.includes('파프리카'))) return true;
+                  if (find === '김' && (base.includes('김치') || base.includes('튀김'))) return true;
+                  if (find === '무' && (base.includes('고무') || base.includes('무침') || base.includes('무늬'))) return true;
+                  if (find === '소' && base.includes('소스')) return true;
+                  return false;
+                };
+                const isOwned = matchedNames.has(normMatch) || Array.from(matchedNames).some(m => {
+                  const nm = normalizeText(m);
+                  if (nm === normMatch) return true;
+                  if (normMatch.includes(nm) && !isBadSubstring(normMatch, nm)) return true;
+                  if (nm.includes(normMatch) && !isBadSubstring(nm, normMatch)) return true;
+                  return false;
+                });
+                return {
+                  recipeId: scanId,
+                  ingName: i.ingName,
+                  ingUnit: i.ingUnit,
+                  isOwned
+                };
+              })
             } as any,
             score: { recipeId: scanId, totalScore: 0, ingredientScore: 0, householdScore: 0, preferenceScore: 0, popularityScore: 0 }
           });
@@ -227,10 +249,26 @@ export async function GET(req: NextRequest) {
             }
 
             return initialIngs.map((i: any) => {
-              const norm = normalizeText(i.ingName);
+              const normMatch = normalizeText(i.ingName);
+              const isBadSubstring = (base: string, find: string) => {
+                if (find === '파' && (base.includes('양파') || base.includes('파스타') || base.includes('파프리카'))) return true;
+                if (find === '김' && (base.includes('김치') || base.includes('튀김'))) return true;
+                if (find === '무' && (base.includes('고무') || base.includes('무침') || base.includes('무늬'))) return true;
+                if (find === '소' && base.includes('소스')) return true;
+                return false;
+              };
+
+              const isOwned = matched.matchedNames.some(m => {
+                const nm = normalizeText(m);
+                if (nm === normMatch) return true;
+                if (normMatch.includes(nm) && !isBadSubstring(normMatch, nm)) return true;
+                if (nm.includes(normMatch) && !isBadSubstring(nm, normMatch)) return true;
+                return false;
+              });
+
               return {
                 ...i,
-                isOwned: matched.matchedNames.some(m => normalizeText(m) === norm || norm.includes(normalizeText(m)) || normalizeText(m).includes(norm))
+                isOwned
               };
             });
           })()

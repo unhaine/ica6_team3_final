@@ -129,6 +129,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
     async jwt({ token, user, trigger, session, account }) {
       // 초기 로그인 시 또는 토큰 업데이트 시
+      if (account) {
+        // Remove massive tokens that inflate the cookie
+        delete token.access_token;
+        delete token.id_token;
+        delete token.refresh_token;
+      }
       if (user) {
         token.id = user.id;
         token.email = user.email;

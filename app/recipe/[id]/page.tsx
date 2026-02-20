@@ -227,54 +227,63 @@ export default function RecipeDetailPage() {
                         {recipe.structuredIngredients ? (
                             recipe.structuredIngredients.map((section, idx) => (
                                 <div key={idx} className="space-y-3">
-                                    <Typography variant="subtitle2" className="text-gray-500 font-bold bg-gray-50 px-3 py-1 rounded-lg inline-block">
-                                        {section.sectionTitle}
-                                    </Typography>
-                                    <div className="grid gap-3">
-                                        {section.items.map((item, itemIdx) => (
-                                            <div key={itemIdx} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
-                                                <div className="flex items-center gap-3">
-                                                    {item.isOwned ? (
-                                                        <div className="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center shrink-0">
-                                                            <Check className="w-3 h-3 text-green-600" />
-                                                        </div>
-                                                    ) : (
-                                                        <div className="w-5 h-5 rounded-full bg-gray-100 flex items-center justify-center shrink-0">
-                                                            <div className="w-1.5 h-1.5 rounded-full bg-gray-300" />
-                                                        </div>
-                                                    )}
-                                                    <div className="flex flex-col">
-                                                        <div className="flex items-center gap-2">
-                                                            <span className={cn(
-                                                                "font-medium text-[15px]",
-                                                                item.isOwned ? "text-gray-900" : "text-gray-500"
-                                                            )}>
-                                                                {item.ingredientName}
-                                                            </span>
-                                                            {item.isUrgent && (
-                                                                <span className="text-[10px] font-bold text-white bg-red-500 px-1.5 py-0.5 rounded-full animate-pulse">
-                                                                    임박
-                                                                </span>
+                                    <div className="overflow-hidden rounded-xl border border-gray-100 bg-white">
+                                        <table className="w-full text-left text-[14px]">
+                                            <thead className="bg-gray-50 border-b border-gray-100 text-gray-500 font-medium text-[13px]">
+                                                <tr>
+                                                    <th className="py-3 px-4 w-12 text-center whitespace-nowrap">보유</th>
+                                                    <th className="py-3 px-4">재료명</th>
+                                                    <th className="py-3 px-4">필요량</th>
+                                                    <th className="py-3 px-4 w-12 text-center whitespace-nowrap">구매</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {section.items.map((item, itemIdx) => (
+                                                    <tr key={itemIdx} className="border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors">
+                                                        <td className="py-3 px-4 text-center">
+                                                            {item.isOwned ? (
+                                                                <div className="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center mx-auto shadow-sm">
+                                                                    <Check className="w-3 h-3 text-green-600" />
+                                                                </div>
+                                                            ) : (
+                                                                <div className="w-5 h-5 rounded-full bg-gray-100 flex items-center justify-center mx-auto">
+                                                                    <div className="w-1.5 h-1.5 rounded-full bg-gray-300" />
+                                                                </div>
                                                             )}
-                                                        </div>
-                                                        {item.amount && (
-                                                            <span className="text-xs text-gray-400">{item.amount}</span>
-                                                        )}
-                                                    </div>
-                                                </div>
-
-                                                {/* Actions */}
-                                                {!item.isOwned && (
-                                                    <button
-                                                        onClick={() => handleShopIngredient(item.ingredientName)}
-                                                        className="p-2 text-gray-400 hover:text-primary hover:bg-primary/5 rounded-full transition-colors"
-                                                        aria-label={`${item.ingredientName} 구매하기`}
-                                                    >
-                                                        <Search className="w-4 h-4" />
-                                                    </button>
-                                                )}
-                                            </div>
-                                        ))}
+                                                        </td>
+                                                        <td className="py-3 px-4">
+                                                            <div className="flex items-center gap-2">
+                                                                <span className={cn(
+                                                                    "font-medium",
+                                                                    item.isOwned ? "text-gray-900" : "text-gray-500"
+                                                                )}>
+                                                                    {item.ingredientName}
+                                                                </span>
+                                                                {item.isUrgent && (
+                                                                    <span className="text-[10px] font-bold text-white bg-red-500 px-1.5 py-0.5 rounded-full animate-pulse shadow-sm">
+                                                                        임박
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                        </td>
+                                                        <td className="py-3 px-4 text-gray-500 font-medium">
+                                                            {item.amount || '-'}
+                                                        </td>
+                                                        <td className="py-3 px-4 text-center">
+                                                            {!item.isOwned && (
+                                                                <button
+                                                                    onClick={() => handleShopIngredient(item.ingredientName)}
+                                                                    className="p-2 text-gray-400 hover:text-primary hover:bg-primary/5 rounded-full transition-colors mx-auto"
+                                                                    aria-label={`${item.ingredientName} 구매하기`}
+                                                                >
+                                                                    <ShoppingCart className="w-4 h-4" />
+                                                                </button>
+                                                            )}
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
                                     </div>
                                 </div>
                             ))
@@ -309,16 +318,6 @@ export default function RecipeDetailPage() {
                                     <Typography variant="body1" className="text-gray-800 leading-relaxed pt-0.5">
                                         {step.stepDesc}
                                     </Typography>
-                                    {/* Step Visual Placeholder */}
-                                    <div className="relative aspect-video rounded-xl overflow-hidden bg-gray-50 border border-gray-100 shadow-sm group">
-                                        <Image
-                                            src={recipe.rcpImgUrl} // DB에 단계별 이미지가 없어 메인 이미지를 블러 처리해 활용 (디자인적 요소)
-                                            alt={`Step ${index + 1}`}
-                                            fill
-                                            className="object-cover opacity-60 group-hover:scale-105 transition-transform duration-500"
-                                        />
-                                        <div className="absolute inset-0 bg-black/5" />
-                                    </div>
                                 </div>
                             </motion.div>
                         ))}
