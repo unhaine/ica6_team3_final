@@ -5,6 +5,7 @@ export const FILTERS = [
   { id: "vegetable", label: "🥬 채소" },
   { id: "dairy", label: "🥚 유제품" },
   { id: "fruit", label: "🍎 과일" },
+  { id: "etc", label: "🍱 기타" },
 ];
 
 export const MOCK_INGREDIENTS = [

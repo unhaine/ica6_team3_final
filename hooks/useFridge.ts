@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo, useCallback } from "react";
+import { getIngredientCategory } from "@/lib/getIngredientCategory";
 
 export interface FridgeItem {
   id: string;
@@ -31,7 +32,12 @@ export const useFridge = (mockData?: FridgeItem[]) => {
       const data = await response.json();
 
       if (data.success) {
-        setItems(data.data);
+        // 백엔드 데이터에 카테고리가 없거나 유효하지 않으면 이름 기반으로 자동 분류 주입
+        const categorizedItems = data.data.map((item: FridgeItem) => ({
+          ...item,
+          category: item.category || getIngredientCategory(item.name)
+        }));
+        setItems(categorizedItems);
       } else {
         console.error('재료 목록 조회 실패:', data.error);
       }
@@ -165,7 +171,7 @@ export const useFridge = (mockData?: FridgeItem[]) => {
       id: Date.now().toString(), // 임시 ID
       name,
       quantity: quantity || null,
-      category: '기타',
+      category: getIngredientCategory(name),
       createdAt: new Date(),
       expiryDate: expiryDate ? new Date(expiryDate) : calculateExpiryDate(name),
     };
