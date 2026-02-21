@@ -6,8 +6,7 @@ import Image from "next/image";
 import { Typography, ActionButton } from "@/components/elements";
 import { Clock } from "lucide-react";
 import { useRouter } from "next/navigation";
-
-
+import { getIngredientIcon } from "@/lib/getIngredientIcon";
 
 import { useUrgentIngredients } from "@/hooks/useUrgentIngredients";
 
@@ -77,15 +76,33 @@ export function RefrigeratorToday() {
 
                     return (
                         <div key={item.id} className="flex flex-col items-center gap-1" onClick={() => router.push('/fridge')}>
-                            <div className="w-11 h-11 rounded-2xl flex items-center justify-center bg-purple-50 border border-purple-100/50">
-                                <span className="text-xl">
-                                    {/* Category based emoji */}
-                                    {item.category === 'meat' ? '🥩' :
-                                        item.category === 'vegetable' ? '🥬' :
-                                            item.category === 'fruit' ? '🍎' :
-                                                item.category === 'seafood' ? '🐟' :
-                                                    item.category === 'dairy' ? '🥛' : '🍱'}
-                                </span>
+                            <div className="w-11 h-11 rounded-2xl flex flex-col items-center justify-center bg-purple-50 border border-purple-100/50 overflow-hidden relative shrink-0">
+                                {(() => {
+                                    const iconUrl = getIngredientIcon(item.name);
+                                    if (iconUrl) {
+                                        return (
+                                            <div className="p-1 w-full h-full relative">
+                                                <Image
+                                                    src={iconUrl}
+                                                    alt={item.name}
+                                                    fill
+                                                    className="object-contain p-1.5"
+                                                    sizes="44px"
+                                                />
+                                            </div>
+                                        );
+                                    }
+                                    return (
+                                        <span className="text-xl">
+                                            {/* Category based emoji fallback */}
+                                            {item.category === 'meat' ? '🥩' :
+                                                item.category === 'vegetable' ? '🥬' :
+                                                    item.category === 'fruit' ? '🍎' :
+                                                        item.category === 'seafood' ? '🐟' :
+                                                            item.category === 'dairy' ? '🥛' : '🍱'}
+                                        </span>
+                                    );
+                                })()}
                             </div>
                             <div className="text-center flex flex-col -space-y-0.5">
                                 <Typography
