@@ -162,7 +162,7 @@ export const useFridge = (mockData?: FridgeItem[]) => {
   // 추가 핸들러
   const handleAdd = useCallback(async (name: string, quantity: string, expiryDate?: string) => {
     const newItem: FridgeItem = {
-      id: Date.now().toString(),
+      id: Date.now().toString(), // 임시 ID
       name,
       quantity: quantity || null,
       category: '기타',
@@ -176,27 +176,25 @@ export const useFridge = (mockData?: FridgeItem[]) => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(newItem),
+        body: JSON.stringify({
+          items: [newItem], // POST는 { items: [] } 형식을 기대함
+        }),
       });
 
       const data = await response.json();
 
-      if (data.success) {
-        setItems(prev => [data.data, ...prev]);
+      if (data.success && data.data.items && data.data.items.length > 0) {
+        // 서버에서 생성된 실제 데이터 사용
+        const createdItem = data.data.items[0];
+        setItems(prev => [createdItem, ...prev]);
         setEditingItem(null);
         alert('✅ 재료가 추가되었습니다.');
       } else {
-        // API 실패 시에도 (테스트 환경 가정) 로컬 추가
-        setItems(prev => [newItem, ...prev]);
-        setEditingItem(null);
-        alert('✅ (로컬) 재료가 추가되었습니다.');
+        alert(`❌ 재료 추가 실패: ${data.error || '알 수 없는 오류'}`);
       }
     } catch (error) {
       console.error('추가 에러:', error);
-      // API 에러 시에도 (테스트 환경 가정) 로컬 추가
-      setItems(prev => [newItem, ...prev]);
-      setEditingItem(null);
-      alert('✅ (로컬) 재료가 추가되었습니다.');
+      alert('❌ 추가 중 서버 통신 오류가 발생했습니다.');
     }
   }, []);
 
