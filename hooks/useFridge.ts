@@ -223,59 +223,13 @@ export const useFridge = (mockData?: FridgeItem[]) => {
     handleAdd,
     handleUse,
     setEditingItem,
-    groupedItems: useMemo(() => {
-      // 1. Sort items by expiry date (ascending) - urgent first
-      const sortedItems = [...filteredItems].sort((a, b) => {
+    sortedItems: useMemo(() => {
+      // Sort items by expiry date (ascending) - urgent first
+      return [...filteredItems].sort((a, b) => {
         const dateA = a.expiryDate ? new Date(a.expiryDate).getTime() : 9999999999999; // Far future if no expiry
         const dateB = b.expiryDate ? new Date(b.expiryDate).getTime() : 9999999999999;
         return dateA - dateB;
       });
-
-      // 2. If filtering by category, return single group
-      if (activeFilter !== "all") {
-        return [{
-          date: `${activeFilter} (유통기한 빠른 순)`, // Header for the group
-          items: sortedItems
-        }];
-      }
-
-      // 3. If "all", group by urgency
-      const groups: { [key: string]: FridgeItem[] } = {
-        "🚨 유통기한 임박 (3일 이내)": [],
-        "⚠️ 섭취 주의 (7일 이내)": [],
-        "✅ 보관 중": [],
-      };
-
-      const now = new Date();
-      now.setHours(0, 0, 0, 0);
-
-      sortedItems.forEach(item => {
-        if (!item.expiryDate) {
-          groups["✅ 보관 중"].push(item);
-          return;
-        }
-
-        const expiry = new Date(item.expiryDate);
-        expiry.setHours(0, 0, 0, 0);
-        const diffTime = expiry.getTime() - now.getTime();
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-        if (diffDays <= 3) {
-          groups["🚨 유통기한 임박 (3일 이내)"].push(item);
-        } else if (diffDays <= 7) {
-          groups["⚠️ 섭취 주의 (7일 이내)"].push(item);
-        } else {
-          groups["✅ 보관 중"].push(item);
-        }
-      });
-
-      // Return valid groups in specific order
-      return [
-        { date: "🚨 유통기한 임박 (3일 이내)", items: groups["🚨 유통기한 임박 (3일 이내)"] },
-        { date: "⚠️ 섭취 주의 (7일 이내)", items: groups["⚠️ 섭취 주의 (7일 이내)"] },
-        { date: "✅ 보관 중", items: groups["✅ 보관 중"] },
-      ].filter(group => group.items.length > 0);
-
-    }, [filteredItems, activeFilter]),
+    }, [filteredItems]),
   };
 };

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronLeft, Plus } from "lucide-react";
+import { ChevronLeft, Plus, Check } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useHeader } from "@/components/modules/Header";
 import { useFooter } from "@/components/modules/Footer";
@@ -28,6 +28,7 @@ export default function FridgePage() {
   const isTestMode = false;
 
   const {
+    items,
     filteredItems,
     isLoading,
     activeFilter,
@@ -41,8 +42,35 @@ export default function FridgePage() {
     handleAdd,
     handleUse,
     setEditingItem,
-    groupedItems,
+    sortedItems,
   } = useFridge(isTestMode ? MOCK_INGREDIENTS : undefined);
+
+  // 선택 상태 관리
+  const [selectedItems, setSelectedItems] = useState<string[]>([]);
+
+  const allGroupedIds = sortedItems.map((item) => item.id);
+  const isAllSelected = allGroupedIds.length > 0 && selectedItems.length === allGroupedIds.length;
+
+  const handleToggleAll = () => {
+    if (isAllSelected) {
+      setSelectedItems([]);
+    } else {
+      setSelectedItems(allGroupedIds);
+    }
+  };
+
+  const handleToggleItem = (id: string) => {
+    setSelectedItems((prev) =>
+      prev.includes(id) ? prev.filter((itemId) => itemId !== id) : [...prev, id]
+    );
+  };
+
+  const handleDeleteSelected = () => {
+    if (confirm(`선택한 ${selectedItems.length}개의 재료를 정말 삭제하시겠습니까?`)) {
+      selectedItems.forEach((id) => handleDelete(id));
+      setSelectedItems([]);
+    }
+  };
 
   // 추천 레시피 가져오기
   const { recipes: recommendedRecipes, isLoading: isRecipeLoading } = useHomeRecommendations();
@@ -101,30 +129,55 @@ export default function FridgePage() {
         onFilterChange={setActiveFilter}
       />
 
+      {/* Sticky Selection Toolbar */}
+      {!isLoading && sortedItems.length > 0 && (
+        <div className="shrink-0 bg-[#F9FAFB] px-5 py-3 border-b border-gray-100 flex items-center justify-between z-10 shadow-sm">
+          <button
+            onClick={handleToggleAll}
+            className="flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-gray-900"
+          >
+            <div
+              className={`shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${
+                isAllSelected ? "border-orange-500 bg-orange-500 text-white" : "border-gray-300 bg-white"
+              }`}
+            >
+              {isAllSelected && (
+                <Check className="w-3.5 h-3.5" strokeWidth={3} />
+              )}
+            </div>
+            전체 선택
+          </button>
+          <div className="h-5">
+            {selectedItems.length > 0 && (
+              <button
+                onClick={handleDeleteSelected}
+                className="text-sm font-semibold text-red-500 hover:text-red-700 transition"
+              >
+                선택 삭제 ({selectedItems.length})
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
       <div className="flex-1 overflow-y-auto p-4 scrollbar-hide">
         {isLoading ? (
           <EmptyState isLoading={true} />
-        ) : groupedItems.length === 0 ? (
+        ) : sortedItems.length === 0 ? (
           <EmptyState isLoading={false} />
         ) : (
-          groupedItems.map((group) => (
-            <div key={group.date} className="mb-6">
-              <h3 className="text-sm font-bold text-gray-500 mb-3 sticky top-0 bg-[#F9FAFB] py-2 z-10">
-                {group.date}
-              </h3>
-              <div className="space-y-2">
-                {group.items.map((item) => (
-                  <FridgeItem
-                    key={item.id}
-                    item={item}
-                    onEdit={handleEdit}
-                    onDelete={handleDelete}
-                    onUse={handleUse}
-                  />
-                ))}
-              </div>
+            <div className="space-y-2 mb-6">
+              {sortedItems.map((item) => (
+                <FridgeItem
+                  key={item.id}
+                  item={item}
+                  isSelected={selectedItems.includes(item.id)}
+                  onToggle={handleToggleItem}
+                  onEdit={handleEdit}
+                  onUse={handleUse}
+                />
+              ))}
             </div>
-          ))
         )}
 
         {/* Footer Button */}

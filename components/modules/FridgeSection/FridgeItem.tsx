@@ -1,6 +1,6 @@
 "use client";
 
-import { Trash2, PenLine, FileText } from "lucide-react";
+import { PenLine, FileText, Check, AlertTriangle, AlertCircle } from "lucide-react";
 
 import Image from "next/image";
 import { ActionCard, DataRow } from "@/components/elements";
@@ -9,35 +9,72 @@ import { getIngredientIcon } from "@/lib/getIngredientIcon";
 
 interface FridgeItemProps {
   item: FridgeItemType;
+  isSelected?: boolean;
+  onToggle?: (id: string) => void;
   onEdit: (item: FridgeItemType) => void;
-  onDelete: (id: string) => void;
   onUse: (item: FridgeItemType) => void;
 }
 
-export const FridgeItem = ({ item, onEdit, onDelete, onUse }: FridgeItemProps) => {
+export const FridgeItem = ({ item, isSelected = false, onToggle, onEdit, onUse }: FridgeItemProps) => {
+  const diffDays = (() => {
+    if (!item.expiryDate) return null;
+    const expiry = new Date(item.expiryDate);
+    const now = new Date();
+    expiry.setHours(0, 0, 0, 0);
+    now.setHours(0, 0, 0, 0);
+    const diffTime = expiry.getTime() - now.getTime();
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  })();
+
+  const isExpired = diffDays !== null && diffDays < 0;
+  const isUrgent = diffDays !== null && diffDays >= 0 && diffDays <= 3;
+  const isWarning = diffDays !== null && diffDays >= 4 && diffDays <= 7;
+
+  let bgClass = "bg-white border-gray-100";
+  if (isExpired || isUrgent) bgClass = "bg-red-100 border-red-200";
+  else if (isWarning) bgClass = "bg-orange-100 border-orange-200";
+
   return (
-    <ActionCard className="bg-white overflow-hidden border border-gray-100 shadow-sm rounded-xl py-0">
+    <ActionCard className={`overflow-hidden border shadow-sm rounded-xl py-0 transition-colors ${bgClass}`}>
       <DataRow
         className="px-2"
         left={
-          <div className="w-10 h-10 rounded-full flex items-center justify-center bg-gray-50 border border-gray-100 overflow-hidden relative shrink-0">
-            {(() => {
-              const iconUrl = getIngredientIcon(item.name);
-              if (iconUrl) {
-                return (
-                  <div className="p-1 w-full h-full relative">
-                    <Image
-                      src={iconUrl}
-                      alt={item.name}
-                      fill
-                      className="object-contain p-1.5"
-                      sizes="40px"
-                    />
-                  </div>
-                );
-              }
-              return <span className="text-xl">🧀</span>;
-            })()}
+          <div className="flex items-center gap-3">
+            {onToggle && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onToggle(item.id);
+                }}
+                className={`shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${
+                  isSelected ? "border-orange-500 bg-orange-500 text-white" : "border-gray-300 bg-white"
+                }`}
+              >
+                {isSelected && (
+                  <Check className="w-3.5 h-3.5" strokeWidth={3} />
+                )}
+              </button>
+            )}
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center border overflow-hidden relative shrink-0 ${isExpired || isUrgent || isWarning ? 'bg-white border-white/50 shadow-sm' : 'bg-gray-50 border-gray-100'}`}>
+              {(() => {
+                const iconUrl = getIngredientIcon(item.name);
+                if (iconUrl) {
+                  return (
+                    <div className="p-1 w-full h-full relative">
+                      <Image
+                        src={iconUrl}
+                        alt={item.name}
+                        fill
+                        className="object-contain p-1.5"
+                        sizes="40px"
+                      />
+                    </div>
+                  );
+                }
+                return <span className="text-xl">🧀</span>;
+              })()}
+            </div>
           </div>
         }
         title={
@@ -59,31 +96,16 @@ export const FridgeItem = ({ item, onEdit, onDelete, onUse }: FridgeItemProps) =
               return null;
             })()}
 
-            <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-md ${(() => {
-              if (!item.expiryDate) return 'bg-gray-100 text-gray-500';
-
-              const expiry = new Date(item.expiryDate);
-              const now = new Date();
-              expiry.setHours(0, 0, 0, 0);
-              now.setHours(0, 0, 0, 0);
-              const diffTime = expiry.getTime() - now.getTime();
-              const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-              if (diffDays < 0) return 'bg-red-100 text-red-600 font-bold'; // 지남
-              if (diffDays <= 3) return 'bg-red-50 text-red-500 font-bold'; // 임박
-              if (diffDays <= 7) return 'bg-orange-50 text-orange-500'; // 주의
+            <span className={`inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-md ${(() => {
+              if (isExpired) return 'bg-red-100 text-red-600 font-bold'; // 지남
+              if (isUrgent) return 'bg-red-50 text-red-500 font-bold'; // 임박
+              if (isWarning) return 'bg-orange-50 text-orange-500'; // 주의
               return 'bg-gray-100 text-gray-500'; // 안전
             })()}`}>
+              {(isExpired || isUrgent) && <AlertTriangle className="w-3 h-3 text-red-500" />}
+              {isWarning && <AlertCircle className="w-3 h-3 text-orange-500" />}
               {(() => {
-                if (!item.expiryDate) return '기한미정';
-
-                const expiry = new Date(item.expiryDate);
-                const now = new Date();
-                expiry.setHours(0, 0, 0, 0);
-                now.setHours(0, 0, 0, 0);
-                const diffTime = expiry.getTime() - now.getTime();
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
+                if (diffDays === null) return '기한미정';
                 if (diffDays === 0) return '오늘까지';
                 if (diffDays < 0) return `D+${Math.abs(diffDays)}`;
                 return `D-${diffDays}`;
@@ -106,15 +128,6 @@ export const FridgeItem = ({ item, onEdit, onDelete, onUse }: FridgeItemProps) =
               }}
             >
               <PenLine className="w-4 h-4" />
-            </button>
-            <button
-              className="p-2 text-red-500 hover:bg-red-50 rounded-full transition-colors"
-              onClick={(e) => {
-                e.stopPropagation();
-                onDelete(item.id);
-              }}
-            >
-              <Trash2 className="w-4 h-4" />
             </button>
           </div>
         }

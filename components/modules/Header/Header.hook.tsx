@@ -81,6 +81,21 @@ export const useHeader = (options: Partial<HeaderState>) => {
     const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? React.useLayoutEffect : React.useEffect;
 
     useIsomorphicLayoutEffect(() => {
-        setHeader({ isVisible, title, left, center, right, transparent });
+        setHeader({ 
+            isVisible: isVisible ?? false, 
+            title: title ?? null, 
+            left: left ?? null, 
+            center: center ?? null, 
+            right: right ?? null, 
+            transparent: transparent ?? false 
+        });
     }, [isVisible, title, left, center, right, transparent, setHeader]);
+
+    // Optional: Reset header on unmount to prevent flickering during navigation
+    useEffect(() => {
+        return () => {
+            // Note: In Next.js App Router, unmount cleanup can sometimes wipe the header for the next page during concurrent transitions, 
+            // but setting the exact missing fields to null on mount (above) handles most state-bleeding cases.
+        };
+    }, []);
 };

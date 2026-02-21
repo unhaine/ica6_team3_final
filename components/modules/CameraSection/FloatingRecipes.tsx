@@ -6,70 +6,33 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { CameraHeader } from './CameraHeader';
 import { RecipeCard } from '@/components/modules/HomeSection';
 import { MockRecipe } from '@/data/mock';
+import { useHomeRecommendations } from '@/hooks/useHomeRecommendations';
 
 interface FloatingRecipesProps {
-    recipes?: MockRecipe[];
+    recipes?: any[];
     isVisible: boolean;
     onClose: () => void;
-    onSelect: (recipe: MockRecipe) => void;
+    onSelect: (recipe: any) => void;
 }
 
 export const FloatingRecipes = ({ recipes = [], isVisible, onClose, onSelect }: FloatingRecipesProps) => {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [direction, setDirection] = useState(0);
-    const [recommendedRecipes, setRecommendedRecipes] = useState<MockRecipe[]>([]);
-    const [isLoading, setIsLoading] = useState(false);
+    const { recipes: homeRecipes, isLoading, refresh } = useHomeRecommendations();
 
-    // API에서 추천 레시피 가져오기
     useEffect(() => {
-        if (isVisible && recipes.length === 0) {
-            const fetchRecommendations = async () => {
-                try {
-                    setIsLoading(true);
-                    const response = await fetch('/api/recommend');
-                    if (response.ok) {
-                        const data = await response.json();
-                        if (data.recommendations && Array.isArray(data.recommendations)) {
-                            // RecipeScoreDetail을 MockRecipe 형식으로 변환
-                            const converted = data.recommendations.map((rec: any) => ({
-                                rcpSno: rec.recipe.rcpSno || rec.recipe.id,
-                                rcpTtl: rec.recipe.rcpTtl || rec.recipe.ckgNm || '레시피',
-                                rcpImgUrl: rec.recipe.rcpImgUrl || '/default-recipe.png',
-                                ckgIpdc: rec.recipe.ckgIpdc || rec.recipe.ckgMtrlCn || '',
-                                ckgTimeNm: rec.recipe.ckgTimeNm || '정보없음',
-                                ckgDodfNm: rec.recipe.ckgDodfNm || '정보없음',
-                                inqCnt: rec.recipe.viewCount || 0,
-                                rcmmCnt: rec.score?.totalScore || 0,
-                                srapCnt: 0,
-                                rgtrNm: '냉파고수',
-                                ckgNm: rec.recipe.ckgNm,
-                                ckgKndActoNm: rec.recipe.ckgKndActoNm,
-                                ckgStaActoNm: rec.recipe.ckgStaActoNm,
-                                ckgMtrlCn: rec.recipe.ckgMtrlCn,
-                            }));
-                            setRecommendedRecipes(converted);
-                        }
-                    }
-                } catch (error) {
-                    console.error('추천 레시피 로딩 실패:', error);
-                    setRecommendedRecipes(recipes);
-                } finally {
-                    setIsLoading(false);
-                }
-            };
-            fetchRecommendations();
-        } else if (recipes.length > 0) {
-            setRecommendedRecipes(recipes);
+        if (isVisible) {
+            refresh();
         }
-    }, [isVisible, recipes]);
+    }, [isVisible, refresh]);
 
-    const displayRecipes = recommendedRecipes.length > 0 ? recommendedRecipes : recipes;
+    const displayRecipes = (homeRecipes.length > 0 ? homeRecipes : recipes).slice(0, 5);
 
     const handleDragEnd = (event: any, info: PanInfo) => {
         const swipeThreshold = 50;
         if (info.offset.x < -swipeThreshold) {
             // Swipe Left -> Next
-            if (currentIndex < recipes.length - 1) {
+            if (currentIndex < displayRecipes.length - 1) {
                 setDirection(1);
                 setCurrentIndex(currentIndex + 1);
             }

@@ -6,7 +6,7 @@ import { useFooter } from "@/components/modules/Footer";
 import { IconButton } from "@/components/elements";
 import { AlertModal } from "@/components/elements/AlertModal";
 import { AnimatePresence } from "framer-motion";
-import { CaptureStep, DetectStep, ConfirmStep } from "@/components/modules/CameraSection";
+import { CaptureStep, DetectStep, ConfirmStep, FloatingRecipes } from "@/components/modules/CameraSection";
 import { useCamera } from "@/hooks/useCamera";
 
 export default function CameraPage() {
@@ -30,6 +30,8 @@ export default function CameraPage() {
         setShowDuplicateAlert,
         duplicateMessage,
         handleForceSave,
+        showRecipes,
+        setShowRecipes,
     } = useCamera();
 
     // 1. 헤더 및 푸터 제어
@@ -90,6 +92,18 @@ export default function CameraPage() {
                 cancelLabel="취소"
                 onConfirm={handleForceSave}
                 onClose={() => setShowDuplicateAlert(false)}
+            />
+
+            <FloatingRecipes
+                isVisible={showRecipes}
+                onClose={() => {
+                    setShowRecipes(false);
+                    router.push("/fridge");
+                }}
+                onSelect={(recipe) => {
+                    setShowRecipes(false);
+                    router.push(`/recipe/${recipe.rcpSno || recipe.id}`);
+                }}
             />
         </div>
     );

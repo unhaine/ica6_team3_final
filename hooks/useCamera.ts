@@ -168,7 +168,7 @@ export const useCamera = () => {
             }
 
             // alert(`✅ ${aggregatedItems.length}종류의 재료(총 ${detectedItems.length}개 객체)가 냉장고에 저장되었습니다.`);
-            router.push("/fridge");
+            setShowRecipes(true); // 저장 완료 후 레시피 팝업 띄우기
         } catch (error) {
             console.error('재료 저장 에러:', error);
             alert(`❌ 재료 저장 중 오류가 발생했습니다: ${error instanceof Error ? error.message : '알 수 없는 오류'}`);
@@ -235,5 +235,7 @@ export const useCamera = () => {
         setShowDuplicateAlert,
         duplicateMessage,
         handleForceSave: executeSave,
+        showRecipes,
+        setShowRecipes,
     };
 };
