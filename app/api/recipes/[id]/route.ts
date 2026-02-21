@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { iconMap } from '@/lib/iconMap';
 
 export async function GET(
   req: NextRequest,
@@ -20,7 +21,11 @@ export async function GET(
             stepId: 'asc',
           },
         },
-        ingredients: true,
+        ingredients: {
+          include: {
+            ingredient: true
+          }
+        },
       },
     });
 
@@ -99,12 +104,17 @@ export async function GET(
         }
       }
 
+      // Add image support from the ingredient schema (Ingre_file -> map)
+      const ingreFile = ing.ingredient?.image;
+      const imageUrl = ingreFile && iconMap[ingreFile] ? iconMap[ingreFile] : null;
+
       return {
         name: `${name} ${amount}`.trim(),
         ingredientName: name,
         amount: amount,
         isOwned: isOwned,
-        isUrgent: isUrgent
+        isUrgent: isUrgent,
+        imageUrl: imageUrl,
       };
     });
 

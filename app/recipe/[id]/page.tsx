@@ -16,6 +16,7 @@ interface IngredientItem {
     amount: string;
     isOwned: boolean;
     isUrgent?: boolean;
+    imageUrl?: string | null;
 }
 
 interface IngredientSection {
@@ -252,18 +253,35 @@ export default function RecipeDetailPage() {
                                                             )}
                                                         </td>
                                                         <td className="py-3 px-4">
-                                                            <div className="flex items-center gap-2">
-                                                                <span className={cn(
-                                                                    "font-medium",
-                                                                    item.isOwned ? "text-gray-900" : "text-gray-500"
-                                                                )}>
-                                                                    {item.ingredientName}
-                                                                </span>
-                                                                {item.isUrgent && (
-                                                                    <span className="text-[10px] font-bold text-white bg-red-500 px-1.5 py-0.5 rounded-full animate-pulse shadow-sm">
-                                                                        임박
-                                                                    </span>
+                                                            <div className="flex items-center gap-3">
+                                                                {item.imageUrl ? (
+                                                                    <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center p-1.5 shrink-0 border border-gray-100 overflow-hidden relative">
+                                                                        <Image
+                                                                            src={item.imageUrl}
+                                                                            alt={item.ingredientName}
+                                                                            fill
+                                                                            sizes="32px"
+                                                                            className="object-contain"
+                                                                        />
+                                                                    </div>
+                                                                ) : (
+                                                                    <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center shrink-0 border border-gray-100">
+                                                                        <span className="text-xs text-gray-400">?</span>
+                                                                    </div>
                                                                 )}
+                                                                <div className="flex items-center gap-2">
+                                                                    <span className={cn(
+                                                                        "font-medium",
+                                                                        item.isOwned ? "text-gray-900" : "text-gray-500"
+                                                                    )}>
+                                                                        {item.ingredientName}
+                                                                    </span>
+                                                                    {item.isUrgent && (
+                                                                        <span className="text-[10px] font-bold text-white bg-red-500 px-1.5 py-0.5 rounded-full animate-pulse shadow-sm whitespace-nowrap">
+                                                                            임박
+                                                                        </span>
+                                                                    )}
+                                                                </div>
                                                             </div>
                                                         </td>
                                                         <td className="py-3 px-4 text-gray-500 font-medium">

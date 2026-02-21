@@ -1,5 +1,5 @@
 import { Typography } from "@/components/elements";
-import { Camera, Image as ImageIcon, Zap } from "lucide-react";
+import { Camera } from "lucide-react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { CameraHeader } from "./CameraHeader";
@@ -11,7 +11,7 @@ interface CaptureStepProps {
 
 export const CaptureStep = ({ onImageChange, onClose }: CaptureStepProps) => {
     return (
-        <motion.div 
+        <motion.div
             key="capture"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -24,7 +24,7 @@ export const CaptureStep = ({ onImageChange, onClose }: CaptureStepProps) => {
             {/* Instruction Text */}
             <div className="text-center space-y-2 px-6 pb-2 pt-2 z-20">
                 <Typography variant="h3" weight="bold" className="text-white drop-shadow-lg text-xl leading-tight">
-                    영수증 또는 냉장고 내부가<br/>잘 보이게 촬영해주세요
+                    영수증 또는 냉장고 내부가<br />잘 보이게 촬영해주세요
                 </Typography>
             </div>
 
@@ -50,16 +50,12 @@ export const CaptureStep = ({ onImageChange, onClose }: CaptureStepProps) => {
             </div>
 
             {/* Bottom Controls */}
-            <div className="w-full px-8 pb-12 pt-2 flex items-center justify-between z-20">
-                <button className="p-3 text-white/50 hover:text-white transition-colors">
-                    <Zap className="w-6 h-6 fill-current" />
-                </button>
-
+            <div className="w-full px-8 pb-12 pt-2 flex items-center justify-center z-20">
                 <label className="group relative flex items-center justify-center cursor-pointer">
-                    <input 
-                        type="file" 
-                        accept="image/*" 
-                        className="hidden" 
+                    <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
                         onChange={onImageChange}
                         capture="environment"
                     />
@@ -71,12 +67,8 @@ export const CaptureStep = ({ onImageChange, onClose }: CaptureStepProps) => {
                         </div>
                     </div>
                 </label>
-
-                <button className="p-3 text-white/50 hover:text-white transition-colors">
-                    <ImageIcon className="w-6 h-6" />
-                </button>
             </div>
-            
+
             {/* Background Effects */}
             <div className="absolute inset-0 z-0 bg-black/60 backdrop-blur-3xl" />
         </motion.div>

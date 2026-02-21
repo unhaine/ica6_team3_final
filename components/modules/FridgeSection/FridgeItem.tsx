@@ -2,8 +2,10 @@
 
 import { Trash2, PenLine, FileText } from "lucide-react";
 
+import Image from "next/image";
 import { ActionCard, DataRow } from "@/components/elements";
 import { FridgeItem as FridgeItemType } from "../../../hooks/useFridge";
+import { getIngredientIcon } from "@/lib/getIngredientIcon";
 
 interface FridgeItemProps {
   item: FridgeItemType;
@@ -18,9 +20,24 @@ export const FridgeItem = ({ item, onEdit, onDelete, onUse }: FridgeItemProps) =
       <DataRow
         className="px-2"
         left={
-          <div className="w-10 h-10 rounded-full flex items-center justify-center text-xl">
-            {/* TODO: Emoji mapping based on category */}
-            🧀
+          <div className="w-10 h-10 rounded-full flex items-center justify-center bg-gray-50 border border-gray-100 overflow-hidden relative shrink-0">
+            {(() => {
+              const iconUrl = getIngredientIcon(item.name);
+              if (iconUrl) {
+                return (
+                  <div className="p-1 w-full h-full relative">
+                    <Image
+                      src={iconUrl}
+                      alt={item.name}
+                      fill
+                      className="object-contain p-1.5"
+                      sizes="40px"
+                    />
+                  </div>
+                );
+              }
+              return <span className="text-xl">🧀</span>;
+            })()}
           </div>
         }
         title={
