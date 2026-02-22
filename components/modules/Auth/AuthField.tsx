@@ -23,7 +23,7 @@ export const AuthField = ({ label, containerClassName, className, ...props }: Au
                 className={cn(
                     "h-12 rounded-xl border-slate-200 bg-white text-slate-900",
                     "placeholder:text-slate-400",
-                    "focus:border-purple-600 focus:ring-purple-600/20 transition-all",
+                    "focus:border-primary focus:ring-primary/20 transition-all",
                     className
                 )}
             />
