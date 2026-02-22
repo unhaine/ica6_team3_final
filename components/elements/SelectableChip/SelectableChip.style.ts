@@ -5,7 +5,7 @@ export const chipVariants = cva(
   {
     variants: {
       selected: {
-        true: "bg-purple-600 text-white border-purple-600 shadow-sm hover:bg-purple-700",
+        true: "bg-primary text-white border-primary shadow-sm hover:bg-primary/90",
         false: "bg-surface text-text-secondary border-border hover:bg-surface-active hover:text-text-primary",
       },
       size: {
