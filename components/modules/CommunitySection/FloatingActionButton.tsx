@@ -16,8 +16,8 @@ export const FloatingActionButton = ({
     onClick,
     ariaLabel,
     className = "",
-    colorClass = "bg-purple-600",
-    borderColorClass = "border-purple-600"
+    colorClass = "bg-primary",
+    borderColorClass = "border-primary"
 }: FloatingActionButtonProps) => {
     return (
         <div className={`absolute bottom-8 right-5 z-50 ${className}`}>
