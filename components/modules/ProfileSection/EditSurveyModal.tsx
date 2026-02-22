@@ -107,7 +107,7 @@ export const EditSurveyModal = ({
       >
         {/* 헤더 */}
         <div className="p-6 border-b border-border flex items-center justify-between">
-          <Typography variant="h3" weight="bold">
+          <Typography variant="h3" weight="bold" className="font-title">
             {type === 'household'
               ? '가구 인원 수정'
               : type === 'allergies'
