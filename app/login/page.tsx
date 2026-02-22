@@ -82,7 +82,7 @@ export default function EmailLoginPage() {
                     type="submit" 
                     fullWidth
                     loading={isLoading}
-                    className="h-12 rounded-xl font-bold text-base shadow-lg shadow-purple-600/20 bg-purple-600 text-white hover:bg-purple-700"
+                    className="h-12 rounded-xl font-bold text-base shadow-lg shadow-primary/20 bg-primary text-white hover:bg-primary/90"
                 >
                     로그인
                 </ActionButton>
@@ -91,10 +91,10 @@ export default function EmailLoginPage() {
             <div className="text-center">
                 <button 
                     onClick={() => router.push('/signup')}
-                    className="text-sm text-slate-500 hover:text-purple-600 transition-colors duration-200"
+                    className="text-sm text-slate-500 hover:text-primary transition-colors duration-200"
                 >
                     계정이 없으신가요? 
-                    <span className="font-bold underline decoration-purple-600/30 underline-offset-4 hover:decoration-purple-600">
+                    <span className="font-bold underline decoration-primary/30 underline-offset-4 hover:decoration-primary">
                         회원가입
                     </span>
                 </button>
