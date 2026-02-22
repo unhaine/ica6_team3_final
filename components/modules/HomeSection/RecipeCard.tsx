@@ -66,7 +66,10 @@ export function RecipeCard({
             <MediaCard
                 imageUrl={recipe.rcpImgUrl || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=200&auto=format&fit=crop"}
                 title={
-                    <span className="text-[10px] text-center block w-full truncate font-medium text-white drop-shadow-sm">
+                    <span 
+                        className="text-[10px] text-center block w-full truncate font-medium text-white drop-shadow-sm"
+                        style={{ fontFamily: 'var(--font-title)' }}
+                    >
                         {recipe.ckgNm || recipe.rcpTtl || '레시피'}
                     </span>
                 }
@@ -102,6 +105,7 @@ export function RecipeCard({
                         variant="h2"
                         as="span"
                         className="text-white font-bold leading-tight drop-shadow-md text-2xl"
+                        style={{ fontFamily: 'var(--font-title)' }}
                     >
                         {recipe.ckgNm || recipe.rcpTtl || '맛있는 레시피'}
                     </Typography>
