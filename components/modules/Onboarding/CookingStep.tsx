@@ -20,7 +20,7 @@ export const CookingStep = ({ value, onChange }: CookingStepProps) => {
   return (
     <>
       <div className="mb-10 text-center space-y-3">
-        <Typography variant="h3" weight="bold" className="text-slate-900 leading-tight">
+        <Typography variant="h3" weight="bold" className="text-slate-900 leading-tight" style={{ fontFamily: 'var(--font-title)' }}>
           어떤 요리 스타일을<br />선호하세요?
         </Typography>
         <Typography variant="caption" className="text-slate-400 font-medium whitespace-pre-line leading-relaxed">
