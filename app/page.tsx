@@ -31,7 +31,7 @@ export default function LandingPage() {
     };
 
     return (
-        <main className="h-screen bg-linear-to-br from-purple-600 via-purple-700 to-indigo-800 flex flex-col relative overflow-hidden">
+        <main className="h-screen bg-linear-to-br from-primary via-primary/95 to-primary/80 flex flex-col relative overflow-hidden">
             <style jsx global>{`
                 @keyframes wiggle {
                     0%, 100% { transform: rotate(0deg); }
@@ -47,9 +47,8 @@ export default function LandingPage() {
 
             {/* Main Illustration Section */}
             <div 
-                className={`flex flex-col items-center transition-all duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)] relative z-10 ${
-                    isExpanded 
-                        ? 'h-[40vh] justify-center scale-90' 
+                className={`flex flex-col items-center transition-all duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)] relative z-10 ${isExpanded
+                        ? 'h-[40vh] justify-center scale-90'
                         : 'h-screen justify-center cursor-pointer'
                 }`}
                 onClick={!isExpanded ? handleExpand : undefined}
