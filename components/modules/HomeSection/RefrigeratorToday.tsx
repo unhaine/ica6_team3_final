@@ -38,7 +38,7 @@ export function RefrigeratorToday() {
                     variant="default"
                     fullWidth
                     size="sm"
-                    className="h-10 rounded-xl text-sm font-bold bg-purple-600 text-white shadow-lg shadow-purple-600/20 hover:bg-purple-700 transition-all"
+                    className="h-10 rounded-xl text-sm font-bold bg-primary text-white shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all"
                     onClick={() => router.push("/camera")}
                 >
                     재료 채우러 가기
@@ -76,7 +76,7 @@ export function RefrigeratorToday() {
 
                     return (
                         <div key={item.id} className="flex flex-col items-center gap-1" onClick={() => router.push('/fridge')}>
-                            <div className="w-11 h-11 rounded-2xl flex flex-col items-center justify-center bg-purple-50 border border-purple-100/50 overflow-hidden relative shrink-0">
+                            <div className="w-11 h-11 rounded-2xl flex items-center justify-center bg-primary/5 border border-primary/20">
                                 {(() => {
                                     const iconUrl = getIngredientIcon(item.name);
                                     if (iconUrl) {
@@ -129,7 +129,7 @@ export function RefrigeratorToday() {
                 variant="default"
                 fullWidth
                 size="sm"
-                className="h-10 rounded-xl text-sm font-bold bg-purple-600 text-white shadow-lg shadow-purple-600/20 hover:bg-purple-700 transition-all"
+                className="h-10 rounded-xl text-sm font-bold bg-primary text-white shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all"
                 onClick={() => router.push("/home/refrigerator-cleanup")}
             >
                 오늘의 냉장고 파먹기
