@@ -38,9 +38,9 @@ export default function OnboardingPage() {
   return (
     <main className="h-dvh bg-white text-slate-900 flex flex-col max-w-md mx-auto w-full relative overflow-hidden">
       {/* Decorative Background Elements */}
-      <div className="absolute top-[-10%] left-[-20%] w-64 h-64 bg-purple-100/50 rounded-full blur-3xl -z-10" />
+      <div className="absolute top-[-10%] left-[-20%] w-64 h-64 bg-primary/5 rounded-full blur-3xl -z-10" />
       <div className="absolute top-[20%] right-[-10%] w-72 h-72 bg-emerald-50/50 rounded-full blur-3xl -z-10" />
-      <div className="absolute bottom-[10%] left-[-10%] w-80 h-80 bg-purple-50/30 rounded-full blur-3xl -z-10" />
+      <div className="absolute bottom-[10%] left-[-10%] w-80 h-80 bg-primary/5 rounded-full blur-3xl -z-10" />
 
       <OnboardingHeader 
         currentStep={step} 
@@ -77,7 +77,7 @@ export default function OnboardingPage() {
           <ActionButton
             size="lg"
             fullWidth
-            className="h-14 rounded-xl font-bold text-lg shadow-lg shadow-purple-600/20 bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="h-14 rounded-xl font-bold text-lg shadow-lg shadow-primary/20 bg-primary text-white hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={handleNext}
             loading={isSubmitting}
             disabled={isSubmitting}
