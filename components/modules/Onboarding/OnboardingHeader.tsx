@@ -19,7 +19,7 @@ export const OnboardingHeader = ({ currentStep, totalSteps, onSkip }: Onboarding
           <div
             key={i}
             className={`w-6 h-1.5 rounded-full transition-colors ${
-              currentStep >= i + 1 ? 'bg-purple-700' : 'bg-slate-100'
+              currentStep >= i + 1 ? 'bg-primary' : 'bg-slate-100'
             }`}
           />
         ))}
@@ -27,7 +27,7 @@ export const OnboardingHeader = ({ currentStep, totalSteps, onSkip }: Onboarding
 
       <button
         onClick={onSkip}
-        className="text-slate-500 hover:text-purple-600 transition-colors text-sm font-medium"
+        className="text-slate-500 hover:text-primary transition-colors text-sm font-medium"
       >
         건너뛰기
       </button>
