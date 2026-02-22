@@ -18,7 +18,7 @@ export const HouseholdStep = ({ value, onChange }: HouseholdStepProps) => {
   return (
     <>
       <div className="mb-6 text-center space-y-2">
-        <Typography variant="h3" weight="bold" className="text-slate-900 leading-tight">
+        <Typography variant="h3" weight="bold" className="text-slate-900 leading-tight" style={{ fontFamily: 'var(--font-title)' }}>
           몇 명을 위한 식사를<br />준비하시나요?
         </Typography>
         <Typography variant="caption" className="text-slate-400 font-medium whitespace-pre-line">
