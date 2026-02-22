@@ -121,7 +121,7 @@ export default function SignupPage() {
                     type="submit" 
                     fullWidth
                     loading={isLoading}
-                    className="h-12 rounded-xl font-bold text-base shadow-lg shadow-purple-600/20 bg-purple-600 text-white hover:bg-purple-700"
+                    className="h-12 rounded-xl font-bold text-base shadow-lg shadow-primary/20 bg-primary text-white hover:bg-primary/90"
                 >
                     회원가입
                 </ActionButton>
