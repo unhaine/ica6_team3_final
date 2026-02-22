@@ -14,11 +14,11 @@ export const FloatingCameraButton = () => {
         aria-label="카메라"
       >
         {/* Outer Ring */}
-        <div className="w-14 h-14 rounded-full border-2 border-purple-600 bg-white flex items-center justify-center">
-           {/* Inner Circle */}
-           <div className="w-12 h-12 rounded-full bg-purple-600 flex items-center justify-center transition-transform group-hover:scale-105">
-              <Camera className="w-6 h-6 text-white" />
-           </div>
+       <div className="w-14 h-14 rounded-full border-2 border-primary bg-white flex items-center justify-center">
+          {/* Inner Circle */}
+          <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center transition-transform group-hover:scale-105">
+            <Camera className="w-6 h-6 text-white" />
+          </div>
         </div>
       </button>
     </div>
