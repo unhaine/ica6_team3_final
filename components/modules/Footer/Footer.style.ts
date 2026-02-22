@@ -3,7 +3,7 @@ export const STYLES = {
     
     item: (isActive: boolean) => [
         "flex flex-col items-center justify-center w-full h-full pt-3 pb-2 gap-1 transition-colors relative",
-        isActive ? "text-purple-600 font-medium" : "text-gray-400 hover:text-purple-600",
+        isActive ? "text-primary font-medium" : "text-gray-400 hover:text-primary",
     ].join(" "),
 
     icon: "h-7 w-7",
