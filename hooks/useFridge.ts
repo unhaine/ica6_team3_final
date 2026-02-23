@@ -100,6 +100,27 @@ export const useFridge = (mockData?: FridgeItem[]) => {
     }
   }, []);
 
+  // 일괄 삭제 핸들러
+  const handleDeleteMultiple = useCallback(async (ids: string[]) => {
+    try {
+      const results = await Promise.all(
+        ids.map(id => fetch(`/api/ingredients?id=${id}`, { method: 'DELETE' }).then(res => res.json()))
+      );
+
+      const successIds = ids.filter((_, index) => results[index].success);
+      
+      if (successIds.length > 0) {
+        setItems(prev => prev.filter(item => !successIds.includes(item.id)));
+        alert('✅ 선택한 재료가 삭제되었습니다.');
+      } else {
+        alert('❌ 재료 삭제에 실패했습니다.');
+      }
+    } catch (error) {
+      console.error('일괄 삭제 에러:', error);
+      alert('❌ 삭제 중 오류가 발생했습니다.');
+    }
+  }, []);
+
   // 수정 핸들러
   const handleEdit = useCallback((item: { id: string; name: string; quantity: string | null }) => {
     setEditingItem(item);
@@ -218,6 +239,7 @@ export const useFridge = (mockData?: FridgeItem[]) => {
     editingItem,
     setActiveFilter,
     handleDelete,
+    handleDeleteMultiple,
     handleEdit,
     handleSaveEdit,
     handleAdd,

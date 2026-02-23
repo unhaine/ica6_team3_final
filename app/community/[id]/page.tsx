@@ -34,7 +34,7 @@ export default function PostDetailPage() {
         title: "커뮤니티",
         left: (
             <IconButton
-                icon="ArrowLeft"
+                icon="ChevronLeft"
                 variant="ghost"
                 onClick={() => router.back()}
                 ariaLabel="뒤로가기"

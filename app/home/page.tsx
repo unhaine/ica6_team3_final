@@ -5,12 +5,18 @@ import { useFooter } from "@/components/modules/Footer";
 import { HomeRecommendations, RefrigeratorToday, RecipeCard } from "@/components/modules";
 import { Typography, IconButton } from "@/components/elements";
 import { Sparkles } from "lucide-react";
+import Image from "next/image";
 
 export default function HomePage() {
     // 헤더 제어 - AI 추천
     useHeader({
         isVisible: true,
-        title: "홈",
+        title: (
+            <div className="flex items-center gap-2">
+                <Image src="/keyvisual.png" alt="먹이 로고" width={24} height={24} className="object-contain" />
+                <span className="font-bold text-lg">먹이</span>
+            </div>
+        ),
     });
 
     useFooter({

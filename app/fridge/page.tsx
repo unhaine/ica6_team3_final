@@ -37,6 +37,7 @@ export default function FridgePage() {
     editingItem,
     setActiveFilter,
     handleDelete,
+    handleDeleteMultiple,
     handleEdit,
     handleSaveEdit,
     handleAdd,
@@ -89,9 +90,9 @@ export default function FridgePage() {
     );
   };
 
-  const handleDeleteSelected = () => {
+  const handleDeleteSelected = async () => {
     if (confirm(`선택한 ${selectedItems.length}개의 재료를 정말 삭제하시겠습니까?`)) {
-      selectedItems.forEach((id) => handleDelete(id));
+      await handleDeleteMultiple(selectedItems);
       setSelectedItems([]);
     }
   };
