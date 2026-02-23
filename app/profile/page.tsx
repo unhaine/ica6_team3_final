@@ -93,25 +93,25 @@ export default function ProfilePage() {
     };
 
     const SETTINGS = [
-        { 
-            icon: Users, 
-            label: "가구 인원", 
-            value: userData?.householdSize 
+        {
+            icon: Users,
+            label: "가구 인원",
+            value: userData?.householdSize
                 ? `${userData.householdSize}${userData.householdSize === 4 ? '인+' : '인'}`
                 : "미설정",
             onClick: () => setEditingType('household'),
         },
-        { 
-            icon: Utensils, 
-            label: "요리 선호", 
-            value: userData?.cookingPreference 
+        {
+            icon: Utensils,
+            label: "요리 선호",
+            value: userData?.cookingPreference
                 ? COOKING_STYLE_OPTIONS.find((opt: any) => opt.value === userData.cookingPreference)?.label || userData.cookingPreference
                 : "미설정",
             onClick: () => setEditingType('cookingPreference'),
         },
-        { 
-            icon: AlertTriangle, 
-            label: "알러지/비선호", 
+        {
+            icon: AlertTriangle,
+            label: "알러지/비선호",
             value: userData?.allergies && userData.allergies.length > 0
                 ? userData.allergies.join(', ')
                 : "없음",
@@ -128,14 +128,14 @@ export default function ProfilePage() {
             <div className="flex-1 overflow-y-auto pb-20 scrollbar-hide">
                 {/* 1. Header Section */}
                 <section className="bg-surface p-6 flex flex-row items-center gap-6">
-                    <div 
+                    <div
                         className="relative cursor-pointer group shrink-0"
                         onMouseEnter={() => setIsHovering(true)}
                         onMouseLeave={() => setIsHovering(false)}
                         onClick={() => router.push('/profile/select')}
                     >
-                        <AvatarThumbnail 
-                            size="lg" 
+                        <AvatarThumbnail
+                            size="lg"
                             className="w-20 h-20 ring-4 ring-surface-alt shadow-lg transition-all group-hover:ring-primary/10"
                             src={user?.image || ""}
                             fallback={user?.name?.[0] || "?"}
@@ -146,14 +146,14 @@ export default function ProfilePage() {
                             </div>
                         </div>
                     </div>
-                    
+
                     <div className="flex flex-col items-start overflow-hidden">
                         <Typography variant="h3" weight="bold" color="primary" className="truncate w-full">
                             {user?.name || "사용자"}님
                         </Typography>
                         <div className="mt-1.5 inline-block">
                             <Typography variant="caption" color="secondary" className="px-3 py-1 bg-surface-alt rounded-full border border-border-subtle font-medium truncate max-w-[200px]">
-                                {user?.email || "로그인이 필요합니다."}
+                                {user ? (user.email || "이메일 정보 없음") : "로그인이 필요합니다."}
                             </Typography>
                         </div>
                     </div>
@@ -168,8 +168,8 @@ export default function ProfilePage() {
                     </div>
                     <div className="bg-white">
                         {SETTINGS.map((item, idx) => (
-                            <div 
-                                key={idx} 
+                            <div
+                                key={idx}
                                 className={`
                                     flex items-center justify-between p-4 cursor-pointer active:bg-gray-50 transition-colors
                                 `}
@@ -209,7 +209,7 @@ export default function ProfilePage() {
                             </div>
                         ))}
 
-                        <div 
+                        <div
                             className="flex items-center justify-between p-4 cursor-pointer active:bg-destructive/5 transition-colors"
                             onClick={() => signOut({ callbackUrl: "/" })}
                         >
@@ -222,7 +222,7 @@ export default function ProfilePage() {
                         </div>
                     </div>
                 </div>
-                
+
                 <div className="py-12 flex flex-col items-center gap-2">
                     <Typography variant="caption" className="text-[10px] text-text-tertiary opacity-50 uppercase tracking-[0.2em]">Build 1.0.0 (MVP)</Typography>
                 </div>
@@ -234,11 +234,11 @@ export default function ProfilePage() {
                     isOpen={editingType !== null}
                     type={editingType}
                     currentValue={
-                        editingType === 'household' 
+                        editingType === 'household'
                             ? userData?.householdSize || null
                             : editingType === 'allergies'
-                            ? userData?.allergies || []
-                            : userData?.cookingPreference || null
+                                ? userData?.allergies || []
+                                : userData?.cookingPreference || null
                     }
                     onClose={() => setEditingType(null)}
                     onSave={(value) => handleSaveSurvey(editingType, value)}

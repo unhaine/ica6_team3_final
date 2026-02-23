@@ -20,12 +20,19 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       clientId: process.env.AUTH_NAVER_ID,
       clientSecret: process.env.AUTH_NAVER_SECRET,
       profile(profile) {
-        // Naver API 응답 구조: { response: { id, nickname, email, profile_image } }
+        console.warn(`[NaverProfile] Raw response: ${JSON.stringify(profile)}`);
+        // Naver API 응답 구조: { response: { id, nickname, email, profile_image, name } }
+        const { response } = profile;
+
+        // 이메일 앞부분을 아이디처럼 활용 (예: user@naver.com -> user)
+        const emailId = response.email ? response.email.split('@')[0] : null;
+
         return {
-          id: profile.response.id, // Provider ID (JWT 콜백에서 DB ID로 교체됨)
-          name: profile.response.nickname || profile.response.name,
-          email: profile.response.email,
-          image: profile.response.profile_image,
+          id: response.id,
+          // 우선순위: 닉네임 > 실제성명 > 이메일아이디 > 기본값
+          name: response.nickname || response.name || emailId || `User_${response.id.substring(0, 6)}`,
+          email: response.email || null,
+          image: response.profile_image || null,
         };
       },
     }),
@@ -89,6 +96,22 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
           if (existingAccount) {
             console.warn(`[SignIn] Existing account found linked to user ID: ${existingAccount.userId}`);
+
+            // 기존 사용자 정보 업데이트 (이름이나 이메일 등이 누락된 경우 동기화)
+            try {
+              await prisma.user.update({
+                where: { id: existingAccount.userId },
+                data: {
+                  name: user.name || undefined,
+                  email: user.email || undefined,
+                  image: user.image || undefined,
+                },
+              });
+              console.warn(`[SignIn] User profile updated for ID: ${existingAccount.userId}`);
+            } catch (updateError) {
+              console.error(`[SignIn] Failed to update user profile:`, updateError);
+            }
+
             return true;
           }
 
@@ -191,6 +214,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             if (userByAccount) {
               console.warn(`[JWT] Found DB user by account with ID: ${userByAccount.id}`);
               token.id = userByAccount.id;
+              token.email = userByAccount.email || token.email;
+              token.name = userByAccount.name || token.name;
               token.image = userByAccount.image || token.image;
             } else if (user.email) {
               // Account로 못 찾았는데 이메일이 있는 경우 (기존 계정 연동 고려)
@@ -201,6 +226,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
               if (dbUser) {
                 console.warn(`[JWT] Found DB user by email with ID: ${dbUser.id}`);
                 token.id = dbUser.id;
+                token.email = dbUser.email || token.email;
+                token.name = dbUser.name || token.name;
                 token.image = dbUser.image || token.image;
               }
             }
@@ -219,6 +246,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             if (dbUser) {
               console.warn(`[JWT] Found DB user with ID: ${dbUser.id}`);
               token.id = dbUser.id;
+              token.email = dbUser.email || token.email;
+              token.name = dbUser.name || token.name;
               token.image = dbUser.image || token.image;
             }
           } catch (error) {
@@ -245,6 +274,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             if (userByEmail) {
               console.warn(`[JWT] Corrected token ID from ${token.id} to ${userByEmail.id}`);
               token.id = userByEmail.id;
+              token.email = userByEmail.email || token.email;
+              token.name = userByEmail.name || token.name;
               token.image = userByEmail.image || token.image;
             }
           }
