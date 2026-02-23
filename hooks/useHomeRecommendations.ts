@@ -20,7 +20,7 @@ export function useHomeRecommendations() {
 
             if (response.status === 401) {
                 // 인증 실패 시 일반 레시피 반환
-                const fallbackResponse = await fetch('/api/recipes?limit=5');
+                const fallbackResponse = await fetch('/api/recipes?limit=6');
                 const fallbackResult = await fallbackResponse.json();
                 if (fallbackResult.success) {
                     setRecipes(fallbackResult.data);

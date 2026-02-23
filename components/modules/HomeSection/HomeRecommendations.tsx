@@ -37,7 +37,7 @@ export function HomeRecommendations() {
 
     if (isLoading) return <HomeRecommendationsSkeleton />;
 
-    const displayRecipes = recipes.slice(0, 5);
+    const displayRecipes = recipes.slice(0, 6);
     const mainRecipe = displayRecipes[0] || null;
     const otherRecipes = displayRecipes.slice(1);
 
