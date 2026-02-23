@@ -51,6 +51,8 @@ export const EditSurveyModal = ({
   const [cookingPreference, setCookingPreference] = useState<string | null>(
     type === 'cookingPreference' ? (currentValue as string | null) : null
   );
+  const [customAllergy, setCustomAllergy] = useState("");
+
 
   useEffect(() => {
     if (type === 'household') {
@@ -89,6 +91,18 @@ export const EditSurveyModal = ({
       setAllergies([...allergies, allergy]);
     }
   };
+
+  const handleAddCustomAllergy = () => {
+    const trimmed = customAllergy.trim();
+    if (!trimmed) return;
+    if (allergies.includes(trimmed)) {
+      setCustomAllergy("");
+      return;
+    }
+    setAllergies([...allergies, trimmed]);
+    setCustomAllergy("");
+  };
+
 
   return (
     <div
@@ -168,7 +182,7 @@ export const EditSurveyModal = ({
                     key={option.value}
                     onClick={() => toggleAllergy(option.value)}
                     className={`
-                      py-3 px-4 rounded-full border-2 transition-all
+                      py-3 px-2 rounded-full border-2 transition-all
                       ${allergies.includes(option.value)
                         ? 'border-primary bg-primary/5 text-primary'
                         : 'border-border hover:border-primary/30'
@@ -176,13 +190,58 @@ export const EditSurveyModal = ({
                     `}
                   >
                     <Typography
-                      variant="body2"
+                      variant="caption"
                       weight={allergies.includes(option.value) ? 'semibold' : 'medium'}
+                      className="whitespace-nowrap overflow-hidden text-ellipsis"
                     >
                       {option.label}
                     </Typography>
                   </button>
                 ))}
+
+                {/* 직접 입력한 항목들 표시 */}
+                {allergies.filter(a => !ALLERGY_OPTIONS.find(o => o.value === a)).map((custom) => (
+                  <button
+                    key={custom}
+                    onClick={() => toggleAllergy(custom)}
+                    className="py-3 px-2 rounded-full border-2 border-primary bg-primary/5 text-primary transition-all"
+                  >
+                    <Typography
+                      variant="caption"
+                      weight="semibold"
+                      className="whitespace-nowrap overflow-hidden text-ellipsis"
+                    >
+                      {custom}
+                    </Typography>
+                  </button>
+                ))}
+              </div>
+
+              {/* 직접 입력 필드 */}
+              <div className="pt-2">
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={customAllergy}
+                    onChange={(e) => setCustomAllergy(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleAddCustomAllergy();
+                      }
+                    }}
+                    placeholder="재료 직접 입력 (예: 고수)"
+                    className="flex-1 px-4 py-2.5 rounded-xl border border-border focus:outline-none focus:border-primary text-sm"
+                  />
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleAddCustomAllergy}
+                    className="shrink-0 rounded-xl"
+                  >
+                    추가
+                  </Button>
+                </div>
               </div>
             </div>
           ) : type === 'cookingPreference' ? (

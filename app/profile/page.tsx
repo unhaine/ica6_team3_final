@@ -122,7 +122,11 @@ export default function ProfilePage() {
     ];
 
     const MENU = [
-        { icon: MessageSquare, label: "피드백 보내기" },
+        {
+            icon: MessageSquare,
+            label: "피드백 보내기",
+            onClick: () => window.open("https://github.com/unhaine/ica6_team3_final.git", "_blank")
+        },
     ];
 
     return (
@@ -200,7 +204,11 @@ export default function ProfilePage() {
                     </div>
                     <div className="bg-white">
                         {MENU.map((item, idx) => (
-                            <div key={idx} className="flex items-center justify-between p-4 cursor-pointer active:bg-gray-50 transition-colors">
+                            <div
+                                key={idx}
+                                className="flex items-center justify-between p-4 cursor-pointer active:bg-gray-50 transition-colors"
+                                onClick={item.onClick}
+                            >
                                 <div className="flex items-center gap-4">
                                     <div className="text-gray-400">
                                         <item.icon className="w-5 h-5" />

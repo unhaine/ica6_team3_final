@@ -97,9 +97,9 @@ export function RecipeCard({
             <MediaCard
                 imageUrl={recipe.rcpImgUrl || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=1000&auto=format&fit=crop"}
                 title={
-                    <div className="flex flex-col gap-1 items-center">
+                    <div className="flex flex-col gap-0.5 items-center">
                         {rank && (
-                            <div className="bg-purple-600/90 backdrop-blur-sm px-3 py-1 rounded-full mb-1">
+                            <div className="bg-purple-600/90 backdrop-blur-sm px-3 py-1 rounded-full mb-0.5">
                                 <Typography variant="caption" className="text-white font-bold">
                                     {rank}순위 추천
                                 </Typography>
@@ -116,9 +116,9 @@ export function RecipeCard({
                     </div>
                 }
                 description={
-                    <div className="flex flex-col gap-2 items-center w-full">
-                        {ingredient ? (
-                            <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/20 mb-1">
+                    <div className="flex flex-col gap-1.5 items-center w-full">
+                        {ingredient && (
+                            <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/20">
                                 <span className="text-base">{ingredient.emoji}</span>
                                 <Typography variant="caption" className="text-white font-medium">
                                     {ingredient.name} (D-{ingredient.dDay})
@@ -135,16 +135,18 @@ export function RecipeCard({
                                     </button>
                                 )}
                             </div>
-                        ) : (
-                            recipe?.recommendReason ? (
-                                <Typography variant="body2" className="text-white/90 font-medium whitespace-pre-line mb-1">
+                        )}
+
+                        {recipe?.recommendReason && (
+                            <div className="w-full px-4 my-0.5">
+                                <Typography className="text-white/90 font-medium whitespace-pre-line leading-tight break-keep text-[11px]">
                                     {recipe.recommendReason}
                                 </Typography>
-                            ) : null
+                            </div>
                         )}
 
                         {/* Ingredient List Display */}
-                        <div className="flex flex-wrap gap-1 justify-center max-h-16 overflow-hidden w-full px-2">
+                        <div className="flex flex-wrap gap-1 justify-center max-h-14 overflow-hidden w-full px-2 mt-1">
                             {(() => {
                                 let ings: { ingName: string; isOwned?: boolean }[] = [];
                                 if (recipe.ingredients && Array.isArray(recipe.ingredients) && recipe.ingredients.length > 0) {
@@ -174,7 +176,7 @@ export function RecipeCard({
                             })()}
                         </div>
 
-                        <div className="flex gap-3 mt-1">
+                        <div className="flex gap-3 mt-0.5">
                             <div className="flex items-center gap-1 text-white/80">
                                 <Clock className="w-3 h-3" />
                                 <Typography variant="caption" className="text-[10px]">{recipe.ckgTimeNm?.replace('분', '') || '15'}분</Typography>

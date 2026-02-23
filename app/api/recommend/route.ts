@@ -223,17 +223,23 @@ export async function GET(req: NextRequest) {
       let reason = '';
 
       // 추천 사유 동적 생성
+      const matchedPct = totalCount > 0 ? Math.round((matchedCount / totalCount) * 100) : 0;
+      const prefLabel = cookingPreference ? `'${cookingPreference}'` : '취향 맞춤';
+      const householdText = user.householdSize ? `${user.householdSize}인 가구` : '당신';
+
+      const hasAllergies = (user.allergies || []).length > 0;
+      const allergyText = hasAllergies ? ' + 알레르기 안심' : '';
+
       if (rec.score && rec.score.totalScore > 0) {
-        // 정상/완화 추천 (점수가 있음)
-        const isStrict = rec.score.householdScore > 0 && rec.score.preferenceScore > 0;
-        if (isStrict) {
-          const prefText = cookingPreference ?? '추천';
-          reason = `👨‍👩‍👧‍👦 당신의 ${user.householdSize}인 가구를 위한 '${prefText}' 레시피!\n✅ ${matchedCount}/${totalCount} 재료가 준비되어 있어요.`;
+        if (rec.score.householdScore > 0 && rec.score.preferenceScore > 0) {
+          reason = `👨‍👩‍👧‍👦 ${householdText}를 위한 ${prefLabel}${allergyText} 레시피!\n✅ 재료 ${matchedPct}% 준비 (${matchedCount}/${totalCount})`;
+        } else if (rec.score.ingredientScore > 25) {
+          reason = `🍱 재료 활용이 좋은 ${prefLabel}${allergyText} 추천!\n✅ 재료 ${matchedPct}% 준비 (${matchedCount}/${totalCount})`;
         } else {
-          reason = `🔎 일부 조건을 넓혀 추천한 레시피입니다.\n✅ ${matchedCount}/${totalCount} 재료가 준비되어 있어요.`;
+          reason = `✨ ${householdText}를 위한 ${prefLabel}${allergyText} 추천!\n✅ 재료 ${matchedPct}% 준비 (${matchedCount}/${totalCount})`;
         }
       } else {
-        reason = `🔥 조건에 맞는 레시피가 적어, 인기 레시피를 추천드립니다.`;
+        reason = `🔥 인기 있는 ${prefLabel}${allergyText} 레시피입니다!\n✅ 재료 ${matchedPct}% 준비 (${matchedCount}/${totalCount})`;
       }
 
       return {

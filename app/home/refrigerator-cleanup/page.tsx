@@ -83,8 +83,8 @@ export default function RefrigeratorCleanupPage() {
 
 
 
-    // Take top 5 recipes.
-    const displayRecipes = recipes.slice(0, 5);
+    // Take top 6 recipes.
+    const displayRecipes = recipes.slice(0, 6);
 
     return (
         <div className="flex flex-col gap-6 p-4 pb-24 overflow-y-auto bg-gray-50/50 h-full">
@@ -111,7 +111,7 @@ export default function RefrigeratorCleanupPage() {
                     const displayIngredient = matchedIngredient || undefined;
 
                     return (
-                        <div key={recipe.rcpSno || index} className="h-[380px] shrink-0">
+                        <div key={recipe.rcpSno || index} className="h-[420px] shrink-0">
                             <RecipeCard
                                 recipe={recipe}
                                 rank={index + 1}
