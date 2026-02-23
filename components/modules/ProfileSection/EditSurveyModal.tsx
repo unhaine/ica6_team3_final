@@ -114,7 +114,7 @@ export const EditSurveyModal = ({
         onClick={(e) => e.stopPropagation()}
       >
         {/* 헤더 */}
-        <div className="p-6 border-b border-border flex items-center justify-between">
+        <div className="p-6 flex items-center justify-between">
           <Typography variant="h3" weight="bold" className="font-title">
             {type === 'household'
               ? '가구 인원 수정'
@@ -287,7 +287,7 @@ export const EditSurveyModal = ({
         </div>
 
         {/* 액션 버튼 */}
-        <div className="p-6 pt-0 flex gap-3 border-t border-border">
+        <div className="p-6 pt-0 flex gap-3">
           <Button
             variant="outline"
             className="flex-1"
