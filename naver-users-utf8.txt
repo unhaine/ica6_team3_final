@@ -1,0 +1,9 @@
+﻿[dotenv@17.3.1] injecting env (10) from .env.local -- tip: ?숋툘  override existing env vars with { override: true }
+--- Naver Users in DB ---
+{
+  "id": "cmlz34d750000e4uqx4y7yslj",
+  "name": "User_6WcOW5",
+  "email": null,
+  "updatedAt": "2026-02-23T02:45:27.841Z",
+  "provider": "naver"
+}

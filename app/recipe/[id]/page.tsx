@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { ChevronLeft, Clock, Zap, Users, Bookmark, Share2, Star, ShoppingCart, Check, Search } from "lucide-react";
-import { Typography, IconBox, ActionButton, Spinner, IconButton } from "@/components/elements";
+import { Typography, IconBox, ActionButton, Spinner, IconButton, AlertModal } from "@/components/elements";
 import { useHeader } from "@/components/modules/Header";
 import { cn } from "@/lib/utils";
 import { CommerceModal, CommerceMultiModal } from "@/components/modules/CommerceModal";
@@ -56,6 +56,10 @@ export default function RecipeDetailPage() {
     const [selectedIngredient, setSelectedIngredient] = useState<string>("");
     const [isMultiModalOpen, setIsMultiModalOpen] = useState(false);
 
+    // Share Modal State
+    const [showShareConfirm, setShowShareConfirm] = useState(false);
+    const [showCopySuccess, setShowCopySuccess] = useState(false);
+
     // Custom Header
     useHeader({
         isVisible: true,
@@ -73,16 +77,11 @@ export default function RecipeDetailPage() {
         right: (
             <div className="flex gap-2">
                 <IconButton
-                    icon="Bookmark"
-                    className="bg-white/80 backdrop-blur-md rounded-full shadow-md hover:bg-white transition-colors text-gray-900"
-                    variant="ghost"
-                    ariaLabel="북마크 추가"
-                />
-                <IconButton
                     icon="Share2"
                     className="bg-white/80 backdrop-blur-md rounded-full shadow-md hover:bg-white transition-colors text-gray-900"
                     variant="ghost"
                     ariaLabel="공유하기"
+                    onClick={() => setShowShareConfirm(true)}
                 />
             </div>
         )
@@ -364,6 +363,33 @@ export default function RecipeDetailPage() {
                 isOpen={isMultiModalOpen}
                 onClose={() => setIsMultiModalOpen(false)}
                 ingredients={missingIngredients}
+            />
+
+            {/* Share Modals */}
+            <AlertModal
+                isOpen={showShareConfirm}
+                title="레시피 공유"
+                message="이 레시피의 링크를 복사하시겠습니까?"
+                confirmLabel="복사하기"
+                cancelLabel="취소"
+                onConfirm={() => {
+                    const url = window.location.href;
+                    navigator.clipboard.writeText(url).then(() => {
+                        setShowShareConfirm(false);
+                        setShowCopySuccess(true);
+                    });
+                }}
+                onClose={() => setShowShareConfirm(false)}
+            />
+
+            <AlertModal
+                isOpen={showCopySuccess}
+                title="공유 완료"
+                message="레시피 링크가 클립보드에 복사되었습니다. 원하시는 곳에 붙여넣어 공유해 보세요!"
+                confirmLabel="확인"
+                showCancel={false}
+                onConfirm={() => setShowCopySuccess(false)}
+                onClose={() => setShowCopySuccess(false)}
             />
         </div>
     );

@@ -11,6 +11,7 @@ interface AlertModalProps {
     onConfirm: () => void;
     onClose: () => void;
     variant?: 'default' | 'danger';
+    showCancel?: boolean;
 }
 
 export const AlertModal = ({
@@ -21,7 +22,8 @@ export const AlertModal = ({
     cancelLabel = "취소",
     onConfirm,
     onClose,
-    variant = 'default'
+    variant = 'default',
+    showCancel = true
 }: AlertModalProps) => {
     if (!isOpen) return null;
 
@@ -48,12 +50,14 @@ export const AlertModal = ({
                     </div>
 
                     <div className="flex w-full gap-3">
-                        <button
-                            onClick={onClose}
-                            className="flex-1 py-3 bg-gray-100 text-gray-600 rounded-xl font-bold text-sm hover:bg-gray-200 transition-colors"
-                        >
-                            {cancelLabel}
-                        </button>
+                        {showCancel && (
+                            <button
+                                onClick={onClose}
+                                className="flex-1 py-3 bg-gray-100 text-gray-600 rounded-xl font-bold text-sm hover:bg-gray-200 transition-colors"
+                            >
+                                {cancelLabel}
+                            </button>
+                        )}
                         <button
                             onClick={onConfirm}
                             className={`flex-1 py-3 rounded-xl font-bold text-sm text-white shadow-md transition-all active:scale-95 ${variant === 'danger' ? 'bg-red-500 hover:bg-red-600' : 'bg-primary hover:bg-primary-dark'

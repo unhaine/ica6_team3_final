@@ -1,8 +1,8 @@
 "use client";
 
-import React from "react";
-import { Typography, ActionButton, IconBox, MediaCard } from "@/components/elements";
-import { Sparkles, Bookmark, Zap, Clock, Users, ShoppingBag } from "lucide-react";
+import React, { useState } from "react";
+import { Typography, ActionButton, IconBox, MediaCard, AlertModal } from "@/components/elements";
+import { Share2, Sparkles, Zap, Clock, Users, ShoppingBag } from "lucide-react";
 import { Skeleton } from "@/components/ui";
 import { cn } from "@/lib/utils";
 
@@ -33,6 +33,9 @@ export function RecipeCard({
     onShop,
     className
 }: RecipeCardProps) {
+    const [showShareConfirm, setShowShareConfirm] = useState(false);
+    const [showCopySuccess, setShowCopySuccess] = useState(false);
+
     if (isEmpty || !recipe) {
         if (variant === "compact") {
             return (
@@ -66,7 +69,7 @@ export function RecipeCard({
             <MediaCard
                 imageUrl={recipe.rcpImgUrl || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=400&auto=format&fit=crop"}
                 title={
-                    <span 
+                    <span
                         className="text-[10px] text-center block w-full truncate font-medium text-white drop-shadow-sm"
                         style={{ fontFamily: 'var(--font-title)' }}
                     >
@@ -90,135 +93,163 @@ export function RecipeCard({
     }
 
     return (
-        <MediaCard
-            imageUrl={recipe.rcpImgUrl || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=1000&auto=format&fit=crop"}
-            title={
-                <div className="flex flex-col gap-1 items-center">
-                    {rank && (
-                        <div className="bg-purple-600/90 backdrop-blur-sm px-3 py-1 rounded-full mb-1">
-                            <Typography variant="caption" className="text-white font-bold">
-                                {rank}순위 추천
-                            </Typography>
+        <>
+            <MediaCard
+                imageUrl={recipe.rcpImgUrl || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=1000&auto=format&fit=crop"}
+                title={
+                    <div className="flex flex-col gap-1 items-center">
+                        {rank && (
+                            <div className="bg-purple-600/90 backdrop-blur-sm px-3 py-1 rounded-full mb-1">
+                                <Typography variant="caption" className="text-white font-bold">
+                                    {rank}순위 추천
+                                </Typography>
+                            </div>
+                        )}
+                        <Typography
+                            variant="h2"
+                            as="span"
+                            className="text-white font-bold leading-tight drop-shadow-md text-2xl"
+                            style={{ fontFamily: 'var(--font-title)' }}
+                        >
+                            {recipe.ckgNm || recipe.rcpTtl || '맛있는 레시피'}
+                        </Typography>
+                    </div>
+                }
+                description={
+                    <div className="flex flex-col gap-2 items-center w-full">
+                        {ingredient ? (
+                            <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/20 mb-1">
+                                <span className="text-base">{ingredient.emoji}</span>
+                                <Typography variant="caption" className="text-white font-medium">
+                                    {ingredient.name} (D-{ingredient.dDay})
+                                </Typography>
+                                {onShop && (
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            onShop(ingredient.name);
+                                        }}
+                                        className="ml-1 p-1 hover:bg-white/20 rounded-full transition-colors"
+                                    >
+                                        <ShoppingBag className="w-3 h-3 text-white" />
+                                    </button>
+                                )}
+                            </div>
+                        ) : (
+                            recipe?.recommendReason ? (
+                                <Typography variant="body2" className="text-white/90 font-medium whitespace-pre-line mb-1">
+                                    {recipe.recommendReason}
+                                </Typography>
+                            ) : null
+                        )}
+
+                        {/* Ingredient List Display */}
+                        <div className="flex flex-wrap gap-1 justify-center max-h-16 overflow-hidden w-full px-2">
+                            {(() => {
+                                let ings: { ingName: string; isOwned?: boolean }[] = [];
+                                if (recipe.ingredients && Array.isArray(recipe.ingredients) && recipe.ingredients.length > 0) {
+                                    ings = recipe.ingredients;
+                                } else if (recipe.ckgMtrlCn) {
+                                    // Fallback without ownership info if ingredients array missing
+                                    ings = recipe.ckgMtrlCn
+                                        .split(/,|\[|\]|\n/)
+                                        .map((s: string) => ({ ingName: s.trim() }))
+                                        .filter((i: any) => i.ingName && !i.ingName.match(/^재료/));
+                                }
+
+                                // Take top 6
+                                return ings.slice(0, 6).map((ing, idx) => (
+                                    <span
+                                        key={idx}
+                                        className={cn(
+                                            "text-[10px] px-1.5 py-0.5 rounded-md backdrop-blur-sm transition-colors",
+                                            ing.isOwned
+                                                ? "bg-green-500/80 text-white font-bold border border-green-400/50"
+                                                : "bg-black/30 text-white/70"
+                                        )}
+                                    >
+                                        {ing.ingName.split(/\s|\d/).shift()}
+                                    </span>
+                                ));
+                            })()}
                         </div>
-                    )}
-                    <Typography
-                        variant="h2"
-                        as="span"
-                        className="text-white font-bold leading-tight drop-shadow-md text-2xl"
-                        style={{ fontFamily: 'var(--font-title)' }}
+
+                        <div className="flex gap-3 mt-1">
+                            <div className="flex items-center gap-1 text-white/80">
+                                <Clock className="w-3 h-3" />
+                                <Typography variant="caption" className="text-[10px]">{recipe.ckgTimeNm?.replace('분', '') || '15'}분</Typography>
+                            </div>
+                            <div className="flex items-center gap-1 text-white/80">
+                                <Zap className="w-3 h-3" />
+                                <Typography variant="caption" className="text-[10px]">{recipe.ckgDodfNm || '쉬움'}</Typography>
+                            </div>
+                            <div className="flex items-center gap-1 text-white/80">
+                                <Users className="w-3 h-3" />
+                                <Typography variant="caption" className="text-[10px]">{recipe.ckgInbunNm?.replace('인분', '') || '1'}인분</Typography>
+                            </div>
+                        </div>
+                    </div>
+                }
+                overlay={
+                    <div className="flex gap-2">
+                        <IconBox
+                            variant="ghost"
+                            size="sm"
+                            icon={<Share2 className="w-4 h-4 text-white" />}
+                            className="bg-white/20 backdrop-blur-md border border-white/30 cursor-pointer hover:bg-white/30 transition-colors shadow-sm"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setShowShareConfirm(true);
+                            }}
+                        />
+                    </div>
+                }
+                footer={
+                    <ActionButton
+                        variant="default"
+                        fullWidth
+                        size="lg"
+                        className="h-12 rounded-xl bg-white text-purple-600 hover:bg-purple-50 border-none font-bold text-base shadow-lg active:scale-95 transition-all w-full"
+                        onClick={() => onSelect?.(recipe)}
                     >
-                        {recipe.ckgNm || recipe.rcpTtl || '맛있는 레시피'}
-                    </Typography>
-                </div>
-            }
-            description={
-                <div className="flex flex-col gap-2 items-center w-full">
-                    {ingredient ? (
-                        <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/20 mb-1">
-                            <span className="text-base">{ingredient.emoji}</span>
-                            <Typography variant="caption" className="text-white font-medium">
-                                {ingredient.name} (D-{ingredient.dDay})
-                            </Typography>
-                            {onShop && (
-                                <button
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        onShop(ingredient.name);
-                                    }}
-                                    className="ml-1 p-1 hover:bg-white/20 rounded-full transition-colors"
-                                >
-                                    <ShoppingBag className="w-3 h-3 text-white" />
-                                </button>
-                            )}
-                        </div>
-                    ) : (
-                        recipe?.recommendReason ? (
-                            <Typography variant="body2" className="text-white/90 font-medium whitespace-pre-line mb-1">
-                                {recipe.recommendReason}
-                            </Typography>
-                        ) : null
-                    )}
+                        이 메뉴로 결정
+                    </ActionButton>
+                }
+                layout="full"
+                aspectRatio="auto"
+                className={cn("h-full rounded-3xl overflow-hidden border-none shadow-xl", className)}
+                contentClassName="p-6 items-center text-center gap-3 pb-8"
+                footerClassName="border-t-0 mt-0 pt-0"
+                onClick={() => onSelect?.(recipe)}
+            />
 
-                    {/* Ingredient List Display */}
-                    <div className="flex flex-wrap gap-1 justify-center max-h-16 overflow-hidden w-full px-2">
-                        {(() => {
-                            let ings: { ingName: string; isOwned?: boolean }[] = [];
-                            if (recipe.ingredients && Array.isArray(recipe.ingredients) && recipe.ingredients.length > 0) {
-                                ings = recipe.ingredients;
-                            } else if (recipe.ckgMtrlCn) {
-                                // Fallback without ownership info if ingredients array missing
-                                ings = recipe.ckgMtrlCn
-                                    .split(/,|\[|\]|\n/)
-                                    .map((s: string) => ({ ingName: s.trim() }))
-                                    .filter((i: any) => i.ingName && !i.ingName.match(/^재료/));
-                            }
+            <AlertModal
+                isOpen={showShareConfirm}
+                title="레시피 공유"
+                message="이 레시피의 링크를 복사하시겠습니까?"
+                confirmLabel="복사하기"
+                cancelLabel="취소"
+                onConfirm={() => {
+                    const id = recipe.rcpSno || recipe.id;
+                    const url = `${window.location.origin}/recipe/${id}`;
+                    navigator.clipboard.writeText(url).then(() => {
+                        setShowShareConfirm(false);
+                        setShowCopySuccess(true);
+                    });
+                }}
+                onClose={() => setShowShareConfirm(false)}
+            />
 
-                            // Take top 6
-                            return ings.slice(0, 6).map((ing, idx) => (
-                                <span
-                                    key={idx}
-                                    className={cn(
-                                        "text-[10px] px-1.5 py-0.5 rounded-md backdrop-blur-sm transition-colors",
-                                        ing.isOwned
-                                            ? "bg-green-500/80 text-white font-bold border border-green-400/50"
-                                            : "bg-black/30 text-white/70"
-                                    )}
-                                >
-                                    {ing.ingName.split(/\s|\d/).shift()}
-                                </span>
-                            ));
-                        })()}
-                    </div>
-
-                    <div className="flex gap-3 mt-1">
-                        <div className="flex items-center gap-1 text-white/80">
-                            <Clock className="w-3 h-3" />
-                            <Typography variant="caption" className="text-[10px]">{recipe.ckgTimeNm?.replace('분', '') || '15'}분</Typography>
-                        </div>
-                        <div className="flex items-center gap-1 text-white/80">
-                            <Zap className="w-3 h-3" />
-                            <Typography variant="caption" className="text-[10px]">{recipe.ckgDodfNm || '쉬움'}</Typography>
-                        </div>
-                        <div className="flex items-center gap-1 text-white/80">
-                            <Users className="w-3 h-3" />
-                            <Typography variant="caption" className="text-[10px]">{recipe.ckgInbunNm?.replace('인분', '') || '1'}인분</Typography>
-                        </div>
-                    </div>
-                </div>
-            }
-            overlay={
-                <div className="flex gap-2">
-                    <IconBox
-                        variant="ghost"
-                        size="sm"
-                        icon={<Sparkles className="w-4 h-4 text-white" />}
-                        className="bg-white/20 backdrop-blur-md border border-white/30 shadow-sm"
-                    />
-                    <IconBox
-                        variant="ghost"
-                        size="sm"
-                        icon={<Bookmark className="w-4 h-4 text-white" />}
-                        className="bg-white/20 backdrop-blur-md border border-white/30 cursor-pointer hover:bg-white/30 transition-colors shadow-sm"
-                    />
-                </div>
-            }
-            footer={
-                <ActionButton
-                    variant="default"
-                    fullWidth
-                    size="lg"
-                    className="h-12 rounded-xl bg-white text-purple-600 hover:bg-purple-50 border-none font-bold text-base shadow-lg active:scale-95 transition-all w-full"
-                    onClick={() => onSelect?.(recipe)}
-                >
-                    이 메뉴로 결정
-                </ActionButton>
-            }
-            layout="full"
-            aspectRatio="auto"
-            className={cn("h-full rounded-3xl overflow-hidden border-none shadow-xl", className)}
-            contentClassName="p-6 items-center text-center gap-3 pb-8"
-            footerClassName="border-t-0 mt-0 pt-0"
-        />
+            <AlertModal
+                isOpen={showCopySuccess}
+                title="공유 완료"
+                message="레시피 링크가 클립보드에 복사되었습니다. 원하시는 곳에 붙여넣어 공유해 보세요!"
+                confirmLabel="확인"
+                showCancel={false}
+                onConfirm={() => setShowCopySuccess(false)}
+                onClose={() => setShowCopySuccess(false)}
+            />
+        </>
     );
 }
 
