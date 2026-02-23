@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/Button";
 import Image from "next/image";
 import { Typography } from "@/components/elements";
 import { Icon } from "@/components/elements/Icon";
-import { COOKING_SITUATION_OPTIONS } from "@/data/constants/cookingSituations";
+import { COOKING_SITUATION_OPTIONS, COOKING_STYLE_OPTIONS } from "@/data/constants/cookingSituations";
 
 const HOUSEHOLD_OPTIONS = [
   { value: 1, label: '1인', imageSrc: '/images/household01.png' },
@@ -15,12 +15,6 @@ const HOUSEHOLD_OPTIONS = [
   { value: 4, label: '4인 이상', imageSrc: '/images/household04.png' },
 ];
 
-const COOKING_STYLE_OPTIONS = [
-  { value: 'simple', label: '간편한 식사', imageSrc: '/images/cookingstyle01.png' },
-  { value: 'proper', label: '제대로 된 식사', imageSrc: '/images/cookingstyle02.png' },
-  { value: 'balanced', label: '균형있는 식사', imageSrc: '/images/cookingstyle03.png' },
-  { value: 'cleanup', label: '재료 소진', imageSrc: '/images/cookingstyle04.png' },
-];
 
 const ALLERGY_OPTIONS = [
   { value: '계란', label: '계란' },

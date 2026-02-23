@@ -8,6 +8,7 @@ import { signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { EditSurveyModal } from "@/components/modules/ProfileSection";
+import { COOKING_STYLE_OPTIONS } from "@/data/constants/cookingSituations";
 
 export default function ProfilePage() {
     const { data: session } = useSession();
@@ -103,7 +104,9 @@ export default function ProfilePage() {
         { 
             icon: Utensils, 
             label: "요리 선호", 
-            value: userData?.cookingPreference || "미설정",
+            value: userData?.cookingPreference 
+                ? COOKING_STYLE_OPTIONS.find((opt: any) => opt.value === userData.cookingPreference)?.label || userData.cookingPreference
+                : "미설정",
             onClick: () => setEditingType('cookingPreference'),
         },
         { 
@@ -158,18 +161,17 @@ export default function ProfilePage() {
 
                 {/* 2. Settings Section */}
                 <div className="mt-4 pb-10">
-                    <div className="px-4 py-2 border-b border-border bg-gray-50/50">
+                    <div className="px-4 py-2">
                         <Typography variant="caption" weight="bold" color="tertiary" className="uppercase tracking-widest text-[11px]">
                             개인화 설정
                         </Typography>
                     </div>
-                    <div className="bg-white border-b border-border shadow-xs">
+                    <div className="bg-white">
                         {SETTINGS.map((item, idx) => (
                             <div 
                                 key={idx} 
                                 className={`
                                     flex items-center justify-between p-4 cursor-pointer active:bg-gray-50 transition-colors
-                                    ${idx !== SETTINGS.length - 1 ? 'border-b border-gray-100' : ''}
                                 `}
                                 onClick={item.onClick}
                             >
@@ -189,14 +191,14 @@ export default function ProfilePage() {
                         ))}
                     </div>
 
-                    <div className="px-4 py-2 mt-4 border-b border-border bg-gray-50/50">
+                    <div className="px-4 py-2 mt-4">
                         <Typography variant="caption" weight="bold" color="tertiary" className="uppercase tracking-widest text-[11px]">
                             계정 및 지원
                         </Typography>
                     </div>
-                    <div className="bg-white border-b border-border shadow-xs">
+                    <div className="bg-white">
                         {MENU.map((item, idx) => (
-                            <div key={idx} className="flex items-center justify-between p-4 border-b border-gray-100 cursor-pointer active:bg-gray-50 transition-colors">
+                            <div key={idx} className="flex items-center justify-between p-4 cursor-pointer active:bg-gray-50 transition-colors">
                                 <div className="flex items-center gap-4">
                                     <div className="text-gray-400">
                                         <item.icon className="w-5 h-5" />

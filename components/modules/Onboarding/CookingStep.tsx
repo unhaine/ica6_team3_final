@@ -2,14 +2,8 @@
 
 import Image from 'next/image';
 import { Typography } from '@/components/elements/Typography';
-// import { Icon } from '@/components/elements/Icon';
+import { COOKING_STYLE_OPTIONS } from '@/data/constants/cookingSituations';
 
-const COOKING_STYLE_OPTIONS = [
-  { value: 'simple', label: '간편한 식사', imageSrc: '/images/cookingstyle01.png' },
-  { value: 'proper', label: '제대로 된 식사', imageSrc: '/images/cookingstyle02.png' },
-  { value: 'balanced', label: '균형있는 식사', imageSrc: '/images/cookingstyle03.png' },
-  { value: 'cleanup', label: '재료 소진', imageSrc: '/images/cookingstyle04.png' },
-];
 
 interface CookingStepProps {
   value: string | null;

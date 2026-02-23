@@ -45,7 +45,7 @@ export default function CommunityPage() {
     }, [activeFilter]);
 
     return (
-        <div className="flex flex-col h-full overflow-y-auto pb-20 scrollbar-hide">
+        <div className="flex flex-col h-full overflow-y-auto pb-20 scrollbar-hide bg-[#F9FAFB]">
             {/* Filter Section */}
             <div className={FilterStyles.stickySection}>
                 <FilterCarousel
@@ -68,7 +68,7 @@ export default function CommunityPage() {
             </div>
 
             {/* Posts List */}
-            <div className="p-4 space-y-4">
+            <div className="px-4 py-2 space-y-1">
                 {loading ? (
                     <div className="text-center py-20 text-text-secondary">피드를 불러오는 중...</div>
                 ) : posts.length === 0 ? (

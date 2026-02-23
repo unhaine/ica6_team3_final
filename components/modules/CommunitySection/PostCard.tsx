@@ -20,7 +20,7 @@ export function PostCard({ post, onLike, onDelete, currentUserId }: PostCardProp
     return (
         <div
             onClick={() => router.push(`/community/${post.id}`)}
-            className="bg-white p-4 rounded-xl shadow-sm border border-slate-100 flex gap-4 cursor-pointer active:scale-[0.99] transition-transform"
+            className="bg-white p-4 rounded-xl border shadow-sm flex gap-4 cursor-pointer active:scale-[0.99] transition-transform"
         >
             {/* Thumbnail */}
             {post.imageUrl ? (

@@ -56,7 +56,7 @@ export const FridgeItem = ({ item, isSelected = false, onToggle, onEdit, onUse }
                 )}
               </button>
             )}
-            <div className={`w-10 h-10 rounded-full flex items-center justify-center border overflow-hidden relative shrink-0 ${isExpired || isUrgent || isWarning ? 'bg-white border-white/50 shadow-sm' : 'bg-gray-50 border-gray-100'}`}>
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center overflow-hidden relative shrink-0 ${isExpired || isUrgent || isWarning ? '' : ''}`}>
               {(() => {
                 const iconUrl = getIngredientIcon(item.name);
                 if (iconUrl) {
@@ -97,9 +97,9 @@ export const FridgeItem = ({ item, isSelected = false, onToggle, onEdit, onUse }
             })()}
 
             <span className={`inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-md ${(() => {
-              if (isExpired) return 'bg-red-100 text-red-600 font-bold'; // 지남
-              if (isUrgent) return 'bg-red-50 text-red-500 font-bold'; // 임박
-              if (isWarning) return 'bg-orange-50 text-orange-500'; // 주의
+              if (isExpired) return 'bg-red-200 text-red-600 font-bold'; // 지남
+              if (isUrgent) return 'bg-red-100 text-red-500 font-bold'; // 임박
+              if (isWarning) return 'bg-orange-200 text-orange-500'; // 주의
               return 'bg-gray-100 text-gray-500'; // 안전
             })()}`}>
               {(isExpired || isUrgent) && <AlertTriangle className="w-3 h-3 text-red-500" />}

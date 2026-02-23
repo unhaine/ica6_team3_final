@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { ChevronLeft, Plus, Check } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useHeader } from "@/components/modules/Header";
@@ -44,6 +44,30 @@ export default function FridgePage() {
     setEditingItem,
     sortedItems,
   } = useFridge(isTestMode ? MOCK_INGREDIENTS : undefined);
+  
+  // Visibility state for recommendations
+  const [isRecommendationsVisible, setIsRecommendationsVisible] = useState(true);
+  const activityTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handleUserActivity = useCallback(() => {
+    setIsRecommendationsVisible(false);
+    
+    if (activityTimeoutRef.current) {
+        clearTimeout(activityTimeoutRef.current);
+    }
+    
+    activityTimeoutRef.current = setTimeout(() => {
+        setIsRecommendationsVisible(true);
+    }, 1000); // 1초 동안 활동이 없으면 다시 표시
+  }, []);
+
+  useEffect(() => {
+    return () => {
+        if (activityTimeoutRef.current) {
+            clearTimeout(activityTimeoutRef.current);
+        }
+    };
+  }, []);
 
   // 선택 상태 관리
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
@@ -90,11 +114,7 @@ export default function FridgePage() {
         />
       </div>
     ) : "나의 냉장고",
-    left: !isSearchMode ? (
-      <button onClick={() => router.back()} className="p-2 -ml-2 text-slate-900">
-        <ChevronLeft size={24} />
-      </button>
-    ) : null,
+    left: null,
     right: isSearchMode ? (
       <button
         onClick={() => {
@@ -131,7 +151,7 @@ export default function FridgePage() {
 
       {/* Sticky Selection Toolbar */}
       {!isLoading && sortedItems.length > 0 && (
-        <div className="shrink-0 bg-[#F9FAFB] px-5 py-3 border-b border-gray-100 flex items-center justify-between z-10 shadow-sm">
+        <div className="shrink-0 bg-[#F9FAFB] px-5 py-2 flex items-center justify-between z-10">
           <button
             onClick={handleToggleAll}
             className="flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-gray-900"
@@ -160,13 +180,17 @@ export default function FridgePage() {
         </div>
       )}
 
-      <div className="flex-1 overflow-y-auto p-4 scrollbar-hide">
+      <div 
+        className="flex-1 overflow-y-auto px-4 py-1 scrollbar-hide"
+        onScroll={handleUserActivity}
+        onTouchMove={handleUserActivity}
+      >
         {isLoading ? (
           <EmptyState isLoading={true} />
         ) : sortedItems.length === 0 ? (
           <EmptyState isLoading={false} />
         ) : (
-            <div className="space-y-2 mb-6">
+            <div className="space-y-1 mb-6">
               {sortedItems.map((item) => (
                 <FridgeItem
                   key={item.id}
@@ -191,7 +215,13 @@ export default function FridgePage() {
       </div>
 
       {/* Recipe Recommendations (Fixed at Bottom) */}
-      <div className="flex-none bg-white z-20 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+      <div 
+        className={`flex-none bg-white z-20 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] transition-all overflow-hidden ${
+            isRecommendationsVisible 
+            ? "max-h-[300px] opacity-100 duration-2000 ease-out" 
+            : "max-h-0 opacity-0 pointer-events-none duration-500 ease-in"
+        }`}
+      >
         <RecipeRecommendationRow
           recipes={recommendedRecipes}
           isLoading={isRecipeLoading}
