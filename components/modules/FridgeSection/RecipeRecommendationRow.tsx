@@ -4,6 +4,7 @@ import { useMemo, useRef, useState, MouseEvent } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Skeleton } from "@/components/ui/Skeleton";
+import { ChevronDown, ChevronUp } from "lucide-react";
 
 interface RecipeRecommendationRowProps {
     recipes: any[];
@@ -19,6 +20,8 @@ export const RecipeRecommendationRow = ({ recipes, isLoading }: RecipeRecommenda
     const [startX, setStartX] = useState(0);
     const [scrollLeft, setScrollLeft] = useState(0);
     const [isClick, setIsClick] = useState(true);
+
+    const [isExpanded, setIsExpanded] = useState(true);
 
     const displayedRecipes = useMemo(() => {
         return recipes.slice(0, 10); // 최대 10개만 표시
@@ -77,22 +80,35 @@ export const RecipeRecommendationRow = ({ recipes, isLoading }: RecipeRecommenda
     if (displayedRecipes.length === 0) return null;
 
     return (
-        <div className="py-3 bg-white border-t border-gray-100">
-            <div className="px-4 flex items-center justify-between mb-2">
-                <div className="flex flex-col">
-                    <h2 className="text-[15px] font-bold text-gray-900 leading-tight">오늘의 추천 요리 🍽️</h2>
-                    <span className="text-[10px] text-gray-400">남은 재료로 만들 수 있어요</span>
+        <div className="bg-white border-t border-gray-100 transition-all duration-300 relative">
+            {/* Pull Handle Visual */}
+            <div className="absolute top-1.5 left-1/2 -translate-x-1/2 w-8 h-1 bg-gray-200 rounded-full" />
+
+            <div 
+                className="px-4 pt-4 pb-3 flex items-center justify-between cursor-pointer active:bg-gray-50 transition-colors"
+                onClick={() => setIsExpanded(!isExpanded)}
+            >
+                <div className="flex flex-col w-full">
+                    <h2 className="text-[15px] font-bold text-gray-900 leading-tight flex items-center gap-1.5">
+                        오늘의 추천 요리 🍽️
+                    </h2>
+                    {isExpanded && (
+                        <p className="text-[10px] text-gray-400 mt-0.5 animate-in slide-in-from-top-1 duration-300">
+                            남은 재료로 만들 수 있어요
+                        </p>
+                    )}
                 </div>
             </div>
 
-            <div
-                ref={scrollRef}
-                className="flex gap-3 overflow-x-auto pb-1 snap-x flex-nowrap scrollbar-hide cursor-grab active:cursor-grabbing"
-                onMouseDown={onMouseDown}
-                onMouseLeave={onMouseLeave}
-                onMouseUp={onMouseUp}
-                onMouseMove={onMouseMove}
-            >
+            <div className={`transition-all duration-500 ease-in-out overflow-hidden ${isExpanded ? "max-h-[200px] opacity-100 mb-4" : "max-h-0 opacity-0 mb-0"}`}>
+                <div
+                    ref={scrollRef}
+                    className="flex gap-3 overflow-x-auto pb-1 snap-x flex-nowrap scrollbar-hide cursor-grab active:cursor-grabbing"
+                    onMouseDown={onMouseDown}
+                    onMouseLeave={onMouseLeave}
+                    onMouseUp={onMouseUp}
+                    onMouseMove={onMouseMove}
+                >
                 {/* Leading Spacer to match px-4 header padding */}
                 <div className="min-w-[4px] w-[4px]" />
 
@@ -130,6 +146,7 @@ export const RecipeRecommendationRow = ({ recipes, isLoading }: RecipeRecommenda
                 {/* Trailing Spacer */}
                 <div className="min-w-[4px] w-[4px]" />
             </div>
+          </div>
         </div>
     );
 };

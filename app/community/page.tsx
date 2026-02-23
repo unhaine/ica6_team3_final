@@ -45,7 +45,7 @@ export default function CommunityPage() {
     }, [activeFilter]);
 
     return (
-        <div className="flex flex-col h-full overflow-y-auto pb-20 scrollbar-hide bg-[#F9FAFB]">
+        <div className="absolute inset-0 flex flex-col overflow-hidden bg-[#F9FAFB]">
             {/* Filter Section */}
             <div className={FilterStyles.stickySection}>
                 <FilterCarousel
@@ -67,31 +67,33 @@ export default function CommunityPage() {
                 />
             </div>
 
-            {/* Posts List */}
-            <div className="px-4 py-2 space-y-1">
-                {loading ? (
-                    <div className="text-center py-20 text-text-secondary">피드를 불러오는 중...</div>
-                ) : posts.length === 0 ? (
-                    <div className="text-center py-20 bg-surface rounded-3xl border border-border shadow-sm">
-                        <p className="text-text-secondary mb-4">아직 올라온 소식이 없어요.</p>
-                        <button
-                            onClick={() => window.location.href = '/community/create'}
-                            className="text-primary font-medium hover:underline"
-                        >
-                            첫 소식 전하기
-                        </button>
-                    </div>
-                ) : (
-                    posts.map((post) => (
-                        <PostCard
-                            key={post.id}
-                            post={post}
-                            onLike={(p) => handleLike(p, setPosts)}
-                            onDelete={(id) => handleDelete(id, () => setPosts(prev => prev.filter(item => item.id !== id)))}
-                            currentUserId={session?.user?.id}
-                        />
-                    ))
-                )}
+            {/* Posts List - Scrollable area */}
+            <div className="flex-1 overflow-y-auto pb-24 scrollbar-hide">
+                <div className="px-4 py-2 space-y-1">
+                    {loading ? (
+                        <div className="text-center py-20 text-text-secondary">피드를 불러오는 중...</div>
+                    ) : posts.length === 0 ? (
+                        <div className="text-center py-20 bg-surface rounded-3xl border border-border shadow-sm">
+                            <p className="text-text-secondary mb-4">아직 올라온 소식이 없어요.</p>
+                            <button
+                                onClick={() => window.location.href = '/community/create'}
+                                className="text-primary font-medium hover:underline"
+                            >
+                                첫 소식 전하기
+                            </button>
+                        </div>
+                    ) : (
+                        posts.map((post) => (
+                            <PostCard
+                                key={post.id}
+                                post={post}
+                                onLike={(p) => handleLike(p, setPosts)}
+                                onDelete={(id) => handleDelete(id, () => setPosts(prev => prev.filter(item => item.id !== id)))}
+                                currentUserId={session?.user?.id}
+                            />
+                        ))
+                    )}
+                </div>
             </div>
 
             {/* Floating Action Button (FAB) */}
