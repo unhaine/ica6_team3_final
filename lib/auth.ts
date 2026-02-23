@@ -20,19 +20,30 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       clientId: process.env.AUTH_NAVER_ID,
       clientSecret: process.env.AUTH_NAVER_SECRET,
       profile(profile) {
+        // [DEBUG] 원본 응답을 파일로 기록하여 구조 확인
+        try {
+          const fs = require('fs');
+          const path = require('path');
+          const logPath = path.join(process.cwd(), 'naver-profile-debug.log');
+          fs.appendFileSync(logPath, `[${new Date().toISOString()}] ${JSON.stringify(profile)}\n`);
+        } catch (e) {
+          console.error('[NaverProfile] Log Write Error:', e);
+        }
+
         console.warn(`[NaverProfile] Raw response: ${JSON.stringify(profile)}`);
         // Naver API 응답 구조: { response: { id, nickname, email, profile_image, name } }
-        const { response } = profile;
+        const response = profile.response || {};
 
         // 이메일 앞부분을 아이디처럼 활용 (예: user@naver.com -> user)
-        const emailId = response.email ? response.email.split('@')[0] : null;
+        const email = response.email || profile.email;
+        const emailId = email ? email.split('@')[0] : null;
 
         return {
-          id: response.id,
-          // 우선순위: 닉네임 > 실제성명 > 이메일아이디 > 기본값
-          name: response.nickname || response.name || emailId || `User_${response.id.substring(0, 6)}`,
-          email: response.email || null,
-          image: response.profile_image || null,
+          id: response.id || profile.id,
+          // 우선순위: 응답닉네임 > 응답성명 > 탑레벨닉네임 > 탑레벨성명 > 이메일아이디 > 기본값
+          name: response.nickname || response.name || profile.nickname || profile.name || emailId || `User_${(response.id || profile.id || String(Math.random())).substring(0, 6)}`,
+          email: email || null,
+          image: response.profile_image || profile.profile_image || profile.image || null,
         };
       },
     }),
@@ -183,6 +194,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
     async jwt({ token, user, trigger, session, account }) {
       console.warn(`[JWT] DEBUG: Trigger: ${trigger}, HasUser: ${!!user}, HasAccount: ${!!account}`);
+      if (user) console.warn(`[JWT] New User Data: ${JSON.stringify(user)}`);
       // 초기 로그인 시 또는 토큰 업데이트 시
       if (account) {
         // Remove massive tokens that inflate the cookie
@@ -293,6 +305,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return token;
     },
     async session({ session, token }) {
+      console.warn(`[Session] DEBUG: Token status: ${!!token}, Token Name: ${token?.name}, Token Email: ${token?.email}`);
       // JWT 전략 사용 시: token에서 사용자 정보 가져오기
       if (session?.user && token) {
         session.user.id = token.id as string;

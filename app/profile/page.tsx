@@ -8,6 +8,7 @@ import { signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { EditSurveyModal } from "@/components/modules/ProfileSection";
+import { AlertModal } from "@/components/elements/AlertModal/AlertModal";
 import { COOKING_STYLE_OPTIONS } from "@/data/constants/cookingSituations";
 
 export default function ProfilePage() {
@@ -22,6 +23,7 @@ export default function ProfilePage() {
     } | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [editingType, setEditingType] = useState<'household' | 'allergies' | 'cookingPreference' | null>(null);
+    const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
     useHeader({
         isVisible: true,
@@ -211,7 +213,7 @@ export default function ProfilePage() {
 
                         <div
                             className="flex items-center justify-between p-4 cursor-pointer active:bg-destructive/5 transition-colors"
-                            onClick={() => signOut({ callbackUrl: "/" })}
+                            onClick={() => setShowLogoutConfirm(true)}
                         >
                             <div className="flex items-center gap-4">
                                 <div className="text-destructive/60">
@@ -244,6 +246,18 @@ export default function ProfilePage() {
                     onSave={(value) => handleSaveSurvey(editingType, value)}
                 />
             )}
+
+            {/* 로그아웃 확인 모달 */}
+            <AlertModal
+                isOpen={showLogoutConfirm}
+                title="로그아웃"
+                message="정말 로그아웃 하시겠습니까?"
+                confirmLabel="로그아웃"
+                cancelLabel="취소"
+                variant="danger"
+                onConfirm={() => signOut({ callbackUrl: "/" })}
+                onClose={() => setShowLogoutConfirm(false)}
+            />
         </div>
     );
 }
