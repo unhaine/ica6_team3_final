@@ -33,12 +33,15 @@ export const MediaCard = ({
             {imageUrl && (
                 <div className={cn(STYLES.imageWrapper(aspectRatio, layout), imageClassName)}>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img 
-                        src={imageUrl} 
-                        alt={typeof title === 'string' ? title : "Media Thumbnail"} 
+                    <img
+                        src={imageUrl || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=800&auto=format&fit=crop"}
+                        alt={typeof title === 'string' ? title : "레시피 이미지"}
                         className={STYLES.image}
+                        onError={(e) => {
+                            e.currentTarget.src = "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=800&auto=format&fit=crop";
+                        }}
                     />
-                    
+
                     {/* Background Gradient for Full Layout */}
                     {layout === "full" && <div className={STYLES.gradient} />}
 
@@ -57,7 +60,7 @@ export const MediaCard = ({
                 <div className={STYLES.header}>
                     <h3 className={STYLES.title}>{title}</h3>
                 </div>
-                
+
                 {/* Metadata & Tag Area (Badge + Metadata inside) */}
                 {(badge || metadata) && (
                     <div className="flex flex-wrap gap-1.5 mt-1 mb-2">
@@ -77,7 +80,7 @@ export const MediaCard = ({
                         })}
                     </div>
                 )}
-                
+
                 {/* Description */}
                 {description && (
                     <div className={STYLES.description}>

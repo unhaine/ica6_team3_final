@@ -17,7 +17,6 @@ interface PostFormProps {
     headerTitle: string;
     submitLabel: string;
     loadingLabel: string;
-    showRecipeLink?: boolean;
 }
 
 export function PostForm({
@@ -30,7 +29,6 @@ export function PostForm({
     headerTitle,
     submitLabel,
     loadingLabel,
-    showRecipeLink = false
 }: PostFormProps) {
     const router = useRouter();
 
@@ -63,7 +61,7 @@ export function PostForm({
         ),
     });
 
-    useFooter({ isVisible: false });
+    useFooter({ isVisible: true });
 
     return (
         <div className="flex flex-col h-full bg-[#F9FAFB] relative max-h-screen">
@@ -90,19 +88,6 @@ export function PostForm({
                     </div>
                 </section>
 
-                {showRecipeLink && (
-                    <div className="mt-6">
-                        <button className="w-full py-4 px-4 bg-white border border-slate-200 rounded-2xl flex items-center justify-between text-slate-500 hover:bg-slate-50 hover:border-slate-300 transition-all group shadow-sm">
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-emerald-500 group-hover:scale-105 transition-transform">
-                                    <Icon name="Link" size={20} />
-                                </div>
-                                <span className="font-medium">레시피 연결하기 (선택)</span>
-                            </div>
-                            <Icon name="ChevronRight" size={20} className="text-slate-400" />
-                        </button>
-                    </div>
-                )}
             </main>
         </div>
     );

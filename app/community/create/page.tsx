@@ -11,7 +11,7 @@ import { extractThumbnail } from '@/utils/community-utils';
 function CreatePostContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
-    
+
     // Layout management is now handled inside PostForm
 
     const [content, setContent] = useState('');
@@ -43,7 +43,6 @@ function CreatePostContent() {
                     title,
                     content,
                     imageUrl,
-                    recipeId: searchParams.get('recipeId'),
                 }),
             });
 
@@ -72,7 +71,6 @@ function CreatePostContent() {
             headerTitle="글쓰기"
             submitLabel="등록"
             loadingLabel="등록 중..."
-            showRecipeLink={true}
         />
     );
 }

@@ -73,61 +73,93 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       // 소셜 로그인 시 사용자 DB에 저장/업데이트
       if (account?.provider && account.provider !== 'credentials') {
         try {
-          console.warn(`[SignIn] Provider: ${account.provider}, Email: ${user.email}`);
+          console.warn(`[SignIn] DEBUG: Full user object: ${JSON.stringify(user)}`);
+          console.warn(`[SignIn] DEBUG: Full account object: ${JSON.stringify({ ...account, access_token: 'REDACTED', refresh_token: 'REDACTED', id_token: 'REDACTED' })}`);
 
-          const existingUser = await prisma.user.findFirst({
+          // 1. 해당 소셜 계정(Provider + AccountId)이 이미 연동되어 있는지 확인
+          const existingAccount = await prisma.account.findUnique({
             where: {
-              accounts: {
-                some: {
-                  provider: account.provider,
-                  providerAccountId: account.providerAccountId,
-                },
+              provider_providerAccountId: {
+                provider: account.provider,
+                providerAccountId: account.providerAccountId,
               },
             },
+            include: { user: true }
           });
 
-          if (!existingUser) {
-            // 새 사용자 생성
-            console.warn(`[SignIn] Creating new user for ${account.provider}`);
-            const newUser = await prisma.user.create({
-              data: {
-                name: user.name,
-                email: user.email,
-                image: user.image,
-                accounts: {
-                  create: {
+          if (existingAccount) {
+            console.warn(`[SignIn] Existing account found linked to user ID: ${existingAccount.userId}`);
+            return true;
+          }
+
+          // 2. 소셜 계정이 없다면, 동일한 이메일을 가진 사용자가 있는지 확인 (계정 연동 고려)
+          if (user.email) {
+            const userWithEmail = await prisma.user.findFirst({
+              where: { email: user.email },
+            });
+
+            if (userWithEmail) {
+              console.warn(`[SignIn] Found existing user with email ${user.email}, linking account...`);
+              try {
+                // 기존 사용자에게 소셜 계정 연결
+                await prisma.account.create({
+                  data: {
+                    userId: userWithEmail.id,
                     type: account.type,
                     provider: account.provider,
                     providerAccountId: account.providerAccountId,
                     access_token: account.access_token,
                     refresh_token: account.refresh_token,
-                    expires_at: account.expires_at,
+                    expires_at: account.expires_at ? Number(account.expires_at) : null, // 숫자로 강제 변환
                     token_type: account.token_type,
                     scope: account.scope,
                     id_token: account.id_token,
                   },
-                },
-              },
-            });
-            console.warn(`[SignIn] User created successfully with ID: ${newUser.id}`);
-          } else {
-            console.warn(`[SignIn] Existing user found with ID: ${existingUser.id}`);
-          }
-        } catch (error) {
-          console.error(`[SignIn] Error for ${account.provider}:`, error);
-          if (error instanceof Error) {
-            console.error(`[SignIn] Error message: ${error.message}`);
-            // @ts-ignore
-            if (error.code) console.error(`[SignIn] Error code: ${error.code}`);
+                });
+                console.warn(`[SignIn] Account linked successfully to user ID: ${userWithEmail.id}`);
+                return true;
+              } catch (linkError: any) {
+                console.error(`[SignIn] CRITICAL: Failed to link account:`, linkError);
+                throw linkError; // catch 블록으로 전달
+              }
+            }
           }
 
-          // 에러 발생 시 로그인 실패
+          // 3. 계정도 없고 동일 이메일 사용자도 없다면 새 사용자 생성
+          console.warn(`[SignIn] Creating new user for ${account.provider}`);
+          const newUser = await prisma.user.create({
+            data: {
+              name: user.name,
+              email: user.email,
+              image: user.image,
+              accounts: {
+                create: {
+                  type: account.type,
+                  provider: account.provider,
+                  providerAccountId: account.providerAccountId,
+                  access_token: account.access_token,
+                  refresh_token: account.refresh_token,
+                  expires_at: account.expires_at ? Number(account.expires_at) : null,
+                  token_type: account.token_type,
+                  scope: account.scope,
+                  id_token: account.id_token,
+                },
+              },
+            },
+          });
+          console.warn(`[SignIn] User created successfully with ID: ${newUser.id}`);
+        } catch (error: any) {
+          console.error(`[SignIn] FATAL ERROR for ${account.provider}:`, error);
+          if (error.code) console.error(`[SignIn] Error code: ${error.code}`);
+          if (error.meta) console.error(`[SignIn] Error meta: ${JSON.stringify(error.meta)}`);
+          // 에러 발생 시 로그인 실패 (false 반환 시 Access Denied 발생)
           return false;
         }
       }
       return true;
     },
     async jwt({ token, user, trigger, session, account }) {
+      console.warn(`[JWT] DEBUG: Trigger: ${trigger}, HasUser: ${!!user}, HasAccount: ${!!account}`);
       // 초기 로그인 시 또는 토큰 업데이트 시
       if (account) {
         // Remove massive tokens that inflate the cookie

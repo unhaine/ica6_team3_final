@@ -64,7 +64,7 @@ export function RecipeCard({
     if (variant === "compact") {
         return (
             <MediaCard
-                imageUrl={recipe.rcpImgUrl || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=200&auto=format&fit=crop"}
+                imageUrl={recipe.rcpImgUrl || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=400&auto=format&fit=crop"}
                 title={
                     <span 
                         className="text-[10px] text-center block w-full truncate font-medium text-white drop-shadow-sm"
