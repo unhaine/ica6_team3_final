@@ -22,7 +22,7 @@ export const LoginPanel = ({ isExpanded, isFullPage, onSocialLogin, onEmailLogin
             <div className={`w-full max-w-md mx-auto space-y-4 flex-1 flex flex-col justify-start pt-2 transition-all duration-300 ${
                 isFullPage ? 'opacity-0 translate-y-8' : 'opacity-100'
             }`}>
-                <SocialButton provider="kakao" onClick={() => onSocialLogin('kakao')} />
+                <SocialButton provider="kakao" disabled onClick={() => onSocialLogin('kakao')} />
                 <SocialButton provider="naver" onClick={() => onSocialLogin('naver')} />
                 <SocialButton provider="google" onClick={() => onSocialLogin('google')} />
                 

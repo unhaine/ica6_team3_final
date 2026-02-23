@@ -55,21 +55,26 @@ const getProviderConfig = (provider: SocialProvider): ProviderConfig => ({
     icon: providerIcons[provider],
 });
 
-export const SocialButton = ({ provider, onClick, className }: SocialButtonProps) => {
+export const SocialButton = ({ provider, onClick, className, disabled }: SocialButtonProps) => {
     const config = getProviderConfig(provider);
 
     return (
         <button
-            onClick={onClick}
+            onClick={disabled ? undefined : onClick}
+            disabled={disabled}
             className={cn(
                 STYLES.button,
                 config.bgColor,
                 config.textColor,
+                disabled && 'opacity-50 grayscale cursor-not-allowed hover:shadow-lg active:scale-100',
                 className
             )}
         >
             <span className={STYLES.iconWrapper}>{config.icon}</span>
-            <span className={STYLES.textWrapper}>{config.name} 로그인</span>
+            <span className={STYLES.textWrapper}>
+                {config.name} 로그인
+                {disabled && ' (준비중)'}
+            </span>
         </button>
     );
 };

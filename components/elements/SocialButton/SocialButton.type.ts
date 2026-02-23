@@ -11,6 +11,8 @@ export interface SocialButtonProps {
     onClick?: () => void;
     /** 추가 CSS 클래스 */
     className?: string;
+    /** 비활성화 여부 */
+    disabled?: boolean;
 }
 
 /** 소셜 제공자 설정 */
