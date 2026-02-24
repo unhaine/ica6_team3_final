@@ -101,8 +101,6 @@ export default function CommunityPage() {
                 icon={Pencil}
                 onClick={() => window.location.href = '/community/create'}
                 ariaLabel="게시글 작성"
-                colorClass="bg-brand-orange"
-                borderColorClass="border-brand-orange"
             />
         </div>
     );

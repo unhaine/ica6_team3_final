@@ -53,7 +53,7 @@ export function PostForm({
                     px-4 py-1.5 rounded-full text-sm font-bold transition-all
                     ${loading
                         ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
-                        : 'bg-brand-orange text-white hover:opacity-90 shadow-sm active:scale-95'}
+                        : 'bg-primary text-white hover:opacity-90 shadow-sm active:scale-95'}
                 `}
             >
                 {loading ? loadingLabel : submitLabel}
@@ -68,7 +68,7 @@ export function PostForm({
             <main className="flex-1 overflow-y-auto px-4 pb-20 scrollbar-hide max-w-2xl mx-auto w-full pt-4">
                 <section className="space-y-4">
                     {/* Title Card Container */}
-                    <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm transition-all focus-within:ring-2 focus-within:ring-brand-orange/20 focus-within:border-brand-orange">
+                    <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm transition-all focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary">
                         <input
                             type="text"
                             placeholder="제목을 입력하세요"
