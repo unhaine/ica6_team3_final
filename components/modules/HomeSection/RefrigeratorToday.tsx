@@ -51,15 +51,8 @@ export function RefrigeratorToday() {
         <div className="space-y-3">
             {/* Section Title */}
             <div className="flex items-center gap-1.5 px-1">
-                <div className="relative w-4 h-4">
-                    <Image
-                        src="/images/tool/Alarm.png"
-                        alt="Alarm"
-                        fill
-                        className="object-contain"
-                    />
-                </div>
-                <Typography variant="body2" weight="bold" className="text-gray-800">
+                <Clock className="w-4 h-4 text-primary" />
+                <Typography variant="body2" weight="bold" className="text-primary">
                     먼저 먹어야하는 재료
                 </Typography>
             </div>
@@ -111,7 +104,7 @@ export function RefrigeratorToday() {
                                     className={`text-[10px]
                                         ${diffDays <= 3 ? 'text-red-500' :
                                             diffDays <= 7 ? 'text-orange-500' :
-                                                'text-blue-500'}
+                                                'text-primary'}
                                     `}
                                 >
                                     {diffDays < 0 ? `D+${Math.abs(diffDays)}` : diffDays === 0 ? "D-Day" : `D-${diffDays}`}
