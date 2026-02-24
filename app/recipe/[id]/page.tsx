@@ -242,8 +242,8 @@ export default function RecipeDetailPage() {
                                                     <tr key={itemIdx} className="border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors">
                                                         <td className="py-3 px-4 text-center">
                                                             {item.isOwned ? (
-                                                                <div className="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center mx-auto shadow-sm">
-                                                                    <Check className="w-3 h-3 text-green-600" />
+                                                                <div className="w-5 h-5 rounded-full bg-[#ff7a00]/10 flex items-center justify-center mx-auto shadow-sm">
+                                                                    <Check className="w-3 h-3 text-[#ff7a00]" />
                                                                 </div>
                                                             ) : (
                                                                 <div className="w-5 h-5 rounded-full bg-gray-100 flex items-center justify-center mx-auto">
@@ -327,7 +327,7 @@ export default function RecipeDetailPage() {
                                 className="flex gap-4"
                             >
                                 <div className="shrink-0">
-                                    <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center shadow-sm">
+                                    <div className="w-6 h-6 rounded-full bg-[#ff7a00] flex items-center justify-center shadow-sm">
                                         <Typography variant="caption" className="text-white font-bold">{index + 1}</Typography>
                                     </div>
                                 </div>

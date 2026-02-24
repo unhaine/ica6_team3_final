@@ -120,7 +120,7 @@ export const FridgeItem = ({ item, isSelected = false, onToggle, onEdit, onUse }
         right={
           <div className="flex items-center gap-1">
             <button
-              className="p-2 text-blue-500 hover:bg-blue-50 rounded-full transition-colors"
+              className="p-2 text-[#ff7a00] hover:bg-orange-50 rounded-full transition-colors"
               onClick={(e) => {
                 e.stopPropagation();
                 onEdit(item);

@@ -143,7 +143,7 @@ export function RecipeCard({
                         <Typography
                             variant="h2"
                             as="span"
-                            className="text-white font-medium leading-tight text-5xl [text-shadow:_0_2px_10px_rgba(0,0,0,0.8),_0_4px_20px_rgba(0,0,0,0.4)]"
+                            className="text-white font-medium leading-tight text-4xl [text-shadow:_0_2px_10px_rgba(0,0,0,0.8),_0_4px_20px_rgba(0,0,0,0.4)]"
                             style={{ fontFamily: 'var(--font-title)' }}
                         >
                             {recipe.ckgNm || recipe.rcpTtl || '맛있는 레시피'}

@@ -65,8 +65,8 @@ export default function PostDetailPage() {
                         </h1>
 
                         <div className="flex items-center justify-between">
-                            <PostUser 
-                                name={post.user.name || '익명 고수'} 
+                            <PostUser
+                                name={post.user.name || '익명 고수'}
                                 image={post.user.image}
                                 caption={new Date(post.createdAt).toLocaleDateString()}
                                 size="md"
@@ -77,7 +77,7 @@ export default function PostDetailPage() {
                             />
 
                             {isMe && (
-                                <PostActionMenu 
+                                <PostActionMenu
                                     onEdit={() => router.push(`/community/edit/${post.id}`)}
                                     onDelete={() => handleDelete(post.id, () => router.push('/community'))}
                                     className="ml-2"
@@ -98,7 +98,7 @@ export default function PostDetailPage() {
 
                 <div className="bg-white border-t border-slate-100 pb-20">
                     <div className="px-4 py-4">
-                        <PostStats 
+                        <PostStats
                             likeCount={likeCount}
                             commentCount={comments.length}
                             isLiked={isLiked}
@@ -132,13 +132,13 @@ export default function PostDetailPage() {
                             onChange={(e) => setCommentText(e.target.value)}
                             placeholder={session ? "댓글 달기..." : "로그인이 필요합니다"}
                             disabled={!session || submittingComment}
-                            className="flex-1 bg-slate-50 border-none rounded-full px-4 py-2 text-sm focus:ring-1 focus:ring-emerald-500 outline-none"
+                            className="flex-1 bg-slate-50 border-none rounded-full px-4 py-2 text-sm focus:ring-1 focus:ring-brand-orange outline-none"
                         />
                         {commentText.trim() && (
                             <button
                                 type="submit"
                                 disabled={submittingComment}
-                                className="text-emerald-500 font-bold text-sm px-2"
+                                className="text-brand-orange font-bold text-sm px-2"
                             >
                                 게시
                             </button>
