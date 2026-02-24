@@ -12,7 +12,7 @@ const ROOT_NAV_ITEMS = [
     { label: '프로필', iconDefault: '/gnbicon/my.png', iconSelected: '/gnbicon/selectmy.png', href: '/profile' },
 ];
 
-const HIDE_FOOTER_PATHS = ['/login', '/signup', '/onboarding', '/test', '/camera', '/test/camera'];
+const HIDE_FOOTER_PATHS = ['/login', '/signup', '/onboarding', '/test', '/camera', '/test/camera', '/recipe'];
 
 export const FooterController = () => {
     const pathname = usePathname();

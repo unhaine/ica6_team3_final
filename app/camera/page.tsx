@@ -44,7 +44,7 @@ export default function CameraPage() {
     });
 
     return (
-        <div className="flex-1 flex flex-col bg-purple-800 overflow-hidden relative">
+        <div className="h-full flex flex-col bg-purple-800 overflow-hidden relative">
             <AnimatePresence mode="wait">
                 {/* Step 1: Capture */}
                 {step === "capture" && (

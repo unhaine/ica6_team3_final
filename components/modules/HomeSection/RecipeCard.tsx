@@ -237,7 +237,7 @@ export function RecipeCard({
                 }
                 layout="full"
                 aspectRatio="auto"
-                className="h-full rounded-3xl overflow-hidden border-none shadow-xl text-[#ffffff]"
+                className="h-full min-h-[300px] rounded-3xl overflow-hidden border-none shadow-xl text-[#ffffff]"
                 contentClassName="p-6 items-center text-center gap-3 pb-8"
                 footerClassName="border-t-0 mt-0 pt-0"
                 onClick={() => onSelect?.(recipe)}

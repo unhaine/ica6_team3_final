@@ -42,12 +42,12 @@ export const DetectStep = ({
     if (!previewUrl) return null;
 
     return (
-        <motion.div 
+        <motion.div
             key="detect"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="flex-1 flex flex-col relative bg-linear-to-b from-purple-900/40 via-black to-purple-900/40 overflow-hidden"
+            className="h-full flex flex-col relative bg-linear-to-b from-purple-900/40 via-black to-purple-900/40 overflow-hidden"
         >
             {/* Header */}
             <CameraHeader onBack={onBack} onClose={onClose} backIcon="arrow" />
@@ -55,13 +55,13 @@ export const DetectStep = ({
             {/* Instruction Text */}
             <div className="text-center space-y-2 px-6 pb-2 pt-2 z-20">
                 <Typography variant="h3" weight="bold" className="text-white drop-shadow-lg text-xl leading-tight">
-                    라벨을 눌러서<br/>내용을 수정할 수 있어요
+                    라벨을 눌러서<br />내용을 수정할 수 있어요
                 </Typography>
             </div>
 
             {/* Viewfinder Area */}
-            <div className="flex-1 w-full px-4 flex items-center justify-center relative z-10">
-                <div className="w-full aspect-2/3 relative rounded-[32px] overflow-hidden border-2 border-white/20 shadow-2xl bg-black/50">
+            <div className="flex-1 w-full px-4 flex items-center justify-center relative z-10 min-h-0">
+                <div className="w-full h-full relative rounded-[32px] overflow-hidden border-2 border-white/20 shadow-2xl bg-black/50">
                     <LoadingOverlay isVisible={isAnalyzing} message="AI 분석 중..." />
                     <BoundingBoxCanvas
                         imageUrl={previewUrl}
@@ -88,12 +88,12 @@ export const DetectStep = ({
                 </Typography>
             </div>
 
-            {/* Padding for Bottom Action Bar - adjusted to match CaptureStep's controls height (136px) */}
-            <div className="h-[136px]" />
+            {/* Bottom Padding for Action Bar */}
+            <div className="shrink-0 h-[100px]" />
 
             <AnimatePresence>
                 {editingItem && (
-                    <SearchModal 
+                    <SearchModal
                         initialValue={editingItem.label}
                         initialQuantity={editingItem.quantity}
                         onClose={() => setEditingItem(null)}
@@ -109,7 +109,7 @@ export const DetectStep = ({
 
             {/* Bottom Action Bar */}
             <div className="absolute bottom-0 left-0 right-0 px-6 pb-12 pt-6 z-20 bg-linear-to-t from-black/90 to-transparent">
-                <button 
+                <button
                     className="w-full h-14 bg-white text-black rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-purple-900/20 active:scale-95 transition-transform disabled:opacity-50 disabled:scale-100"
                     disabled={isAnalyzing}
                     onClick={onConfirm}

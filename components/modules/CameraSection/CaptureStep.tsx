@@ -16,7 +16,7 @@ export const CaptureStep = ({ onImageChange, onClose }: CaptureStepProps) => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="flex-1 flex flex-col relative bg-linear-to-b from-purple-900/40 via-black to-purple-900/40"
+            className="h-full flex flex-col relative bg-linear-to-b from-purple-900/40 via-black to-purple-900/40"
         >
             {/* Header */}
             <CameraHeader onClose={onClose} onBack={onClose} />
@@ -29,8 +29,8 @@ export const CaptureStep = ({ onImageChange, onClose }: CaptureStepProps) => {
             </div>
 
             {/* Viewfinder Area */}
-            <div className="flex-1 w-full px-4 flex items-center justify-center relative z-10">
-                <div className="w-full aspect-2/3 relative rounded-[32px] overflow-hidden border-2 border-white/20 shadow-2xl">
+            <div className="flex-1 w-full px-4 flex items-center justify-center relative z-10 min-h-0">
+                <div className="w-full h-full relative rounded-[32px] overflow-hidden border-2 border-white/20 shadow-2xl">
                     <Image
                         src="/fridge/fridge.png"
                         alt="Camera Viewfinder"

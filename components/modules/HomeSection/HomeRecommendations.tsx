@@ -68,7 +68,7 @@ export function HomeRecommendations() {
     return (
         <div className="h-full flex flex-col px-4 pt-2 pb-6 gap-4">
             {/* Main Recipe - Swipeable Carousel */}
-            <div className="flex-1 min-h-0 relative group">
+            <div className="flex-1 min-h-[300px] relative group">
                 <div
                     ref={scrollContainerRef}
                     className="h-full flex overflow-x-auto snap-x snap-mandatory scrollbar-hide"
@@ -151,7 +151,7 @@ function HomeRecommendationsSkeleton() {
     return (
         <div className="h-full flex flex-col px-4 pt-2 pb-6 gap-4">
             {/* Main Card Skeleton - Dynamic Height */}
-            <div className="flex-1 min-h-0 relative">
+            <div className="flex-1 min-h-[300px] relative">
                 <RecipeCard.Skeleton variant="main" />
             </div>
 
