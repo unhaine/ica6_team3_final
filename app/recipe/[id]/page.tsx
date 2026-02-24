@@ -69,7 +69,7 @@ export default function RecipeDetailPage() {
             <IconButton
                 icon="ChevronLeft"
                 onClick={() => router.back()}
-                className="bg-white/80 backdrop-blur-md rounded-full shadow-md hover:bg-white transition-colors text-gray-900"
+                className="bg-white/80 backdrop-blur-md rounded-full hover:bg-white transition-colors text-gray-900"
                 variant="ghost"
                 ariaLabel="뒤로 가기"
             />
@@ -78,7 +78,7 @@ export default function RecipeDetailPage() {
             <div className="flex gap-2">
                 <IconButton
                     icon="Share2"
-                    className="bg-white/80 backdrop-blur-md rounded-full shadow-md hover:bg-white transition-colors text-gray-900"
+                    className="bg-white/80 backdrop-blur-md rounded-full hover:bg-white transition-colors text-gray-900"
                     variant="ghost"
                     ariaLabel="공유하기"
                     onClick={() => setShowShareConfirm(true)}
