@@ -347,7 +347,7 @@ export default function RecipeDetailPage() {
                 <ActionButton
                     fullWidth
                     size="lg"
-                    className="h-14 rounded-2xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-lg shadow-2xl shadow-purple-200 active:scale-[0.97] transition-all"
+                    className="h-14 rounded-2xl bg-primary hover:opacity-90 text-white font-bold text-lg shadow-2xl shadow-primary/20 active:scale-[0.97] transition-all"
                     onClick={() => router.push('/home')}
                 >
                     더 많은 레시피 보기

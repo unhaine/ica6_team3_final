@@ -80,7 +80,7 @@ export const ConfirmStep = ({
 
             <div className="p-6 bg-surface border-t border-border flex gap-3">
                 <button
-                    className="flex-1 h-14 rounded-xl font-bold bg-purple-600 text-white relative flex items-center justify-center transition-all active:scale-[0.98] shadow-lg shadow-primary/20 disabled:opacity-50"
+                    className="flex-1 h-14 rounded-xl font-bold bg-primary text-white relative flex items-center justify-center transition-all active:scale-[0.98] shadow-lg shadow-primary/20 disabled:opacity-50"
                     onClick={onSave}
                 >
                     <Check className="absolute left-4 w-5 h-5" />

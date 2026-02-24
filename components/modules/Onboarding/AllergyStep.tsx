@@ -46,14 +46,14 @@ export const AllergyStep = ({ selectedAllergies, onToggle }: AllergyStepProps) =
             size="sm"
             className={cn(
               "w-full justify-center py-2.5 text-xs transition-all rounded-full border",
-              selectedAllergies.includes(option.value) 
-                ? "bg-purple-600 border-purple-600 text-white shadow-sm shadow-purple-100" 
-                : "bg-white border-slate-100 text-slate-500 hover:border-purple-100"
+              selectedAllergies.includes(option.value)
+                ? "bg-primary border-primary text-white shadow-sm shadow-primary/10"
+                : "bg-white border-slate-100 text-slate-500 hover:border-primary/20"
             )}
           />
         ))}
         {/* Plus Button */}
-        <button className="w-full flex items-center justify-center py-2.5 bg-white border border-slate-100 rounded-full text-slate-300 hover:border-purple-200 transition-all">
+        <button className="w-full flex items-center justify-center py-2.5 bg-white border border-slate-100 rounded-full text-slate-300 hover:border-primary/20 transition-all">
           <Icon name="Plus" size={14} />
         </button>
       </div>

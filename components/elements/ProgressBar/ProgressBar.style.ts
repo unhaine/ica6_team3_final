@@ -13,5 +13,5 @@ export const VARIANT_STYLES = {
     default: "bg-primary",
     success: "bg-green-500",
     warning: "bg-yellow-500",
-    gradient: "bg-gradient-to-r from-primary to-purple-500",
+    gradient: "bg-gradient-to-r from-primary to-primary", // Or omit 'to' if it's the same color, but keeping structure. Actually usually gradients use different shades. 
 } as const;

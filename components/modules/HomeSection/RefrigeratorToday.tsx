@@ -19,7 +19,7 @@ export function RefrigeratorToday() {
         return (
             <div className="space-y-3">
                 <div className="flex items-center gap-1.5 px-1">
-                    <Clock className="w-4 h-4 text-purple-600" />
+                    <Clock className="w-4 h-4 text-primary" />
                     <Typography variant="body2" weight="bold" className="text-gray-800">
                         먼저 먹어야하는 재료
                     </Typography>

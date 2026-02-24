@@ -47,9 +47,8 @@ export const FridgeItem = ({ item, isSelected = false, onToggle, onEdit, onUse }
                   e.stopPropagation();
                   onToggle(item.id);
                 }}
-                className={`shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${
-                  isSelected ? "border-orange-500 bg-orange-500 text-white" : "border-gray-300 bg-white"
-                }`}
+                className={`shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${isSelected ? "border-orange-500 bg-orange-500 text-white" : "border-gray-300 bg-white"
+                  }`}
               >
                 {isSelected && (
                   <Check className="w-3.5 h-3.5" strokeWidth={3} />
@@ -114,7 +113,7 @@ export const FridgeItem = ({ item, isSelected = false, onToggle, onEdit, onUse }
           </div>
         }
         subTitle={
-          <span className={`text-xs font-bold ${item.quantity ? 'text-gray-500' : 'text-purple-600'}`}>
+          <span className={`text-xs font-bold ${item.quantity ? 'text-gray-500' : 'text-primary'}`}>
             {item.quantity || '입력필요'}
           </span>
         }

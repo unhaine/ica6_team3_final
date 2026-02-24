@@ -30,8 +30,8 @@ export const CookingStep = ({ value, onChange }: CookingStepProps) => {
             className={`
               relative p-6 rounded-3xl border-2 transition-all flex flex-col items-center justify-center gap-4
               ${value === option.value
-                ? 'border-purple-600 bg-purple-50'
-                : 'border-slate-50 bg-white hover:border-purple-100 shadow-sm shadow-slate-200/50'
+                ? 'border-primary bg-primary/5'
+                : 'border-slate-50 bg-white hover:border-primary/10 shadow-sm shadow-slate-200/50'
               }
             `}
           >
@@ -47,7 +47,7 @@ export const CookingStep = ({ value, onChange }: CookingStepProps) => {
               <Typography
                 variant="body2"
                 weight="bold"
-                className={value === option.value ? 'text-purple-600' : 'text-slate-600'}
+                className={value === option.value ? 'text-primary' : 'text-slate-600'}
               >
                 {option.label}
               </Typography>
