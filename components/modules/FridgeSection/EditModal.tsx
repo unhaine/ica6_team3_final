@@ -73,7 +73,7 @@ export const EditModal = ({ isOpen, item, onClose, onSave }: EditModalProps) => 
         onClick={(e) => e.stopPropagation()}
       >
         {/* 헤더 */}
-        <div className="p-6 border-b border-border flex items-center justify-between">
+        <div className="p-6 flex items-center justify-between">
           <Typography variant="h3" weight="bold">
             {item?.id ? "재료 수정" : "재료 추가"}
           </Typography>
