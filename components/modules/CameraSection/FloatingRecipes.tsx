@@ -12,7 +12,7 @@ interface FloatingRecipesProps {
     recipes?: any[];
     isVisible: boolean;
     onClose: () => void;
-    onSelect: (recipe: any) => void;
+    onSelect: (recipe: any, rank?: number) => void;
 }
 
 export const FloatingRecipes = ({ recipes = [], isVisible, onClose, onSelect }: FloatingRecipesProps) => {
@@ -144,7 +144,8 @@ export const FloatingRecipes = ({ recipes = [], isVisible, onClose, onSelect }: 
                                             >
                                                 <RecipeCard
                                                     recipe={displayRecipes[currentIndex]}
-                                                    onSelect={() => onSelect(displayRecipes[currentIndex])}
+                                                    rank={currentIndex + 1}
+                                                    onSelect={(r, rank) => onSelect(r, rank)}
                                                     className="rounded-[32px] shadow-2xl"
                                                 />
                                             </motion.div>

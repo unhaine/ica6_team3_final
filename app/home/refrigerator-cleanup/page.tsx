@@ -116,9 +116,12 @@ export default function RefrigeratorCleanupPage() {
                                 recipe={recipe}
                                 rank={index + 1}
                                 ingredient={displayIngredient}
-                                onSelect={(r) => {
+                                onSelect={(r, rank) => {
                                     const id = r.rcpSno || r.id;
-                                    if (id) router.push(`/recipe/${id}`);
+                                    if (id) {
+                                        const url = rank ? `/recipe/${id}?rank=${rank}` : `/recipe/${id}`;
+                                        router.push(url);
+                                    }
                                 }}
                                 onShop={(name) => setShoppingItem(name)}
                             />

@@ -17,7 +17,7 @@ export interface RecipeCardProps {
         dDay: number;
         emoji: string;
     };
-    onSelect?: (recipe: any) => void;
+    onSelect?: (recipe: any, rank?: number) => void;
     onShop?: (ingredientName: string) => void;
     className?: string;
 }
@@ -127,7 +127,7 @@ export function RecipeCard({
                     aspectRatio="square"
                     className="rounded-2xl border-none shadow-md overflow-hidden bg-white"
                     contentClassName="p-2 pb-2 flex flex-col justify-end"
-                    onClick={() => onSelect?.(recipe)}
+                    onClick={() => onSelect?.(recipe, currentRank)}
                 />
             </div>
         );
@@ -230,7 +230,7 @@ export function RecipeCard({
                         fullWidth
                         size="lg"
                         className="h-12 rounded-xl bg-[#FFEFEB] text-primary border-[0.5px] border-primary font-bold text-base shadow-lg active:scale-95 hover:bg-[#FAD9DC] transition-all w-full"
-                        onClick={() => onSelect?.(recipe)}
+                        onClick={() => onSelect?.(recipe, currentRank)}
                     >
                         이 메뉴로 결정
                     </ActionButton>
@@ -240,7 +240,7 @@ export function RecipeCard({
                 className="h-full min-h-[300px] rounded-3xl overflow-hidden border-none shadow-xl text-[#ffffff]"
                 contentClassName="p-6 items-center text-center gap-3 pb-8"
                 footerClassName="border-t-0 mt-0 pt-0"
-                onClick={() => onSelect?.(recipe)}
+                onClick={() => onSelect?.(recipe, currentRank)}
             />
 
             <AlertModal

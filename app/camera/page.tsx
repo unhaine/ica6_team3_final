@@ -100,9 +100,11 @@ export default function CameraPage() {
                     setShowRecipes(false);
                     router.push("/fridge");
                 }}
-                onSelect={(recipe) => {
+                onSelect={(recipe, rank) => {
                     setShowRecipes(false);
-                    router.push(`/recipe/${recipe.rcpSno || recipe.id}`);
+                    const id = recipe.rcpSno || recipe.id;
+                    const url = rank ? `/recipe/${id}?rank=${rank}` : `/recipe/${id}`;
+                    router.push(url);
                 }}
             />
         </div>

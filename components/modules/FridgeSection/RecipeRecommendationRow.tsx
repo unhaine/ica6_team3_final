@@ -56,9 +56,10 @@ export const RecipeRecommendationRow = ({ recipes, isLoading }: RecipeRecommenda
         }
     };
 
-    const handleItemClick = (recipeId: string) => {
+    const handleItemClick = (recipeId: string, rank?: number) => {
         if (isClick) {
-            router.push(`/recipe/${recipeId}`);
+            const url = rank ? `/recipe/${recipeId}?rank=${rank}` : `/recipe/${recipeId}`;
+            router.push(url);
         }
     };
 
@@ -84,7 +85,7 @@ export const RecipeRecommendationRow = ({ recipes, isLoading }: RecipeRecommenda
             {/* Pull Handle Visual */}
             <div className="absolute top-1.5 left-1/2 -translate-x-1/2 w-8 h-1 bg-gray-200 rounded-full" />
 
-            <div 
+            <div
                 className="px-4 pt-4 pb-3 flex items-center justify-between cursor-pointer active:bg-gray-50 transition-colors"
                 onClick={() => setIsExpanded(!isExpanded)}
             >
@@ -109,44 +110,44 @@ export const RecipeRecommendationRow = ({ recipes, isLoading }: RecipeRecommenda
                     onMouseUp={onMouseUp}
                     onMouseMove={onMouseMove}
                 >
-                {/* Leading Spacer to match px-4 header padding */}
-                <div className="min-w-[4px] w-[4px]" />
+                    {/* Leading Spacer to match px-4 header padding */}
+                    <div className="min-w-[4px] w-[4px]" />
 
-                {displayedRecipes.map((recipe) => (
-                    <div
-                        key={recipe.id}
-                        className="min-w-[100px] w-[100px] snap-start select-none group flex flex-col pointer-events-auto"
-                        onClick={() => handleItemClick(recipe.id)}
-                        onDragStart={(e) => e.preventDefault()}
-                    >
-                        <div className="relative aspect-[4/5] rounded-xl overflow-hidden mb-1.5 bg-gray-100 shadow-sm border border-gray-100">
-                            {recipe.rcpImgUrl ? (
-                                <Image
-                                    src={recipe.rcpImgUrl}
-                                    alt={recipe.rcpTtl}
-                                    fill
-                                    sizes="100px"
-                                    className="object-cover group-hover:scale-105 transition-transform duration-500 pointer-events-none"
-                                />
-                            ) : (
-                                <div className="w-full h-full flex items-center justify-center text-gray-300 bg-gray-50">
-                                    <span className="text-xl">🍳</span>
-                                </div>
-                            )}
+                    {displayedRecipes.map((recipe) => (
+                        <div
+                            key={recipe.id}
+                            className="min-w-[100px] w-[100px] snap-start select-none group flex flex-col pointer-events-auto"
+                            onClick={() => handleItemClick(recipe.id, displayedRecipes.indexOf(recipe) + 1)}
+                            onDragStart={(e) => e.preventDefault()}
+                        >
+                            <div className="relative aspect-[4/5] rounded-xl overflow-hidden mb-1.5 bg-gray-100 shadow-sm border border-gray-100">
+                                {recipe.rcpImgUrl ? (
+                                    <Image
+                                        src={recipe.rcpImgUrl}
+                                        alt={recipe.rcpTtl}
+                                        fill
+                                        sizes="100px"
+                                        className="object-cover group-hover:scale-105 transition-transform duration-500 pointer-events-none"
+                                    />
+                                ) : (
+                                    <div className="w-full h-full flex items-center justify-center text-gray-300 bg-gray-50">
+                                        <span className="text-xl">🍳</span>
+                                    </div>
+                                )}
 
-                            <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                                <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                            </div>
+
+                            <h3 className="text-[12px] font-medium text-gray-900 leading-snug line-clamp-1 group-hover:text-primary transition-colors">
+                                {recipe.rcpTtl}
+                            </h3>
                         </div>
+                    ))}
 
-                        <h3 className="text-[12px] font-medium text-gray-900 leading-snug line-clamp-1 group-hover:text-primary transition-colors">
-                            {recipe.rcpTtl}
-                        </h3>
-                    </div>
-                ))}
-
-                {/* Trailing Spacer */}
-                <div className="min-w-[4px] w-[4px]" />
+                    {/* Trailing Spacer */}
+                    <div className="min-w-[4px] w-[4px]" />
+                </div>
             </div>
-          </div>
         </div>
     );
 };

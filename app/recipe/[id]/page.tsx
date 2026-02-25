@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useMemo } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { ChevronLeft, Clock, Zap, Users, Bookmark, Share2, Star, ShoppingCart, Check, Search } from "lucide-react";
@@ -48,6 +48,8 @@ interface RecipeDetail {
 export default function RecipeDetailPage() {
     const params = useParams();
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const rank = searchParams.get('rank');
     const [recipe, setRecipe] = useState<RecipeDetail | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -168,7 +170,7 @@ export default function RecipeDetailPage() {
                 {/* Ranking & Categories */}
                 <div className="flex items-center gap-3">
                     <div className="bg-gray-100 flex items-center px-2 py-0.5 rounded-sm">
-                        <Typography variant="caption" className="font-bold text-gray-500 text-[11px]">1순위</Typography>
+                        <Typography variant="caption" className="font-bold text-gray-500 text-[11px]">{rank ? `${rank}순위` : '1순위'}</Typography>
                     </div>
                     <div className="flex-1 overflow-hidden">
                         <Typography variant="caption" className="text-gray-400 font-medium whitespace-nowrap overflow-ellipsis">

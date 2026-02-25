@@ -32,12 +32,13 @@ export function HomeRecommendations() {
 
     const router = useRouter();
 
-    const handleRecipeClick = (recipe: any) => {
+    const handleRecipeClick = (recipe: any, rank?: number) => {
         // 드래그 후 클릭 방지
         if (hasDragged.current) return;
         const id = recipe?.rcpSno || recipe?.id;
         if (id) {
-            router.push(`/recipe/${id}`);
+            const url = rank ? `/recipe/${id}?rank=${rank}` : `/recipe/${id}`;
+            router.push(url);
         }
     };
 
