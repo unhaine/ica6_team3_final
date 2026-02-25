@@ -13,8 +13,8 @@ export default function HomePage() {
         isVisible: true,
         title: (
             <div className="flex items-center gap-2">
-                <Image src="/keyvisual.png" alt="먹이 로고" width={24} height={24} className="object-contain" />
-                <span className="font-bold text-lg">먹이</span>
+                <Image src="/ai_star.png" alt="AI 추천" width={24} height={24} className="object-contain" />
+                <span className="font-bold text-lg">Ai 추천</span>
             </div>
         ),
     });
