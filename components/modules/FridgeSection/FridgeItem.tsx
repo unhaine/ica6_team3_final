@@ -71,7 +71,17 @@ export const FridgeItem = ({ item, isSelected = false, onToggle, onEdit, onUse }
                     </div>
                   );
                 }
-                return <span className="text-xl">🧀</span>;
+                return (
+                    <div className="p-1 w-full h-full relative">
+                      <Image
+                        src="/icons/etc.png"
+                        alt={item.name}
+                        fill
+                        className="object-contain p-1.5"
+                        sizes="40px"
+                      />
+                    </div>
+                  );
               })()}
             </div>
           </div>

@@ -2,10 +2,8 @@
 
 import { useEffect, useState, useRef } from "react";
 
-import { ActionButton, IconBox, MediaCard } from "@/components/elements";
 import { RecipeCard } from "./RecipeCard";
-import { Skeleton } from "@/components/ui";
-import { Sparkles, Bookmark, ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useHomeRecommendations } from "@/hooks/useHomeRecommendations";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
@@ -14,6 +12,12 @@ export function HomeRecommendations() {
     const { recipes, isLoading, groceryCount } = useHomeRecommendations();
     const [currentIndex, setCurrentIndex] = useState(0);
     const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+    // 마우스 드래그 스와이프 상태
+    const isDragging = useRef(false);
+    const startX = useRef(0);
+    const scrollLeft = useRef(0);
+    const hasDragged = useRef(false);
 
     // 로딩 중 스크롤바 숨김 처리
     useEffect(() => {
@@ -29,6 +33,8 @@ export function HomeRecommendations() {
     const router = useRouter();
 
     const handleRecipeClick = (recipe: any) => {
+        // 드래그 후 클릭 방지
+        if (hasDragged.current) return;
         const id = recipe?.rcpSno || recipe?.id;
         if (id) {
             router.push(`/recipe/${id}`);
@@ -38,8 +44,6 @@ export function HomeRecommendations() {
     if (isLoading) return <HomeRecommendationsSkeleton />;
 
     const displayRecipes = recipes.slice(0, 6);
-    const mainRecipe = displayRecipes[0] || null;
-    const otherRecipes = displayRecipes.slice(1);
 
     // 냉장고가 비어있거나(로그인 유저 기준), 레시피가 아예 없는 경우
     const isEmpty = displayRecipes.length === 0 || (groceryCount !== null && groceryCount === 0);
@@ -65,14 +69,51 @@ export function HomeRecommendations() {
         setCurrentIndex(index);
     };
 
+    // --- 마우스 드래그로 스와이프 지원 (데스크톱 웹) ---
+    const handleMouseDown = (e: React.MouseEvent) => {
+        if (!scrollContainerRef.current) return;
+        isDragging.current = true;
+        hasDragged.current = false;
+        startX.current = e.pageX - scrollContainerRef.current.offsetLeft;
+        scrollLeft.current = scrollContainerRef.current.scrollLeft;
+        scrollContainerRef.current.style.scrollSnapType = 'none';
+        scrollContainerRef.current.style.cursor = 'grabbing';
+    };
+
+    const handleMouseMove = (e: React.MouseEvent) => {
+        if (!isDragging.current || !scrollContainerRef.current) return;
+        e.preventDefault();
+        const x = e.pageX - scrollContainerRef.current.offsetLeft;
+        const walk = (x - startX.current) * 1.2; // 드래그 감도
+        if (Math.abs(walk) > 5) hasDragged.current = true;
+        scrollContainerRef.current.scrollLeft = scrollLeft.current - walk;
+    };
+
+    const handleMouseUp = () => {
+        if (!isDragging.current || !scrollContainerRef.current) return;
+        isDragging.current = false;
+        scrollContainerRef.current.style.scrollSnapType = 'x mandatory';
+        scrollContainerRef.current.style.cursor = '';
+        // snap-x가 다시 활성화되면서 가장 가까운 카드로 스냅됨
+    };
+
+    const handleMouseLeave = () => {
+        if (isDragging.current) handleMouseUp();
+    };
+
     return (
         <div className="h-full flex flex-col px-4 pt-2 pb-6 gap-4">
             {/* Main Recipe - Swipeable Carousel */}
             <div className="flex-1 min-h-[300px] relative group">
                 <div
                     ref={scrollContainerRef}
-                    className="h-full flex overflow-x-auto snap-x snap-mandatory scrollbar-hide"
+                    className="h-full flex overflow-x-auto snap-x snap-mandatory scrollbar-hide select-none"
+                    style={{ cursor: 'grab' }}
                     onScroll={handleScroll}
+                    onMouseDown={handleMouseDown}
+                    onMouseMove={handleMouseMove}
+                    onMouseUp={handleMouseUp}
+                    onMouseLeave={handleMouseLeave}
                 >
                     {isEmpty ? (
                         <div className="w-full h-full flex-shrink-0 snap-center">
@@ -116,31 +157,6 @@ export function HomeRecommendations() {
                     </>
                 )}
             </div>
-
-            {/* Other Recipes - Fixed at Bottom */}
-            <div className="shrink-0 grid grid-cols-5 gap-2">
-                {isEmpty ? (
-                    [1, 2, 3, 4, 5].map((i) => (
-                        <RecipeCard
-                            key={`empty-${i}`}
-                            recipe={null}
-                            index={i + 1}
-                            isEmpty={true}
-                            variant="compact"
-                        />
-                    ))
-                ) : (
-                    otherRecipes.map((rec, index) => (
-                        <RecipeCard
-                            key={String(rec.rcpSno ?? rec.id ?? index)}
-                            recipe={rec}
-                            index={index + 2}
-                            variant="compact"
-                            onSelect={handleRecipeClick}
-                        />
-                    ))
-                )}
-            </div>
         </div>
     );
 }
@@ -153,13 +169,6 @@ function HomeRecommendationsSkeleton() {
             {/* Main Card Skeleton - Dynamic Height */}
             <div className="flex-1 min-h-[300px] relative">
                 <RecipeCard.Skeleton variant="main" />
-            </div>
-
-            {/* Grid Skeleton - Fixed Bottom */}
-            <div className="shrink-0 grid grid-cols-5 gap-2">
-                {[1, 2, 3, 4, 5].map((i) => (
-                    <RecipeCard.Skeleton key={i} variant="compact" />
-                ))}
             </div>
         </div>
     );

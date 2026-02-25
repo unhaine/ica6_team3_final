@@ -37,6 +37,7 @@ export const MediaCard = ({
                         src={imageUrl || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=800&auto=format&fit=crop"}
                         alt={typeof title === 'string' ? title : "레시피 이미지"}
                         className={STYLES.image}
+                        draggable={false}
                         onError={(e) => {
                             e.currentTarget.src = "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=800&auto=format&fit=crop";
                         }}
