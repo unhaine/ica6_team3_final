@@ -18,7 +18,8 @@ export const CookingStep = ({ value, onChange }: CookingStepProps) => {
           어떤 요리 스타일을<br />선호하세요?
         </Typography>
         <Typography variant="caption" className="text-slate-400 font-medium whitespace-pre-line leading-relaxed">
-          가장 중요하게 생각하는 요리 기준을 선택해 주세요.
+          가장 중요하게 생각하는 요리 기준을 선택해 주세요.{"\n"}
+          설정은 마이메뉴에서 언제든 변경할 수 있어요.
         </Typography>
       </div>
 
