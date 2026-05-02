@@ -30,7 +30,7 @@ export default function EmailLoginPage() {
                 toast.error('이메일 또는 비밀번호가 올바르지 않습니다.');
             } else {
                 toast.success('로그인되었습니다.');
-                router.push('/test');
+                router.push('/home');
             }
         } catch (error) {
             console.error(error);
@@ -78,8 +78,8 @@ export default function EmailLoginPage() {
                     />
                 </div>
 
-                <ActionButton 
-                    type="submit" 
+                <ActionButton
+                    type="submit"
                     fullWidth
                     loading={isLoading}
                     className="h-12 rounded-xl font-bold text-base shadow-lg shadow-primary/20 bg-primary text-white hover:bg-primary/90"
@@ -89,11 +89,11 @@ export default function EmailLoginPage() {
             </form>
 
             <div className="text-center">
-                <button 
+                <button
                     onClick={() => router.push('/signup')}
                     className="text-sm text-slate-500 hover:text-primary transition-colors duration-200"
                 >
-                    계정이 없으신가요? 
+                    계정이 없으신가요?
                     <span className="font-bold underline decoration-primary/30 underline-offset-4 hover:decoration-primary">
                         회원가입
                     </span>
